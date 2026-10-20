@@ -781,13 +781,17 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   assert.doesNotMatch(body.textContent,/官方原说明|官方如何说明|核验方法|项目 evidence|本工具的估算依据/);
   assert.ok(body.querySelector('a[href="'+h.w.ReelayModels.get('seedance-2.0').sources.minima.calculatorUrl+'"]'));
   assert.ok(body.querySelector('a[href="'+h.w.ReelayModels.get('seedance-2.5').sources.minima.calculatorUrl+'"]'));
-  assert.ok(body.querySelector('.usage-prices a[href="https://ark.volcengine.com/region:cn-beijing/docs/model-pricing"]'));
+  const sources=body.querySelector('.usage-source-links');
+  assert.equal(body.querySelector('#usage-explanation').lastElementChild,sources);
+  assert.equal(sources.querySelectorAll('a').length,6);
+  assert.equal(body.querySelectorAll('.usage-explanation>section a').length,0,'source links stay together below the explanations');
+  assert.ok(sources.querySelector('a[href="https://ark.volcengine.com/region:cn-beijing/docs/model-pricing"]'));
   assert.equal(body.querySelector('a[href$=".md"]'),null,'readable source links must open the normal documentation page');
   for(const [model,tableId] of [['seedance-2.0','tblmNCuMjADrXtDf'],['seedance-2.5','tblheIYDXXwYM43b']]){
     const link=[...body.querySelectorAll('a')].find(a=>a.getAttribute('href')===h.w.ReelayModels.get(model).sources.minima.url);
     assert.ok(link,'each model family has a minimum usage table link');
     assert.equal(new URL(link.href).searchParams.get('table'),tableId,'the two model families must open their separate official tables');
-    assert.ok(link.closest('section').querySelector('#usage-minimum-description'));
+    assert.ok(sources.contains(link));
   }
   assert.equal(body.querySelector('.source-formula'),null);
   assert.equal(doc.getElementById('usage-method'),null);
@@ -810,7 +814,7 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   assert.equal(help.disabled,true);vin.blur();h.good();assert.equal(help.disabled,false);
 });
 
-test('usage dimension table matches captured official mappings and marks all maximum pixel ties', t => {
+test('usage dimension table matches captured official mappings without ranking highlights', t => {
   const h=boot(t),doc=h.w.document;
   h.click('#usage-help');
   const table=doc.getElementById('usage-dimension-table');
@@ -824,13 +828,14 @@ test('usage dimension table matches captured official mappings and marks all max
   const bodies=[...table.querySelectorAll('tbody[data-model]')];
   assert.deepEqual(bodies.map(body=>body.dataset.model).sort(),Object.keys(official).sort());
   assert.equal(table.querySelectorAll('td[data-ratio]').length,54,'include only supported model/resolution specifications');
+  assert.equal(table.querySelector('.is-pixel-maximum, .dimension-maximum'),null);
+  assert.doesNotMatch(table.textContent,/最多/);
   for(const body of bodies){
     const model=body.dataset.model,source=official[model];
     const rows=[...body.querySelectorAll('tr[data-resolution]')];
     assert.deepEqual(rows.map(row=>row.dataset.resolution),source.resolutions,model+' resolution coverage');
     for(const row of rows){
       const res=row.dataset.resolution,dims=source.dims[res];
-      const maximum=Math.max(...Object.values(dims).map(([width,height])=>width*height));
       const cells=[...row.querySelectorAll('td[data-ratio]')];
       assert.deepEqual(cells.map(cell=>cell.dataset.ratio),ratios,model+'/'+res+' ratio order');
       for(const cell of cells){
@@ -838,16 +843,9 @@ test('usage dimension table matches captured official mappings and marks all max
         const label=model+'/'+res+'/'+ratio;
         assert.equal(cell.querySelector('.dimension-size')?.textContent,width+' × '+height,label+' dimensions');
         assert.equal(cell.querySelector('.dimension-pixels')?.textContent,pixels.toLocaleString('en-US')+' 像素',label+' exact total pixels');
-        assert.equal(cell.classList.contains('is-pixel-maximum'),pixels===maximum,label+' maximum highlight');
-        const markers=[...cell.querySelectorAll('.dimension-maximum')];
-        assert.deepEqual(markers.map(marker=>marker.textContent),pixels===maximum?['最多']:[],label+' accessible maximum label');
       }
     }
   }
-  const winners=(model,res)=>[...table.querySelectorAll('tbody[data-model="'+model+'"] tr[data-resolution="'+res+'"] td.is-pixel-maximum')].map(cell=>cell.dataset.ratio);
-  assert.deepEqual(winners('seedance-2.0','480p'),['21:9','16:9','9:16'],'all three 2.0 480p ties are marked');
-  assert.deepEqual(winners('seedance-2.5','480p'),['21:9'],'2.5 uses its own smaller 16:9 and 9:16 dimensions');
-  assert.deepEqual(winners('seedance-2.0','4k'),['4:3','3:4'],'the small 4K pixel difference must not be rounded into a tie');
 });
 
 test('four quick configurations are true official token extrema over all supported specifications', t => {
