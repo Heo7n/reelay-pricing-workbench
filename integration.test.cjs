@@ -825,34 +825,34 @@ test('four quick configurations are true official token extrema over all support
   }
 });
 
-test('architecture: the default model stage contains no platform inputs or commercial results', t => {
+test('architecture: one workbench puts pricing first and keeps estimates and charges visible together', t => {
   const h=boot(t),doc=h.w.document;
-  const model=doc.getElementById('theory-workspace'),platform=doc.getElementById('platform-workspace'),actual=doc.getElementById('actual-workspace');
+  const workbench=doc.getElementById('theory-workspace'),actual=doc.getElementById('actual-workspace');
   assert.equal(h.api.getState().workspace,'theory');
-  assert.equal(model.hidden,false);assert.equal(platform.hidden,true);assert.equal(actual.hidden,true);
-  const navigation=[...doc.querySelectorAll('.workspace-nav [data-workspace]')];
-  assert.deepEqual(navigation.map(el=>el.dataset.workspace),['theory','platform','actual']);
-  assert.equal(navigation[0].getAttribute('aria-current'),'page');
-  for(const id of ['model','seconds','vin-slider','token-rate','token-estimate','token-minimum','cost-p','usage-help']){
-    assert.ok(model.contains(doc.getElementById(id)),id+' belongs to the independent model estimate');
+  assert.equal(workbench.hidden,false);assert.equal(actual.hidden,true);
+  assert.equal(doc.querySelector('.workspace-nav'),null);
+  assert.equal(doc.getElementById('platform-workspace'),null);
+  assert.equal(doc.getElementById('open-platform'),null);
+  const plan=workbench.querySelector('.plan'),work=workbench.querySelector('.work');
+  assert.equal(workbench.firstElementChild,plan,'pricing is the first block');
+  assert.ok(plan.compareDocumentPosition(work)&h.w.Node.DOCUMENT_POSITION_FOLLOWING);
+  for(const id of ['pay','total','purchase-discount','target-mode','manual-m'])assert.ok(plan.contains(doc.getElementById(id)));
+  for(const id of ['model','seconds','vin-slider','token-rate','token-estimate','token-minimum','cost-p','usage-help','cost-c','calculation','add-task']){
+    const el=doc.getElementById(id);assert.ok(work.contains(el),id+' is in the same parameter/result area');
+    assert.equal(el.closest('[hidden]'),null,id+' needs no stage switch');
   }
-  for(const id of ['pay','total','purchase-discount','target-mode','manual-m','cost-c','calculation','add-task','table']){
-    assert.equal(model.contains(doc.getElementById(id)),false,id+' must not appear in the model section');
-    assert.ok(platform.contains(doc.getElementById(id)),id+' belongs to platform pricing');
-  }
+  assert.equal(work.querySelector('.result-stack').children.length,2,'model estimate and commercial result retain distinct headings');
   assert.equal(doc.querySelector('.quick-config').open,false);
   assert.equal(doc.getElementById('platform-comparison').open,false);
   const estimate=h.api.quote().calc;
-  h.click('#open-platform');
-  assert.equal(h.api.getState().workspace,'platform');
-  assert.equal(model.hidden,true);assert.equal(platform.hidden,false);assert.equal(actual.hidden,true);
-  assert.equal(navigation[1].getAttribute('aria-current'),'page');
-  assert.ok(doc.getElementById('platform-quote').textContent.trim(),'the next stage carries the model context');
-  equal(h.api.quote().calc.P,estimate.P,'navigation does not modify the model quote');
-  h.click('.workspace-nav [data-workspace="actual"]');
-  assert.equal(actual.hidden,false);assert.equal(platform.hidden,true);assert.equal(model.hidden,true);
-  h.click('#back-theory');
-  assert.equal(model.hidden,false);assert.equal(actual.hidden,true);
+  h.click('#open-actual');assert.equal(actual.hidden,false);assert.equal(workbench.hidden,true);
+  h.click('#back-theory');assert.equal(workbench.hidden,false);assert.equal(actual.hidden,true);
+  equal(h.api.quote().calc.P,estimate.P,'opening reconciliation does not modify the quote');
+  const legacy=h.api.getState();legacy.workspace='platform';legacy.plan.manualM='1.65';legacy.plan.mode='manual';
+  const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(legacy)]]);
+  assert.equal(restored.api.getState().workspace,'theory','old platform drafts reopen the unified calculator');
+  assert.equal(restored.api.getState().plan.manualM,'1.65');
+  assert.equal(restored.w.document.getElementById('theory-workspace').hidden,false);
 });
 
 test('architecture: invalid recharge input clears only platform results and leaves model estimates usable', t => {
@@ -924,14 +924,10 @@ test('architecture: model drafts and quote exports remain independent of an inva
   equal(restored.api.quote().calc.P,h.api.quote().calc.P);
 });
 
-test('architecture: stage navigation keeps visible focus and the 2.5 matrix can load a 30-second quote', t => {
+test('architecture: reconciliation returns to the workbench and matrix choices focus generation parameters', t => {
   const h=boot(t),doc=h.w.document;
-  const navigation=stage=>doc.querySelector('.workspace-nav [data-workspace="'+stage+'"]');
   h.input('model','seedance-2.5','change');
-  h.click('#open-platform');
-  assert.equal(doc.activeElement,navigation('platform'),'the model handoff focuses the destination navigation');
-  h.click('#platform-comparison > summary');
-  h.click('[data-tab="matrix"]');
+  h.click('#platform-comparison > summary');h.click('[data-tab="matrix"]');
   const headings=[...doc.querySelectorAll('#table th')].map(el=>el.textContent);
   for(const seconds of ['20','25','30'])assert.ok(headings.includes(seconds+'秒'));
   const thirty=[...doc.querySelectorAll('[data-matrix]')].find(el=>{
@@ -941,21 +937,14 @@ test('architecture: stage navigation keeps visible focus and the 2.5 matrix can 
   const expected=h.api.quote(JSON.parse(thirty.dataset.matrix)).calc.P;
   thirty.focus();thirty.click();h.good();
   const selected=h.api.getState();
-  assert.equal(selected.workspace,'theory');
-  assert.equal(selected.task.model,'seedance-2.5');
+  assert.equal(selected.workspace,'theory');assert.equal(selected.task.model,'seedance-2.5');
   assert.equal(selected.task.res,'1080p');assert.equal(selected.task.seconds,'30');
   assert.equal(doc.getElementById('seconds').value,'30');
-  assert.equal(doc.getElementById('theory-workspace').hidden,false);
-  assert.equal(doc.activeElement,navigation('theory'),'loading a matrix cell moves focus out of the hidden comparison');
+  assert.equal(doc.activeElement,doc.getElementById('model'),'loading a matrix cell focuses editable parameters');
   equal(h.api.quote().calc.P,expected);
-  h.click('.workspace-nav [data-workspace="actual"]');
-  assert.equal(doc.activeElement,navigation('actual'));
-  assert.equal(navigation('actual').getAttribute('aria-current'),'page');
-  h.click('#back-theory');
-  assert.equal(doc.activeElement,navigation('theory'));
-  assert.equal(navigation('theory').getAttribute('aria-current'),'page');
-  h.click('.workspace-nav [data-workspace="platform"]');
-  assert.equal(doc.activeElement,navigation('platform'));
+  assert.equal(doc.getElementById('cost-c').closest('[hidden]'),null,'platform result remains on the same page');
+  h.click('#open-actual');assert.equal(doc.activeElement.id,'actual-title');
+  h.click('#back-theory');assert.equal(doc.activeElement.id,'plan-title');
 });
 
 test('models: selecting 2.5 uses its 30-second limit and exact 480p pixel map', t => {
@@ -1123,7 +1112,7 @@ test('architecture: an incomplete composer does not hide saved actual records or
   vin.value='';vin.dispatchEvent(new h.w.Event('input',{bubbles:true}));
   assert.equal(h.api.getState().task.vin,'');
   assert.equal(doc.getElementById('globalError').hidden,false);
-  doc.querySelector('.workspace-nav [data-workspace="actual"]').click();
+  doc.getElementById('open-actual').click();
   assert.equal(h.api.getState().workspace,'actual');
   assert.equal(doc.getElementById('actual-workspace').hidden,false);
   assert.equal(h.api.getState().task.vin,'','viewing records does not silently rewrite the incomplete draft');
