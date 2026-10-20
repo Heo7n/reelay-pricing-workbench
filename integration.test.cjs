@@ -825,7 +825,7 @@ test('four quick configurations are true official token extrema over all support
   }
 });
 
-test('architecture: one workbench puts pricing first and keeps estimates and charges visible together', t => {
+test('architecture: one workbench groups generation and its estimate on the left, platform pricing on the right', t => {
   const h=boot(t),doc=h.w.document;
   const workbench=doc.getElementById('theory-workspace'),actual=doc.getElementById('actual-workspace');
   assert.equal(h.api.getState().workspace,'theory');
@@ -834,18 +834,23 @@ test('architecture: one workbench puts pricing first and keeps estimates and cha
   assert.equal(doc.getElementById('platform-workspace'),null);
   assert.equal(doc.getElementById('open-platform'),null);
   const plan=workbench.querySelector('.plan'),work=workbench.querySelector('.work');
-  assert.equal(workbench.firstElementChild,plan,'pricing is the first block');
-  assert.ok(plan.compareDocumentPosition(work)&h.w.Node.DOCUMENT_POSITION_FOLLOWING);
+  const generation=work.querySelector('.generation-panel');
+  assert.equal(workbench.firstElementChild,work);
+  assert.equal(work.children.length,2,'two cards follow the model-to-platform calculation flow');
+  assert.equal(work.firstElementChild,generation);
+  assert.equal(work.lastElementChild,plan);
+  assert.ok(generation.compareDocumentPosition(plan)&h.w.Node.DOCUMENT_POSITION_FOLLOWING);
   for(const id of ['pay','total','purchase-discount','target-mode','manual-m'])assert.ok(plan.contains(doc.getElementById(id)));
   for(const id of ['model','seconds','vin-slider','token-rate','token-estimate','token-minimum','cost-p','usage-help','cost-c','calculation','add-task']){
     const el=doc.getElementById(id);assert.ok(work.contains(el),id+' is in the same parameter/result area');
     assert.equal(el.closest('[hidden]'),null,id+' needs no stage switch');
   }
-  const result=work.querySelector('.task-result');
-  assert.equal(work.querySelector('.result-stack').children.length,1,'one result belongs to this task');
-  assert.ok(result.querySelector('.model-cost-section').contains(doc.getElementById('cost-p')));
-  assert.ok(result.querySelector('.model-cost-section').contains(doc.getElementById('cost-c')));
-  assert.ok(result.querySelector('.customer-charge-section').contains(doc.getElementById('integer-points')));
+  for(const id of ['model','seconds','vin-slider','token-rate','token-estimate','token-minimum','cost-p','usage-help','globalError'])assert.ok(generation.contains(doc.getElementById(id)),id+' stays with generation');
+  for(const id of ['purchase-discount','procurement-status','cost-c','integer-points','actual-cash','platformError'])assert.ok(plan.contains(doc.getElementById(id)),id+' stays with platform pricing');
+  assert.equal(generation.querySelectorAll('#cost-p').length,1,'video estimate and list-price cost are the same amount');
+  assert.equal(plan.contains(doc.getElementById('cost-p')),false,'list-price cost is not duplicated in the platform panel');
+  assert.equal(generation.contains(doc.getElementById('cost-c')),false,'procurement is platform-dependent');
+  assert.equal(doc.getElementById('pixels').closest('[hidden]')!==null,true,'pixel detail remains available to code without cluttering the form');
   assert.equal(doc.querySelector('.quick-config').open,false);
   assert.equal(doc.getElementById('platform-comparison').open,false);
   const estimate=h.api.quote().calc;
@@ -902,7 +907,8 @@ test('architecture: model drafts and quote exports remain independent of an inva
   const stored=JSON.parse(h.w.localStorage.getItem('reelay_pricing_v9_official'));
   assert.equal(stored.task.model,'seedance-2.5');
   assert.equal(stored.task.seconds,'30');assert.equal(stored.task.vin,'30');
-  assert.deepEqual(stored.plan,lastValidPlan,'only the last valid platform plan is persisted');
+  const modelPlan={...lastValidPlan,procurementModel:'seedance-2.5',q:lastValidPlan.procurementByModel['seedance-2.5']};
+  assert.deepEqual(stored.plan,modelPlan,'persist valid financial settings and map while aligning only the active procurement mirror');
   h.click('#export');
   assert.equal(doc.getElementById('export-quote').disabled,false);
   assert.equal(doc.getElementById('export-json').disabled,true);
@@ -922,7 +928,7 @@ test('architecture: model drafts and quote exports remain independent of an inva
   const restored=boot(t,entries),state=restored.api.getState();
   assert.equal(state.task.model,'seedance-2.5');
   assert.equal(state.task.seconds,'30');assert.equal(state.task.vin,'30');
-  assert.deepEqual(plain(state.plan),lastValidPlan);
+  assert.deepEqual(plain(state.plan),modelPlan);
   assert.equal(restored.w.document.getElementById('pay').value,'200');
   assert.equal(restored.w.document.getElementById('platformError').hidden,true);
   equal(restored.api.quote().calc.P,h.api.quote().calc.P);
@@ -948,7 +954,7 @@ test('architecture: reconciliation returns to the workbench and matrix choices f
   equal(h.api.quote().calc.P,expected);
   assert.equal(doc.getElementById('cost-c').closest('[hidden]'),null,'platform result remains on the same page');
   h.click('#open-actual');assert.equal(doc.activeElement.id,'actual-title');
-  h.click('#back-theory');assert.equal(doc.activeElement.id,'plan-title');
+  h.click('#back-theory');assert.equal(doc.activeElement.id,'generation-title');
 });
 
 test('models: selecting 2.5 uses its 30-second limit and exact 480p pixel map', t => {

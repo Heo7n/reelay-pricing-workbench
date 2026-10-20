@@ -122,10 +122,10 @@
 @media(max-width:600px){.usage-token{padding:9px 10px}.usage-metrics dd{font-size:16px}}
 
 /* Plan fields share a baseline, control height and unit placement. */
-.plan .plan-head{margin-bottom:18px}.plan .plan-head h2{font-size:15px}.plan .target-validation{font-size:10px;color:var(--amber);margin-top:6px}
-.plan .plan-grid{grid-template-columns:minmax(145px,.65fr) minmax(255px,1.1fr) minmax(380px,1.65fr);gap:24px}
+.plan .plan-head{margin-bottom:20px;flex-wrap:wrap}.plan .plan-model{font-size:11px;color:var(--muted);font-weight:400}.plan .plan-head h2{font-size:15px}.plan .target-validation{font-size:10px;color:var(--amber);margin-top:6px}
+.plan .plan-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
 .plan .plan-grid>.plan-block{display:flex;flex-direction:column;align-items:stretch;min-width:0;grid-column:auto;padding:0;border:0}
-.plan .plan-grid>.plan-block+.plan-block{border-left:1px solid var(--line);padding-left:24px}
+.plan .plan-grid>.plan-block+.plan-block{border-top:1px solid var(--line);padding-top:18px}
 .plan .plan-block-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;min-height:25px;margin:0 0 12px;color:var(--sub)}
 .plan .plan-block-head,.plan .plan-block-head h3{font-size:12px;font-weight:600;line-height:1.6}
 .plan .fieldlabel{display:flex;align-items:center;gap:7px;min-height:21px;margin:0 0 6px;font-size:11px;color:var(--muted);line-height:1.6}
@@ -165,8 +165,7 @@
 .plan .plan-principle b{font-weight:600;font-variant-numeric:tabular-nums}
 .plan .outcome-caption{font-size:10px;color:var(--muted)}.plan .outcome-note{font-size:10px;color:var(--amber)}
 .plan #unit-check{font-size:11px;margin-left:auto}
-@media(max-width:1100px){.plan .plan-grid{grid-template-columns:minmax(140px,.65fr) minmax(240px,1fr);gap:18px}.plan .plan-grid>.plan-block+.plan-block{padding-left:18px}.plan .plan-grid>.client-pricing{grid-column:1/-1;padding:16px 0 0;border-left:0;border-top:1px solid var(--line)}.plan .client-pricing-body{grid-template-columns:1fr 1fr;gap:24px}}
-@media(max-width:540px){.plan .plan-grid{grid-template-columns:minmax(0,1fr);gap:15px}.plan .plan-grid>.plan-block+.plan-block{grid-column:auto;padding:15px 0 0;border-left:0;border-top:1px solid var(--line)}.plan .client-pricing-body{grid-template-columns:minmax(0,1fr);gap:16px}.plan .target-support .picks{gap:6px}.plan .target-support .picks button{font-size:11px;padding:0 9px}.plan #unit-check{margin-left:0}}
+@media(max-width:540px){.plan .client-pricing-body{grid-template-columns:minmax(0,1fr);gap:16px}.plan .target-support .picks{gap:6px}.plan .target-support .picks button{font-size:11px;padding:0 9px}.plan #unit-check{margin-left:0}}
 
 /* Multiplier settings: one calculation path, optional precision, one derivation. */
 .multiplier-settings .multiplier-method{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12px}.multiplier-method .input{width:166px}
@@ -179,72 +178,112 @@
 .multiplier-settings .multiplier-result{background:var(--tint);border-color:#dce5fb;margin-top:15px}.multiplier-result .big{font-size:24px;line-height:1.6;overflow-wrap:anywhere}.multiplier-result .state-feedback{font-size:11px;margin-top:3px}.plan-basis-note .fieldlabel{margin-top:10px}
 @media(max-width:400px){.derivation-known{grid-template-columns:1fr}.derivation-head{flex-wrap:wrap}.multiplier-method .input{width:145px}}
 
-/* One task, one result card. Shared spacing and parallel amounts. */
+/* Model estimate on the left; model-specific purchasing and points on the right. */
 .intro{padding:24px 0 18px}.intro h1{font-size:24px;letter-spacing:-.5px}
-#theory-workspace>.plan{margin-bottom:18px;padding-bottom:12px}#platformError{margin:0 0 15px}
-.plan-advanced{margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
-.plan-advanced>summary,.platform-calculation-detail>summary{font-size:11px;color:var(--sub);cursor:pointer}
-.result-stack{min-width:0}
-.model-work{align-items:start;margin-top:0;grid-template-columns:minmax(320px,3fr) minmax(0,7fr)}
-.model-work .composer{padding:20px}.model-work .composer>.head{margin-bottom:17px}
-.model-select-field{margin-bottom:19px;padding-bottom:18px;border-bottom:1px solid var(--line)}
-.model-select-field select{width:100%;height:39px;padding:0 10px;border:1px solid #dce2eb;border-radius:7px;background:#fff;font-size:13px;font-weight:550;color:var(--ink)}
-.model-work .fields-layout{display:block}.model-work .field{margin-bottom:18px}
-.model-work .pixel-line{justify-content:flex-start;gap:9px;margin-top:7px;font-size:10px}
-.quick-config{border-top:1px solid var(--line);padding-top:12px;margin-top:2px}
+.pricing-workbench{display:grid;grid-template-columns:minmax(370px,43fr) minmax(430px,57fr);gap:20px;align-items:start;margin-top:0}
+.pricing-workbench>.card{padding:22px 24px;min-width:0}
+.pricing-workbench .section-title{font-size:15px;font-weight:650;line-height:1.6}
+.pricing-workbench #globalError,.pricing-workbench #platformError{margin:0 0 16px}
+.generation-panel>.head{margin-bottom:20px}
+.generation-panel .model-select-field{margin-bottom:20px}.generation-panel .fieldlabel{display:flex;align-items:center;min-height:21px;margin:0 0 6px}
+.generation-panel .model-select-field select{width:100%;height:38px;padding:0 10px;border:1px solid #dce2eb;border-radius:7px;background:#fff;font-size:14px;color:var(--ink);font-weight:550}
+.generation-panel .fields-layout{display:block}.generation-panel .field{margin-bottom:18px}
+.generation-panel .field:last-child{margin-bottom:0}
+.generation-panel .field .label{font-size:12px;margin-bottom:8px}
+.generation-panel .segs button{padding:7px 8px}
+.generation-panel .ratios{gap:7px}.generation-panel .ratios button{height:54px}
+.generation-panel .model-cost-section{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.estimate-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.result-section-title{font-size:12px;line-height:1.6;font-weight:600;color:var(--sub);margin:0}
+.generation-panel .usage-summary{margin:0}.generation-panel .usage-rate-line{padding:0 0 12px}
+.generation-panel .usage-metrics{gap:12px;margin:0 0 14px}.generation-panel .usage-token{padding:11px 13px}
+.generation-panel .usage-metrics dd{font-size:21px;line-height:1.5}
+.generation-panel .usage-status{margin:0 0 12px}
+.video-price{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:16px;border-top:1px solid var(--line)}
+.video-price-label{display:flex;align-items:baseline;flex-wrap:wrap;gap:7px;font-size:12px;color:var(--sub)}
+.video-price-label small{color:var(--muted);font-size:10px}
+.video-price-amount{display:flex;align-items:baseline;gap:6px;min-width:0}.video-price-amount .cost-number{font-size:28px;font-weight:600;line-height:1.5}.video-price-amount .cost-number small{font-size:15px}.video-price-amount>span{color:var(--muted);font-size:10px;white-space:nowrap}
+.quick-config{border-top:1px solid var(--line);padding-top:12px;margin-top:18px}
 .quick-config>summary{cursor:pointer;font-size:11px;color:var(--sub);padding:2px 0;list-style:none;display:flex;align-items:center;justify-content:space-between}
 .quick-config>summary::-webkit-details-marker{display:none}.quick-config>summary:after{content:'＋';font-size:14px;color:var(--muted)}
 .quick-config[open]>summary:after{content:'−'}.quick-config .quick-examples{margin:12px 0 0}
-.task-result .result-heading{padding:20px 24px 0}.task-result .result-heading h2{font-size:15px}
-.task-result .model-cost-section,.task-result .customer-charge-section{padding:18px 24px}
-.task-result .customer-charge-section{border-top:1px solid var(--line)}
-.task-result .result-section-title{font-size:12px;font-weight:600;color:var(--sub);margin:0 0 12px}
-.task-result .usage-summary{margin:0}.task-result .usage-rate-line{padding:0 0 12px}
-.task-result .usage-metrics{gap:12px;margin:0 0 14px}.task-result .usage-token{padding:11px 14px}
-.task-result .usage-metrics dd{font-size:21px;line-height:1.5}
-.task-result .usage-status{margin:0 0 14px}
-.model-costs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}
-.model-costs>div{min-width:0;padding:0 14px}.model-costs dt{font-size:11px;color:var(--muted);margin-bottom:4px}
-.model-costs dd{margin:0;font-size:26px;line-height:1.5}.model-costs dd small{font-size:14px}
-.task-result .calculation{padding:0}
-.platform-primary-metrics{display:grid;grid-template-columns:1.08fr 1fr 1fr;gap:18px;align-items:stretch}
-.platform-primary-metrics .points-box{padding:12px 14px}.platform-primary-metrics .points-value{font-size:30px;white-space:normal;overflow-wrap:anywhere}
+.pricing-panel .purchase-values{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.pricing-panel .purchase-values .cost-number{font-size:24px;line-height:38px;letter-spacing:0}
+.pricing-panel .purchase-values .cost-number small{font-size:13px}
+.procurement-status{font-size:11px;color:var(--muted);margin:8px 0 0;line-height:1.7}.procurement-status.is-simulation{color:var(--amber)}
+.plan-advanced{margin-top:16px}
+.plan-advanced>summary,.platform-calculation-detail>summary{font-size:11px;color:var(--sub);cursor:pointer}
+.pricing-panel .customer-charge-section{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+.pricing-panel .customer-charge-section>.result-section-title{margin-bottom:12px}
+.pricing-panel .calculation{padding:0}
+.platform-primary-metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:stretch}
+.platform-primary-metrics .points-box{padding:12px 13px}.platform-primary-metrics .points-value{font-size:29px;white-space:normal;overflow-wrap:anywhere}
 .platform-primary-metrics .cash-item{border:0;align-items:flex-start;display:flex;flex-direction:column;justify-content:center;gap:0;min-width:0;padding:4px 0;margin:0;background:none;grid-column:auto}
-.platform-primary-metrics .cash-item b{font-size:23px;white-space:normal;overflow-wrap:anywhere;line-height:1.6}
+.platform-primary-metrics .cash-item b{font-size:22px;white-space:normal;overflow-wrap:anywhere;line-height:1.6}
 .platform-primary-metrics .cash-item small{margin:0;font-size:10px}
 .platform-primary-metrics .cash-item b.loss,.plan .plan-principle b.loss{color:var(--red)}
-.task-result .result-note{padding:0;background:none;color:var(--muted);font-size:10px;margin-top:12px}
+.pricing-panel .result-note{padding:0;background:none;color:var(--muted);font-size:10px;margin-top:12px}
 .platform-calculation-detail{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
 .platform-calculation-detail .equation{margin:12px 0;font-size:12px}.platform-calculation-detail .cash-row{margin-bottom:12px}
-.task-result .result-foot{padding:13px 24px;margin-top:0}
-.platform-comparison{padding:0;margin:18px 0}
+.pricing-panel .result-foot{padding:14px 0 0;margin-top:18px;gap:14px}
+.pricing-panel .result-foot .links{gap:16px}
+.platform-comparison{padding:0;margin:20px 0}
 .platform-comparison>summary{display:flex;align-items:center;gap:12px;list-style:none;padding:16px 22px;cursor:pointer;font-size:13px;font-weight:600}
 .platform-comparison>summary::-webkit-details-marker{display:none}.platform-comparison>summary:after{content:'＋';font-size:17px;color:var(--muted);margin-left:auto;font-weight:400}
 .platform-comparison[open]>summary:after{content:'−'}
 .comparison-content{padding:0 22px}.compare-actions{display:flex;justify-content:flex-end;padding-top:1px}
 .platform-comparison .tabs{margin-top:5px}.platform-comparison .tabs button{padding-top:10px}
 .bottom{margin-top:24px}.bottom .rule-status{display:inline;margin:0;font-size:10px;color:var(--muted)}
-@media(max-width:1100px){.task-result .result-heading{padding:20px 20px 0}.task-result .model-cost-section,.task-result .customer-charge-section{padding:16px 20px}.model-costs dd{font-size:23px}.platform-primary-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.platform-primary-metrics .points-box{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}.platform-primary-metrics .cash-item{padding:0 14px}}
-@media(max-width:800px){.model-work{grid-template-columns:1fr;gap:16px}.model-work .fields-layout{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}}
-@media(max-width:540px){.intro{padding:19px 0 15px}.intro h1{font-size:22px}.model-work .fields-layout{display:block}.model-work .composer{padding:17px}.task-result .result-heading{padding:17px 17px 0}.task-result .model-cost-section,.task-result .customer-charge-section{padding:16px 17px}.task-result .usage-token{padding:10px}.task-result .usage-metrics dd{font-size:18px}.model-costs>div{padding:0}.model-costs dd{font-size:21px}.platform-primary-metrics .cash-item{padding:0}.platform-primary-metrics .cash-item b{font-size:20px}.task-result .result-foot{padding:12px 17px}.platform-comparison>summary{padding:15px 16px}.comparison-content{padding:0 16px}.bottom{margin-top:19px}}
-@media(max-width:360px){.task-result .usage-metrics,.model-costs,.platform-primary-metrics{grid-template-columns:minmax(0,1fr)}}
-@media print{.quick-config{display:none!important}.platform-comparison{border:0}.task-result .result-heading,.task-result .model-cost-section,.task-result .customer-charge-section{padding:10px 0}}
+@media(max-width:1160px){.pricing-workbench>.card{padding:20px}.platform-primary-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.platform-primary-metrics .points-box{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}.platform-primary-metrics .cash-item{padding:0 13px}.generation-panel .usage-metrics dd{font-size:19px}.video-price-amount .cost-number{font-size:25px}}
+@media(max-width:900px){.pricing-workbench{grid-template-columns:minmax(0,1fr);gap:18px}.generation-panel .model-select-field{max-width:none}.generation-panel .usage-metrics dd{font-size:21px}.platform-primary-metrics{grid-template-columns:1fr 1fr 1fr;gap:16px}.platform-primary-metrics .points-box{grid-column:auto;display:block}.platform-primary-metrics .cash-item{padding:4px 0}}
+@media(max-width:540px){.intro{padding:19px 0 15px}.intro h1{font-size:22px}.pricing-workbench>.card{padding:18px 17px}.generation-panel .ratios{gap:5px}.generation-panel .usage-token{padding:10px}.generation-panel .usage-metrics dd{font-size:18px}.video-price-amount .cost-number{font-size:24px}.platform-primary-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.platform-primary-metrics .points-box{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}.platform-primary-metrics .cash-item b{font-size:20px}.pricing-panel .result-foot{padding-top:14px}.pricing-panel .purchase-values .cost-number{font-size:22px}.platform-comparison>summary{padding:15px 16px}.comparison-content{padding:0 16px}.bottom{margin-top:19px}}
+@media(max-width:360px){.generation-panel .usage-metrics,.platform-primary-metrics,.pricing-panel .purchase-values,.plan .recharge-values .grid2{grid-template-columns:minmax(0,1fr)}}
+@media print{.quick-config{display:none!important}.platform-comparison{border:0}.pricing-workbench{grid-template-columns:1fr 1.2fr;gap:18px}.pricing-workbench>.card{padding:10px}}
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.4.2</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.0</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
-<section class="card plan" aria-label="积分定价方案">
-<div class="head plan-head"><h2 class="section-title" id="plan-title" tabindex="-1">积分定价方案</h2></div>
-<div class="plan-grid">
-<section class="plan-block procurement-block" aria-labelledby="procurement-title">
-<h3 class="plan-block-head" id="procurement-title">采购条件</h3>
-<label class="fieldlabel" for="purchase-discount">采购折扣</label><div class="inputbox"><input class="input num" id="purchase-discount" title="按火山刊例价采购填10；协议采购填写实际折扣" inputmode="decimal" value="7.35"><span class="unit">折</span></div>
-<p class="plan-support">以模型刊例价为基准</p>
+<section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
+<article class="card composer generation-panel" aria-labelledby="generation-title">
+<div class="head"><h2 class="section-title" id="generation-title" tabindex="-1">生成任务</h2></div>
+<div id="globalError" class="notice red" role="alert" hidden></div>
+<div class="model-select-field"><label class="fieldlabel" for="model">生成模型</label><select id="model"></select></div>
+<div class="preview-box model-preview" hidden aria-hidden="true"><div id="preview-frame" class="preview-frame"></div><div class="preview-meta" id="preview-meta"></div></div>
+<div class="fields-layout">
+<div class="field" data-field="video"><div class="label">视频输入</div><div class="segs" id="video-options"><button data-video="false">无视频输入</button><button data-video="true">有视频输入</button></div><div class="reference-controls" data-field="vin" id="video-detail"><label for="vin-slider" id="vin-label">输入视频总时长</label><input class="duration-slider reference-slider" type="range" id="vin-slider" aria-labelledby="vin-label" min="2" max="15" step="1" value="2"><div class="vin-value"><input class="num" type="number" id="vin" aria-label="输入视频总时长（整秒）" inputmode="numeric" min="2" max="15" step="1" value="2"><span>秒</span></div></div></div>
+<div class="field" data-field="resolution"><div class="label">输出分辨率</div><div class="segs" id="res-options"></div></div>
+<div class="field" data-field="ratio"><div class="label">画面比例</div><div class="ratios" id="ratio-options"></div><div class="pixel-line" hidden><span id="pixels"></span><span>24 fps</span></div></div>
+<div class="field" data-field="seconds"><div class="label slider-label"><label for="seconds">输出时长</label><output class="slider-value num" id="seconds-value" for="seconds">4 秒</output></div><div id="seconds-fixed"><input class="duration-slider" type="range" id="seconds" aria-label="输出秒数" min="4" max="15" step="1" value="4"><div class="slider-scale"><span>4 秒</span><span id="seconds-max-label">15 秒</span></div></div></div>
+</div>
+
+<button id="task-rule" hidden>本规格计算规则</button>
+
+<section class="model-cost-section" aria-labelledby="model-cost-title">
+<div class="estimate-heading"><h3 class="result-section-title" id="model-cost-title">用量与费用</h3><span id="cost-badge" class="badge blue" hidden></span></div>
+<div class="usage-summary" id="usage-summary">
+<div class="usage-rate-line"><span>刊例单价</span><b class="num" id="token-rate">—</b><small>元 / 百万 Token</small><button class="link usage-help" id="usage-help" aria-haspopup="dialog">用量说明 ⓘ</button></div>
+<dl class="usage-metrics" aria-label="基础与最低 Token 估算">
+<div class="usage-token" id="token-estimate-metric"><dt title="按生成参数计算，尚未应用最低用量"><span>基础 Token 估算</span><span class="usage-adopted" id="token-estimate-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-estimate">—</dd></div>
+<div class="usage-token" id="token-minimum-metric"><dt><span id="token-minimum-label">最低 Token 估算</span><span class="usage-rule-kind" id="token-minimum-kind" hidden></span><span class="usage-adopted" id="token-minimum-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-minimum">—</dd></div>
+</dl>
+<div id="coverage-note" class="usage-status" hidden></div>
+</div>
+<div class="video-price"><div class="video-price-label"><span>视频费用估算</span><small>刊例价</small></div><div class="video-price-amount"><div class="cost-number num" id="cost-p">—</div><span>/ 次</span></div></div>
 </section>
-<section class="plan-block foundation-block" aria-labelledby="recharge-title">
-<h3 class="plan-block-head" id="recharge-title">充值方案</h3>
+<details class="quick-config"><summary>快捷配置</summary><div class="quick-examples"><button class="btn sm" data-example="none-min"><span>无视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="none-max"><span>无视频输入 · 最高用量</span><small></small></button><button class="btn sm" data-example="video-min"><span>有视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="video-max"><span>有视频输入 · 最高用量</span><small></small></button></div></details>
+<button id="show-formula" hidden>公式明细</button>
+</article>
+<article class="card plan pricing-panel" aria-labelledby="plan-title">
+<div class="head plan-head"><h2 class="section-title" id="plan-title" tabindex="-1">积分定价方案</h2><span class="plan-model" id="pricing-model"></span></div>
+<div id="platformError" class="notice red" role="alert" hidden></div>
+<div class="plan-grid">
+<section class="plan-block procurement-block" aria-label="模型采购">
+<div class="grid2 purchase-values"><div><label class="fieldlabel" for="purchase-discount">采购折扣</label><div class="inputbox"><input class="input num" id="purchase-discount" title="10折表示按刊例价采购；暂无供应商的模型可调整折扣试算" inputmode="decimal" value="7.35"><span class="unit">折</span></div></div><div><div class="fieldlabel">采购成本</div><div class="cost-number num" id="cost-c">—</div></div></div>
+<p class="procurement-status" id="procurement-status"></p>
+</section>
+<section class="plan-block foundation-block" aria-label="充值方案">
 <div class="recharge-values"><div class="grid2">
 <div><label class="fieldlabel" for="pay">充值实付</label><div class="inputbox"><input class="input num" id="pay" inputmode="decimal" value="100"><span class="unit">元</span></div></div>
 <div><div class="fieldlabel total-mode-label"><select id="total-mode" aria-label="积分填写方式"><option value="total">到账总积分</option><option value="gift">附赠积分</option></select></div><div class="inputbox"><input class="input num" id="total" aria-label="到账总积分" inputmode="decimal" value="1538"><span class="unit">积分</span></div></div>
@@ -252,7 +291,7 @@
 <div class="foundation-support plan-support"><span class="recharge-equivalence" id="recharge-value">1 元 <span id="recharge-sign">=</span> <b class="num" id="per-yuan">15.38</b> 积分</span></div>
 </section>
 <section class="plan-block client-pricing" aria-labelledby="client-pricing-title">
-<div class="plan-block-head"><h3 id="client-pricing-title">客户定价</h3><select class="pricing-mode" id="pricing-mode" aria-label="定价方式"><option value="ideal">按目标计算</option><option value="manual">指定倍率</option></select></div>
+<div class="plan-block-head"><h3 id="client-pricing-title">定价方式</h3><select class="pricing-mode" id="pricing-mode" aria-label="定价方式"><option value="ideal">按目标计算</option><option value="manual">指定倍率</option></select></div>
 <div class="client-pricing-body">
 <details class="target-settings" id="target-settings" open><summary id="target-summary" hidden>参考目标 <span>不参与定价</span></summary>
 <div class="target-block" id="pricing-target">
@@ -264,50 +303,19 @@
 </div>
 </details>
 <div class="multiplier-block">
-<div class="fieldlabel multiplier-label"><span>定价倍率</span><button class="link" id="plan-settings" aria-label="倍率与精度设置">设置 ⓘ</button></div>
+<div class="fieldlabel multiplier-label"><span title="取整前积分 = 采购成本 × 定价倍率 × 10">定价倍率</span><button class="link" id="plan-settings" aria-label="倍率与精度设置">设置 ⓘ</button></div>
 <div class="multiplier-value-row"><div class="coefficient num" id="multiplier"></div><div class="inputbox manual-m-control" id="manual-m-control" hidden><input class="input num" id="manual-m" aria-label="指定定价倍率" inputmode="decimal" value="1.538"><span class="unit">倍</span></div></div>
-<div class="multiplier-support plan-support"><span title="取整前积分 = 采购成本 × 定价倍率 × 10">采购成本 × 倍率 × 10</span><span id="m-state" class="badge blue" hidden></span></div>
+<div class="multiplier-support plan-support"><span id="m-state" class="badge blue" hidden></span></div>
 </div>
 </div>
 </section>
 </div>
 <details class="plan-advanced"><summary>方案校验</summary><div class="plan-outcome"><div class="plan-principle" id="plan-principle" aria-live="polite"></div><span class="point-price" id="point-price" title="充值实付 ÷ 到账总积分">每积分 <span id="point-price-sign">≈</span> <b class="num" id="per-point">0.06501951</b> 元</span><span class="break-even" title="取整前的模型毛利为零时所需倍率">保本倍率 <b class="num" id="break-even-m">1.538</b></span><button class="link" id="unit-check">1 元基准校验 ⓘ</button></div></details>
-</section>
-<div id="platformError" class="notice red" role="alert" hidden></div>
-<div id="globalError" class="notice red" role="alert" hidden></div>
-<section class="work model-work" aria-label="生成参数与费用测算">
-<aside class="card composer">
-<div class="head"><h2 class="section-title">生成任务</h2></div>
-<div class="model-select-field"><label class="fieldlabel" for="model">生成模型</label><select id="model"></select></div>
-<div class="preview-box model-preview" hidden aria-hidden="true"><div id="preview-frame" class="preview-frame"></div><div class="preview-meta" id="preview-meta"></div></div>
-<div class="fields-layout">
-<div class="field" data-field="video"><div class="label">视频输入</div><div class="segs" id="video-options"><button data-video="false">无视频输入</button><button data-video="true">有视频输入</button></div><div class="reference-controls" data-field="vin" id="video-detail"><label for="vin-slider" id="vin-label">输入视频总时长</label><input class="duration-slider reference-slider" type="range" id="vin-slider" aria-labelledby="vin-label" min="2" max="15" step="1" value="2"><div class="vin-value"><input class="num" type="number" id="vin" aria-label="输入视频总时长（整秒）" inputmode="numeric" min="2" max="15" step="1" value="2"><span>秒</span></div></div></div>
-<div class="field" data-field="resolution"><div class="label">输出分辨率</div><div class="segs" id="res-options"></div></div>
-<div class="field" data-field="ratio"><div class="label">画面比例</div><div class="ratios" id="ratio-options"></div><div class="pixel-line"><span id="pixels"></span><span>24 fps</span></div></div>
-<div class="field" data-field="seconds"><div class="label slider-label"><label for="seconds">输出时长</label><output class="slider-value num" id="seconds-value" for="seconds">4 秒</output></div><div id="seconds-fixed"><input class="duration-slider" type="range" id="seconds" aria-label="输出秒数" min="4" max="15" step="1" value="4"><div class="slider-scale"><span>4 秒</span><span id="seconds-max-label">15 秒</span></div></div></div>
-</div>
-<details class="quick-config"><summary>快捷配置</summary><div class="quick-examples"><button class="btn sm" data-example="none-min"><span>无视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="none-max"><span>无视频输入 · 最高用量</span><small></small></button><button class="btn sm" data-example="video-min"><span>有视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="video-max"><span>有视频输入 · 最高用量</span><small></small></button></div></details>
-<button id="task-rule" hidden>本规格计算规则</button>
-</aside>
-<div class="result-stack">
-<article class="card result task-result" aria-labelledby="result-title">
-<div class="head result-heading"><h2 class="section-title" id="result-title">本次测算</h2><span id="cost-badge" class="badge blue" hidden></span><button id="show-formula" hidden>公式明细</button></div>
-<section class="model-cost-section" aria-labelledby="model-cost-title">
-<h3 class="result-section-title" id="model-cost-title">模型费用</h3>
-<div class="usage-summary" id="usage-summary">
-<div class="usage-rate-line"><span>刊例单价</span><b class="num" id="token-rate">—</b><small>元 / 百万 Token</small><button class="link usage-help" id="usage-help" aria-haspopup="dialog">用量说明 ⓘ</button></div>
-<dl class="usage-metrics" aria-label="基础与最低 Token 估算">
-<div class="usage-token" id="token-estimate-metric"><dt title="按生成参数计算，尚未应用最低用量"><span>基础 Token 估算</span><span class="usage-adopted" id="token-estimate-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-estimate">—</dd></div>
-<div class="usage-token" id="token-minimum-metric"><dt><span id="token-minimum-label">最低 Token 估算</span><span class="usage-rule-kind" id="token-minimum-kind" hidden></span><span class="usage-adopted" id="token-minimum-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-minimum">—</dd></div>
-</dl>
-<div id="coverage-note" class="usage-status" hidden></div>
-</div>
-<dl class="model-costs"><div><dt>刊例费用</dt><dd class="cost-number num" id="cost-p">—</dd></div><div><dt>采购成本</dt><dd class="cost-number num" id="cost-c">—</dd></div></dl>
-</section>
-<section class="customer-charge-section" aria-labelledby="customer-charge-title"><h3 class="result-section-title" id="customer-charge-title">客户收费与毛利</h3><div class="calculation" id="calculation"></div></section>
+
+<section class="customer-charge-section" aria-labelledby="customer-charge-title"><h3 class="result-section-title" id="customer-charge-title">收费与毛利</h3><div class="calculation" id="calculation"></div></section>
 <div class="result-foot"><div class="links"><button id="details" class="link">定价明细 ⓘ</button><button id="actual-calculation" class="link">实测复算 ↗</button></div><button class="btn primary sm" id="add-task">＋ 加入任务清单</button></div>
+
 </article>
-</div>
 </section>
 <details class="card compare platform-comparison" id="platform-comparison"><summary><span>方案对比</span></summary><div class="comparison-content"><div class="compare-actions"><button class="link" id="table-export">导出当前表格 ↓</button></div><nav class="tabs" aria-label="平台方案对比"><button data-tab="discounts">折扣对比</button><button data-tab="matrix">规格对比</button><button data-tab="recharges">充值对比</button><button data-tab="tasks">任务清单 <b id="task-count">0</b></button></nav><div class="table-tools" id="table-tools"></div><div class="mobile-hint">左右滑动查看完整计算列 ↔</div><div class="table-scroll" id="table"></div><div class="table-end" id="table-end"></div></div></details>
 </section>
