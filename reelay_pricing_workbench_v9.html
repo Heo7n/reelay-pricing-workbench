@@ -118,6 +118,7 @@
 @keyframes usage-dialog-in{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
 .usage-explanation{font-size:12px;line-height:1.85;color:var(--sub);overflow-wrap:anywhere}.usage-explanation h3{font-size:13px;font-weight:600;color:var(--ink);margin:0 0 9px}.usage-explanation section+section{margin-top:22px}
 .usage-section-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px}.usage-section-heading>span{font-size:11px;color:var(--muted)}
+.dimension-display-toggle{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sub);cursor:pointer;white-space:nowrap}.dimension-display-toggle input{appearance:none;position:relative;width:30px;height:18px;margin:0;border:1px solid #cbd3df;border-radius:10px;background:#e3e7ee;cursor:pointer}.dimension-display-toggle input::before{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #18253b26}.dimension-display-toggle input:checked{background:var(--accent);border-color:var(--accent)}.dimension-display-toggle input:checked::before{transform:translateX(12px)}.dimension-display-toggle input:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .usage-table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;margin-top:3px}.usage-price-table{width:100%;min-width:470px;border-collapse:collapse;margin:0;font-size:12px}.usage-price-table th,.usage-price-table td{padding:9px 11px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line);font-size:12px;line-height:1.6}.usage-price-table thead th{background:#f7f8fa;color:var(--sub);font-weight:500}.usage-price-table tbody th{background:none;color:var(--ink);font-weight:550;vertical-align:top}.usage-price-table .num,.usage-price-table thead th:nth-last-child(-n+2){text-align:right}.usage-price-table tr:last-child td,.usage-price-table tr:last-child th{border-bottom:0}.usage-price-table .selected-rate{background:var(--tint);color:var(--accent);font-weight:650}
 .usage-dimension-table{width:100%;min-width:980px;table-layout:fixed;border-collapse:collapse;margin:0;font-size:12px;font-variant-numeric:tabular-nums}.dimension-model-column{width:130px}.dimension-resolution-column{width:66px}.usage-dimension-table th,.usage-dimension-table td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;line-height:1.6}.usage-dimension-table thead th{background:#f7f8fa;color:var(--sub);font-weight:500;font-size:11px}.usage-dimension-table tbody th{font-size:11px;font-weight:550;color:var(--ink);background:#fff}.usage-dimension-table th[scope="rowgroup"]{vertical-align:top;position:sticky;left:0;z-index:1}.usage-dimension-table tbody+tbody{border-top:2px solid var(--line)}.usage-dimension-table tbody:last-child tr:last-child>*{border-bottom:0}.dimension-size{display:block;font-size:12px;font-weight:500;color:var(--ink)}.dimension-total{margin-top:3px;font-size:11px;color:var(--muted)}
 .usage-definition>p{white-space:pre-line;margin:0}.usage-definition .usage-override{margin-top:10px;padding:9px 11px;background:var(--amberbg);color:var(--amber);border-radius:6px}.usage-source-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 24px;font-size:11px;margin-top:24px;padding-top:16px;border-top:1px solid var(--line)}.usage-source-links>div{display:flex;flex-direction:column;align-items:flex-start;gap:6px}@media(max-width:760px){.usage-source-links{grid-template-columns:1fr}}
@@ -196,17 +197,17 @@
 .generation-panel .field .label{font-size:12px;margin-bottom:8px}
 .generation-panel .segs button{padding:7px 8px}
 .generation-panel .ratios{gap:7px}.generation-panel .ratios button{height:54px}
-.generation-panel .model-cost-section{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.generation-panel .model-cost-section{--usage-value-size:21px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
 .estimate-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
 .estimate-actions{display:flex;align-items:center;gap:8px}
 .result-section-title{font-size:12px;line-height:1.6;font-weight:600;color:var(--sub);margin:0}
 .generation-panel .usage-summary{margin:0}
-.generation-panel .usage-metrics{gap:8px;margin:0 0 14px}.generation-panel .usage-token{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px}
-.generation-panel .usage-metrics dt{min-width:0;margin:0}.generation-panel .usage-metrics dd{max-width:60%;flex-shrink:0;font-size:21px;line-height:1.5;text-align:right}
+.generation-panel .usage-metrics{gap:8px;margin:0 0 8px}.generation-panel .usage-token{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px}
+.generation-panel .usage-metrics dt{min-width:0;margin:0}.generation-panel .usage-metrics dd{max-width:60%;flex-shrink:0;font-size:var(--usage-value-size);line-height:1.5;text-align:right}
 .generation-panel .usage-status{margin:0 0 12px}
-.video-price{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:16px;border-top:1px solid var(--line)}
-.video-price-label{display:flex;align-items:baseline;flex-wrap:wrap;gap:7px;font-size:12px;color:var(--sub)}
-.video-price-amount{display:flex;align-items:baseline;gap:6px;min-width:0}.video-price-amount .cost-number{font-size:28px;font-weight:600;line-height:1.5}.video-price-amount .cost-number small{font-size:15px}.video-price-amount>span{color:var(--muted);font-size:10px;white-space:nowrap}
+.video-price{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;padding:10px 13px;border:1px solid transparent;border-radius:7px;background:#f7f8fa}
+.video-price-label{min-width:0;font-size:11px;line-height:1.6;color:var(--muted)}
+.video-price-amount{display:flex;align-items:baseline;justify-content:flex-end;gap:6px;min-width:0;max-width:60%;flex-shrink:0;margin:0;text-align:right}.video-price-amount .cost-number{min-width:0;font-size:var(--usage-value-size);font-weight:600;line-height:1.5;letter-spacing:0;color:var(--ink)}.video-price-unit{color:var(--muted);font-size:11px;white-space:nowrap}
 .quick-config{border-top:1px solid var(--line);padding-top:12px;margin-top:18px}
 .quick-config .quick-examples{margin:12px 0 0}
 .pricing-panel .purchase-values{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
@@ -237,15 +238,15 @@
 .comparison-content{padding:0 22px}.compare-actions{display:flex;justify-content:flex-end;padding-top:1px}
 .platform-comparison .tabs{margin-top:5px}.platform-comparison .tabs button{padding-top:10px}
 .bottom{margin-top:24px}.bottom .rule-status{display:inline;margin:0;font-size:10px;color:var(--muted)}
-@media(max-width:1160px){.pricing-workbench>.card{padding:20px}.platform-primary-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.platform-primary-metrics .points-box{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}.platform-primary-metrics .cash-item{padding:0 13px}.generation-panel .usage-metrics dd{font-size:19px}.video-price-amount .cost-number{font-size:25px}}
-@media(max-width:900px){.pricing-workbench{grid-template-columns:minmax(0,1fr);gap:18px}.generation-panel .model-select-field{max-width:none}.generation-panel .usage-metrics dd{font-size:21px}.platform-primary-metrics{grid-template-columns:1fr 1fr 1fr;gap:16px}.platform-primary-metrics .points-box{grid-column:auto;display:block}.platform-primary-metrics .cash-item{padding:4px 0}}
-@media(max-width:540px){.intro{padding:19px 0 15px}.intro h1{font-size:22px}.pricing-workbench>.card{padding:18px 17px}.generation-panel .ratios{gap:5px}.generation-panel .usage-token{padding:10px}.generation-panel .usage-metrics dd{font-size:18px}.video-price-amount .cost-number{font-size:24px}.platform-primary-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.platform-primary-metrics .points-box{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}.platform-primary-metrics .cash-item b{font-size:20px}.pricing-panel .result-foot{padding-top:14px}.pricing-panel .purchase-values .cost-number{font-size:22px}.platform-comparison>summary{padding:15px 16px}.comparison-content{padding:0 16px}.bottom{margin-top:19px}}
+@media(max-width:1160px){.pricing-workbench>.card{padding:20px}.platform-primary-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.platform-primary-metrics .points-box{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}.platform-primary-metrics .cash-item{padding:0 13px}.generation-panel .model-cost-section{--usage-value-size:19px}}
+@media(max-width:900px){.pricing-workbench{grid-template-columns:minmax(0,1fr);gap:18px}.generation-panel .model-select-field{max-width:none}.generation-panel .model-cost-section{--usage-value-size:21px}.platform-primary-metrics{grid-template-columns:1fr 1fr 1fr;gap:16px}.platform-primary-metrics .points-box{grid-column:auto;display:block}.platform-primary-metrics .cash-item{padding:4px 0}}
+@media(max-width:540px){.intro{padding:19px 0 15px}.intro h1{font-size:22px}.pricing-workbench>.card{padding:18px 17px}.generation-panel .ratios{gap:5px}.generation-panel .usage-token,.video-price{padding:10px}.generation-panel .model-cost-section{--usage-value-size:18px}.platform-primary-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.platform-primary-metrics .points-box{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}.platform-primary-metrics .cash-item b{font-size:20px}.pricing-panel .result-foot{padding-top:14px}.pricing-panel .purchase-values .cost-number{font-size:22px}.platform-comparison>summary{padding:15px 16px}.comparison-content{padding:0 16px}.bottom{margin-top:19px}}
 @media(max-width:360px){.generation-panel .usage-metrics,.platform-primary-metrics,.pricing-panel .purchase-values,.plan .recharge-values .grid2{grid-template-columns:minmax(0,1fr)}}
 @media print{.quick-config{display:none!important}.platform-comparison{border:0}.pricing-workbench{grid-template-columns:3.5fr 6.5fr;gap:18px}.pricing-workbench>.card{padding:10px}.pricing-workbench>.generation-panel{display:block!important}}
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.7</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.8</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
 <section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
@@ -271,7 +272,7 @@
 </dl>
 <div id="coverage-note" class="usage-status" hidden></div>
 </div>
-<div class="video-price"><div class="video-price-label"><span>估算视频价格（元/个）</span></div><div class="video-price-amount"><div class="cost-number num" id="cost-p">—</div></div></div>
+<dl class="video-price"><dt class="video-price-label">估算视频费用</dt><dd class="video-price-amount"><span class="cost-number num" id="cost-p">—</span><span class="video-price-unit">元/个</span></dd></dl>
 </section>
 <section class="quick-config" aria-labelledby="quick-config-title"><h3 class="result-section-title" id="quick-config-title">快捷选项</h3><div class="quick-examples"><button class="btn sm" data-example="none-min"><span>无视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="none-max"><span>无视频输入 · 最高用量</span><small></small></button><button class="btn sm" data-example="video-min"><span>有视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="video-max"><span>有视频输入 · 最高用量</span><small></small></button></div></section>
 <button id="show-formula" hidden>公式明细</button>
@@ -18161,13 +18162,14 @@ function usageRateTable(t){
  }
  return `<div class="usage-table-scroll"><table class="usage-price-table" id="usage-price-table"><thead><tr><th scope="col">模型</th><th scope="col">分辨率</th><th scope="col">无视频输入</th><th scope="col">有视频输入</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
 }
+let showDimensionPixels=false;
 function usageDimensionTable(){
  const groups=['seedance-2.5','seedance-2.0','seedance-2.0-fast'].map(id=>{
   const model=M.get(id);
   const rows=model.resolutions.map((res,index)=>{
    const cells=M.RATIOS.map(ratio=>{
     const [width,height]=model.dims[res][ratio],pixels=width*height;
-    return `<td data-ratio="${esc(ratio)}"><span class="dimension-size">${width} × ${height}</span><div class="dimension-total"><span class="dimension-pixels">${pixels.toLocaleString('en-US')} 像素</span></div></td>`;
+    return `<td data-ratio="${esc(ratio)}"><span class="dimension-size">${width} × ${height}</span><div class="dimension-total"${showDimensionPixels?'':' hidden'}><span class="dimension-pixels">${pixels.toLocaleString('en-US')} 像素</span></div></td>`;
    }).join('');
    return `<tr data-resolution="${esc(res)}">${index===0?`<th scope="rowgroup" rowspan="${model.resolutions.length}">${esc(model.label)}</th>`:''}<th scope="row">${res==='4k'?'4K':res}</th>${cells}</tr>`;
   }).join('');
@@ -18181,7 +18183,7 @@ function usageExplanation(v,t){
  const override=manual?`<p class="usage-override">本次最低用量：${tokenText(v.rule.tokens)} Token（人工设置）<br>${esc(v.rule.note)}</p>`:v.partial?'<p class="usage-override">本规格最低用量待补齐。</p>':'';
  return `<div class="usage-explanation" id="usage-explanation">
  <section class="usage-prices"><div class="usage-section-heading"><h3>Seedance 系列模型刊例价</h3><span>元 / 百万 Token</span></div>${usageRateTable(t)}</section>
- <section class="usage-dimensions"><div class="usage-section-heading"><h3 id="usage-dimensions-heading">画面比例与像素分辨率</h3><span>宽 × 高 · 总像素</span></div>${usageDimensionTable()}</section>
+ <section class="usage-dimensions"><div class="usage-section-heading"><h3 id="usage-dimensions-heading">画面比例与像素分辨率</h3><label class="dimension-display-toggle" for="usage-show-pixels"><span>显示总像素</span><input type="checkbox" role="switch" id="usage-show-pixels" aria-controls="usage-dimension-table"${showDimensionPixels?' checked':''}></label></div>${usageDimensionTable()}</section>
  <section class="usage-definition"><h3>估算 Token 用量</h3><p id="usage-estimate-description">${esc(USAGE_DESCRIPTIONS.estimate)}</p></section>
  <section class="usage-definition"><h3>最低 Token 用量</h3><p id="usage-minimum-description">${esc(USAGE_DESCRIPTIONS.minimum)}</p>${override}</section>
  <nav class="usage-source-links" aria-label="相关资料">
@@ -18336,7 +18338,7 @@ function openDetails(mode='theory',recordId='',contextTask=null){
  const view=chosen==='actual'?actualBreakdown(selected,p):theoryBreakdown(t,p);
  const tabs=`<div class="detail-switch" role="tablist" aria-label="计算展开口径"><button role="tab" aria-selected="${chosen==='theory'}" data-detail-mode="theory" class="${chosen==='theory'?'active':''}">参数估算明细</button><button role="tab" aria-selected="${chosen==='actual'}" data-detail-mode="actual" class="${chosen==='actual'?'active':''}">实测金额复算展开</button></div>`;
  const content=tabs+detailPlan(p,t.model||'seedance-2.0')+selector+view.html+detailBusinessMath(p)+`<div class="actions" style="margin-top:20px"><button class="btn" id="export-calculation">导出这份计算明细 ↓</button><button class="btn" id="close-only">关闭</button></div>`;
- detailContext.text=[`Reelay V9.5.7 · ${chosen==='actual'?'平台实测金额复算':'参数估算明细'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
+ detailContext.text=[`Reelay V9.5.8 · ${chosen==='actual'?'平台实测金额复算':'参数估算明细'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
  openDrawer('calculation','定价明细',label(t)+' / '+vinLabel(t)+' · 不改变主表输入',content,true);
 }
 let ruleContext=null;
@@ -18397,11 +18399,11 @@ function addTask(){const v=current();if(!v.x||!globalValid)return;if(state.tasks
 function openNewRecharge(){openDrawer('recharge','添加充值方案','不改变实测数据，也不执行实际充值。',`<div class="grid2"><div><label class="fieldlabel" for="r-pay">实付金额</label><input class="input" id="r-pay" inputmode="decimal" value="100"></div><div><label class="fieldlabel" for="r-total">到账总积分</label><input class="input" id="r-total" inputmode="decimal" value="1500"></div></div><div class="inline-error" id="r-error"></div><button class="btn primary" id="save-recharge">加入对比</button>`);}
 function download(name,text,type='text/plain;charset=utf-8'){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 const filename=()=>state.plan.company.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,50)||'Reelay方案';
-function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.5.7 · 视频成本与定价','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
+function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.5.8 · 视频成本与定价','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
 function exportJSON(){
  const procurementProfiles=Object.keys(PROCUREMENT_MODELS).map(model=>procurementInfo(model));
  const taskEstimates=state.tasks.map(row=>{const v=theory(row.params);return v.x?exportRow(row.title,v,v.x,row.qty):{model:row.params.model,...procurementInfo(row.params.model),scope:'规则缺项，未生成收费估算'};});
- download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.5.7',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
+ download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.5.8',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
 }
 function csvCell(x){let s=String(x??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
 function exportCSV(actual=false){const rows=actual?actualRows:tableRows;if(!rows.length)return toast('没有可导出记录。');const titles=actual?{scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',procurementRatio:'当前复算采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',record:'记录',params:'规格',coverage:'估算依据',theoryP:'刊例费用P',recordedP:'平台记录P',deltaP:'实测P减估算P',theoryC:'采购成本C',recordedC:'平台记录C',deltaC:'实测C减估算C',recordedN:'平台实际扣分_空白为未知',recalcN:'当前复算扣分_非历史',recalcCash:'当前复算金额',recalcProfit:'当前复算模型毛利',pay:'当前充值实付',total:'当前到账积分',M:'当前倍率',targetMode:'当前目标模式',usage:'API_completion_tokens_原记录',note:'备注'}:{scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',targetMode:'定价目标模式',targetMargin:'目标模型毛利率百分数_毛利模式',procurementRatio:'采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',profit:'每笔模型毛利',margin:'取整后测算模型毛利率百分数',scenario:'场景',coverage:'估算依据',ruleVersion:'规则版本',quantity:'数量_逐笔先取整',pay:'实付元',total:'到账积分',discount:'目标客户折扣',M:'定价倍率',P:'刊例费用P',C:'采购成本C',raw:'取整前积分',N:'每笔预计扣分_非实际',target:'目标金额',cash:'每笔折合金额',gap:'与目标差额'};const ks=Object.keys(titles),csv='\ufeff'+[ks.map(k=>csvCell(titles[k])).join(','),...rows.map(r=>ks.map(k=>csvCell(r[k])).join(','))].join('\r\n');download(filename()+(actual?'_实测对照':'_理论_'+state.tab)+'.csv',csv,'text/csv;charset=utf-8');}
@@ -18460,6 +18462,11 @@ if(id==='vin-slider'){if(state.task.video)changeTask({vin:el.value});return;}if(
  render();return;
 }if(id==='seconds'){state.task.seconds=el.value;render();return;}if(id==='unit-p'){unitPreview();return;}if(id==='plan-manual'){ $('plan-mode').value='manual';planPreview();return;}if(id==='plan-basis'){planPreview();return;}});
 document.addEventListener('change',e=>{const el=e.target,id=el.id;if(id==='model'){changeModel(el.value);return;}if(id==='total-mode'){if(!globalValid){el.value=state.plan.giftMode?'gift':'total';toast('请先修正定价或任务输入。');return;}const giftMode=el.value==='gift';if(giftMode&&cmp(sub(state.plan.total,mul(state.plan.pay,10)),0)<0){el.value=state.plan.giftMode?'gift':'total';toast('总积分小于基础积分，不能按附赠模式填写。');return;}state.plan.giftMode=giftMode;render();return;}if(id==='pricing-mode'){state.plan.mode=el.value;render();return;}if(id==='target-mode'){state.plan.targetMode=el.value;render();return;}if(id==='seconds'&&validTask(state.task)){state.task=normalizeTask(state.task);render();return;}if(id==='details-record'){openDetails('actual',el.value,detailContext.task);return;}if(['plan-mode','plan-limit-precision','plan-digits','plan-round'].includes(id)){planPreview();return;}if(id==='matrix-axis'){state.matrixAxis=el.value;render();return;}if(id==='matrix-metric'){state.matrixMetric=el.value;render();return;}if(id==='recharge-mode'){state.rechargeMode=el.value;if(el.value==='fixed')state.frozenM=pack(pricing().usedM);render();return;}if(el.dataset.qty){const t=state.tasks.find(r=>r.id===el.dataset.qty),v=el.value.trim();if(t&&/^\d+$/.test(v)&&+v>=1&&+v<=100000)t.qty=v;else toast('任务数量须为1～100000的整数。');render();}});
+$('drawer-body').addEventListener('change',e=>{
+ if(e.target.id!=='usage-show-pixels')return;
+ showDimensionPixels=e.target.checked;
+ $('usage-dimension-table').querySelectorAll('.dimension-total').forEach(el=>{el.hidden=!showDimensionPixels;});
+});
 // The compact range and numeric value share one integer duration.
 let vinEditStart='2';
 $('vin').addEventListener('focus',()=>{vinEditStart=positive(state.task.vin,false,4)?state.task.vin:'2';});

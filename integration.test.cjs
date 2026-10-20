@@ -816,9 +816,14 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
 
 test('usage dimension table matches captured official mappings without ranking highlights', t => {
   const h=boot(t),doc=h.w.document;
+  const before=JSON.stringify(h.api.getState());
   h.click('#usage-help');
   const table=doc.getElementById('usage-dimension-table');
   assert.ok(table,'the explanation includes the aspect-ratio to pixel-resolution table');
+  assert.equal(doc.getElementById('usage-show-pixels').checked,false);
+  assert.ok([...table.querySelectorAll('.dimension-total')].every(el=>el.hidden),'total pixels are hidden by default');
+  h.click('#usage-show-pixels');
+  assert.ok([...table.querySelectorAll('.dimension-total')].every(el=>!el.hidden),'the switch reveals every total without changing dimensions');
   // The oracle is parsed from the captured official document, independently of models.js.
   const catalog=require('./model-catalog-check.cjs');
   const evidence=catalog.readEvidence();
@@ -846,6 +851,11 @@ test('usage dimension table matches captured official mappings without ranking h
       }
     }
   }
+  h.click('#close-drawer');h.click('#usage-help');
+  assert.equal(doc.getElementById('usage-show-pixels').checked,true,'the display preference lasts for this page session');
+  h.click('#usage-show-pixels');
+  assert.ok([...doc.querySelectorAll('#usage-dimension-table .dimension-total')].every(el=>el.hidden));
+  assert.equal(JSON.stringify(h.api.getState()),before,'display preferences do not alter quotes or exported pricing state');
 });
 
 test('four quick configurations are true official token extrema over all supported specifications', t => {
