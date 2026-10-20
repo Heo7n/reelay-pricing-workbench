@@ -133,15 +133,17 @@
 .plan .recharge-values .grid2{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .plan .recharge-values .input{height:37px}
 .plan .discountbox{display:grid;grid-template-columns:minmax(0,1fr) 16px;align-items:baseline;gap:8px;width:136px;max-width:100%;min-width:0;height:38px;padding:0;border:0;border-radius:0;background:transparent;flex:0 1 136px}
-.plan .discountbox input{width:100%;max-width:none;min-width:0;height:38px;padding:0 2px 3px;border:0;border-bottom:1px solid #dce2eb;border-radius:0;background:transparent;text-align:right;font-size:29px;line-height:34px;font-variant-numeric:tabular-nums}
+.plan .discountbox input{width:100%;max-width:none;min-width:0;height:38px;padding:0 0 1px;border:0;border-bottom:1px solid #dce2eb;border-radius:0;background:transparent}
 .plan .discountbox input:hover{border-bottom-color:#aebbd1}
 .plan .discountbox input:focus{border-bottom-color:var(--accent);box-shadow:0 1px 0 var(--accent)}
 .plan .discountbox input:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.plan .discountbox>span{text-align:left;font-size:12px;line-height:1;color:var(--muted)}
+.plan .discountbox>span{text-align:left;font-size:12px;line-height:1.6;color:var(--sub)}
 .plan .multiplier-value-row{display:flex;align-items:baseline;min-width:0;width:100%}
-.plan .multiplier-value-row .coefficient{font-size:29px;line-height:38px;max-width:100%;margin:0}
-.plan .manual-m-control{align-items:baseline;max-width:100%;min-width:0;gap:5px}
-.plan .manual-m-control input{width:calc(var(--value-width,4.5ch) + 8px);max-width:calc(100% - 24px);height:38px;padding:0 2px 3px;border:0;border-bottom:1px solid #c7d5f6;border-radius:0;background:transparent;font-size:29px;line-height:34px;font-variant-numeric:tabular-nums}
+.plan .multiplier-value-row .coefficient{max-width:100%;margin:0;padding:0 0 1px;border-bottom:1px solid transparent}
+.plan .manual-m-control{align-items:baseline;max-width:100%;min-width:0;gap:8px}
+.plan .manual-m-control input{width:calc(var(--value-width,4.5ch) + 8px);max-width:calc(100% - 24px);height:38px;padding:0 0 1px;border:0;border-bottom:1px solid #c7d5f6;border-radius:0;background:transparent}
+.plan .discountbox input,.plan .manual-m-control input,.plan .multiplier-value-row .coefficient{font:600 29px/36px Inter,"Segoe UI",Arial,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:0;text-align:left}
+.plan .multiplier-value-row .coefficient small{margin-left:8px;letter-spacing:0}
 .plan .plan-support{margin:7px 0 0;color:var(--muted);font-size:11px;line-height:1.7}
 .plan .foundation-support{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px 12px}
 .plan .purchase-control{gap:6px;align-items:center;flex-wrap:nowrap;font-size:11px}
@@ -149,7 +151,7 @@
 .plan .purchase-control input{width:62px;height:25px;border-radius:5px;padding:0 6px;font-size:12px;font-variant-numeric:tabular-nums}
 .plan .recharge-equivalence,.plan .point-price{white-space:nowrap;font-size:11px}
 .plan .recharge-equivalence b,.plan .point-price b{color:var(--sub);font-weight:550}
-.plan .target-support .picks{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));max-width:280px;margin-top:0;gap:5px}
+.plan .target-support .picks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));max-width:280px;margin-top:0;gap:5px}
 .plan .target-support .picks[data-mode="margin"]{grid-template-columns:repeat(5,minmax(0,1fr))}
 .plan .target-support .picks button{min-width:0;height:25px;padding:0 3px;white-space:nowrap;font-variant-numeric:tabular-nums}
 .plan .pricing-context{font-size:10px;margin-top:5px;color:var(--muted);line-height:1.7}
@@ -172,6 +174,17 @@
 @media(max-width:800px){.plan .plan-grid{grid-template-columns:minmax(0,1fr);gap:12px}.plan .plan-grid>.plan-block+.plan-block{border-left:0;border-top:1px solid var(--line);padding:11px 0 0}.plan .plan-outcome{gap:8px 14px}.plan .plan-outcome>.purchase-control{padding-right:0;border-right:0}}
 @media print{.plan .plan-grid{grid-template-columns:minmax(0,1.13fr) repeat(2,minmax(0,1fr));gap:18px}.plan .plan-grid>.plan-block+.plan-block{border-top:0;border-left:1px solid var(--line);padding:0 0 0 18px}}
 
+/* Multiplier settings: one calculation path, optional precision, one derivation. */
+.multiplier-settings .multiplier-method{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12px}.multiplier-method .input{width:166px}
+.precision-toggle{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:12px;color:var(--sub);cursor:pointer}.precision-toggle input{margin:0;width:14px;height:14px}.precision-toggle span{font-size:10px;color:var(--muted)}
+.multiplier-settings #plan-precision{padding-left:21px}.multiplier-settings #plan-precision .grid2{margin:9px 0 5px}.multiplier-settings .precision-note{font-size:11px;color:var(--muted)}.multiplier-settings #plan-manual-field{margin-top:12px}
+.multiplier-derivation{border-top:1px solid var(--line);margin-top:18px;padding-top:15px}.derivation-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.multiplier-settings .derivation-head h3{margin:0;font-size:13px}
+.derivation-known{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;margin:10px 0 13px;padding:0;font-size:11px}.derivation-known>div{display:flex;align-items:baseline;gap:10px;min-width:0}.derivation-known .known-recharge{grid-column:1/-1}.derivation-known dt{color:var(--muted);flex:none}.derivation-known dd{margin:0;color:var(--sub);overflow-wrap:anywhere}
+.derivation-steps{margin:0;padding:0;list-style:none;counter-reset:derivation;display:grid;gap:12px}.derivation-steps>li{position:relative;padding-left:25px;counter-increment:derivation}.derivation-steps>li:before{content:counter(derivation);position:absolute;left:0;top:1px;width:17px;height:17px;border-radius:50%;background:#eef2f8;color:var(--sub);font-size:10px;line-height:17px;text-align:center}.derivation-formula{font-size:12px;color:var(--sub);line-height:1.8}.derivation-substitution{font-size:13px;line-height:1.9;overflow-wrap:anywhere}.derivation-substitution small{font-size:10px;color:var(--muted)}.derivation-substitution strong{font-weight:600;color:var(--ink)}
+.multiplier-settings .derivation-note{font-size:11px;color:var(--muted);margin-top:10px}.derivation-basis{margin-top:10px}.derivation-basis summary{font-size:11px;color:var(--muted);cursor:pointer}.multiplier-settings .derivation-basis p{font-size:11px;margin-top:5px;color:var(--sub)}
+.multiplier-settings .multiplier-result{background:var(--tint);border-color:#dce5fb;margin-top:15px}.multiplier-result .big{font-size:24px;line-height:1.6;overflow-wrap:anywhere}.multiplier-result .state-feedback{font-size:11px;margin-top:3px}.plan-basis-note .fieldlabel{margin-top:10px}
+@media(max-width:400px){.derivation-known{grid-template-columns:1fr}.derivation-head{flex-wrap:wrap}.multiplier-method .input{width:145px}}
+
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">企业定价 / 计算工作台</div></div><div class="actions"><button class="link" id="open-rules">计算规则</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出方案 ↗</button></div></div></header>
 <main class="wrap"><div class="rule-status" id="rule-status"></div><section class="intro"><div><h1>看清每次生成的成本与利润。</h1><p>任务成本、积分定价与毛利测算。</p></div><div class="intro-meta"><span class="scope">Seedance 2.0 · 标准版</span><span>V9.3</span></div></section>
@@ -193,12 +206,12 @@
 </div>
 </div>
 <div class="plan-block target-block" id="pricing-target">
-<div class="label plan-block-head"><label for="target-mode" id="target-context">定价目标</label><select id="target-mode" aria-label="定价目标模式"><option value="discount">现金折扣</option><option value="margin">销售毛利率</option></select></div>
+<div class="label plan-block-head"><label for="target-mode" id="target-context">定价目标</label><select id="target-mode" aria-label="定价目标模式"><option value="discount">客户折扣</option><option value="margin">销售毛利率</option></select></div>
 <div class="plan-main-value">
-<div id="discount-control" class="discountbox"><input id="discount" aria-label="目标现金折扣" inputmode="decimal" value="7.35"><span>折</span></div>
+<div id="discount-control" class="discountbox"><input id="discount" aria-label="目标客户折扣" title="以火山刊例价为基准；10折表示无折扣" inputmode="decimal" value="7.35"><span>折</span></div>
 <div id="margin-control" class="discountbox" hidden><input id="target-margin" aria-label="目标销售毛利率" inputmode="decimal" value="8.125"><span>%</span></div>
 </div>
-<div class="plan-support target-support"><div class="picks" id="discount-picks" role="group" aria-label="现金折扣快捷值（折）"></div><p class="pricing-context" id="manual-pricing-note" hidden>收费按右侧指定倍率计算</p></div>
+<div class="plan-support target-support"><div class="picks" id="discount-picks" role="group" aria-label="客户折扣快捷值（折）"></div><p class="pricing-context" id="manual-pricing-note" hidden>收费按右侧指定倍率计算</p></div>
 </div>
 <div class="plan-block multiplier-block">
 <div class="label plan-block-head multiplier-label"><span>成本定价倍率</span><select class="pricing-mode" id="pricing-mode" aria-label="倍率计算方式"><option value="ideal">自动计算</option><option value="manual">手动指定</option></select></div>
@@ -208,7 +221,7 @@
 <div class="multiplier-support plan-support"><span title="得到原始积分，实际扣分再向上取整">采购成本 × 倍率 × 10</span><span id="m-state" class="badge blue" hidden></span></div>
 </div>
 </div>
-<div class="plan-outcome"><div class="purchase-control"><label for="purchase-discount">采购折扣</label><input id="purchase-discount" aria-label="采购折扣" inputmode="decimal" value="7.35"><span>折</span></div><div class="plan-principle" id="plan-principle" aria-live="polite"></div><span class="break-even" title="取整前的模型采购毛利为零时所需倍率">保本倍率 <b class="num" id="break-even-m">1.538</b></span><button class="link" id="unit-check">1元基准校验 ↗</button></div>
+<div class="plan-outcome"><div class="purchase-control"><label for="purchase-discount">采购折扣</label><input id="purchase-discount" aria-label="采购折扣" title="按火山刊例价采购填10；协议采购填写实际折扣" inputmode="decimal" value="7.35"><span>折</span></div><div class="plan-principle" id="plan-principle" aria-live="polite"></div><span class="break-even" title="取整前的模型采购毛利为零时所需倍率">保本倍率 <b class="num" id="break-even-m">1.538</b></span><button class="link" id="unit-check">1元基准校验 ↗</button></div>
 </section>
 <div class="notice neutral" id="migration-note" hidden></div><div id="globalError" class="notice red" role="alert" hidden></div>
 <section class="work" aria-label="理论任务参数与计算"><aside class="card composer"><div class="head"><h2 class="section-title">生成任务</h2></div>

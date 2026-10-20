@@ -311,19 +311,115 @@ test('standard procurement can use either the exact cash target or a manually sp
   assert.doesNotMatch(h.w.document.getElementById('target-context').textContent,/对照目标/);
 });
 
-test('typing a multiplier in the advanced drawer selects manual mode before saving', t => {
+test('manual mode in the multiplier drawer previews its value before applying', t => {
   const h=boot(t);
   h.input('purchase-discount','10');
   h.input('discount','10');
   h.click('#plan-settings');
   assert.equal(h.w.document.getElementById('plan-mode').value,'ideal');
+  assert.equal(h.w.document.getElementById('plan-manual-field').hidden,true);
+  h.input('plan-mode','manual','change');
+  assert.equal(h.w.document.getElementById('plan-manual-field').hidden,false);
   h.input('plan-manual','1.65');
   assert.equal(h.w.document.getElementById('plan-mode').value,'manual');
   assert.match(h.w.document.getElementById('plan-preview').textContent,/1\.65/);
+  assert.equal(h.w.document.getElementById('plan-comparison').hidden,false);
+  assert.match(h.w.document.getElementById('plan-ideal-value').textContent,/= 1\.538$/);
+  assert.match(h.w.document.getElementById('plan-result-note').textContent,/仅作对照/);
+  equal(h.api.pricing().usedM,'1.538','draft is not applied until saving');
   h.click('#save-plan');
   assert.equal(h.api.getState().plan.mode,'manual');
   equal(h.api.pricing().usedM,'1.65');
   assert.equal(h.w.document.getElementById('pricing-mode').value,'manual');
+});
+
+test('automatic precision is optional, persists as a saved plan and restores exact calculation', t => {
+  const h=boot(t),doc=h.w.document;
+  h.input('purchase-discount','10');h.input('discount','10');
+  h.click('#plan-settings');
+  assert.deepEqual([...doc.getElementById('plan-mode').options].map(o=>o.textContent),['自动计算','手动指定']);
+  assert.equal(doc.getElementById('plan-limit-precision').checked,false);
+  assert.equal(doc.getElementById('plan-precision').hidden,true);
+  h.click('#plan-limit-precision');
+  assert.equal(doc.getElementById('plan-precision').hidden,false);
+  h.input('plan-digits','2','change');
+  assert.equal(doc.getElementById('plan-used-value').textContent,'1.54');
+  h.input('plan-round','truncate','change');
+  assert.equal(doc.getElementById('plan-used-value').textContent,'1.53');
+  equal(h.api.pricing().usedM,'1.538','preview leaves the active plan unchanged');
+  h.click('#save-plan');
+  assert.equal(h.api.getState().plan.mode,'saved');
+  equal(h.api.pricing().usedM,'1.53');
+  const entries=Array.from({length:h.w.localStorage.length},(_,i)=>{
+    const key=h.w.localStorage.key(i);return[key,h.w.localStorage.getItem(key)];
+  });
+  const restored=boot(t,entries),rdoc=restored.w.document;
+  restored.click('#plan-settings');
+  assert.equal(rdoc.getElementById('plan-mode').value,'ideal');
+  assert.equal(rdoc.getElementById('plan-limit-precision').checked,true);
+  assert.equal(rdoc.getElementById('plan-digits').value,'2');
+  assert.equal(rdoc.getElementById('plan-round').value,'truncate');
+  assert.equal(rdoc.getElementById('plan-used-value').textContent,'1.53');
+  restored.click('#plan-limit-precision');restored.click('#save-plan');
+  assert.equal(restored.api.getState().plan.mode,'ideal');
+  equal(restored.api.pricing().usedM,'1.538');
+});
+
+test('multiplier derivation uses original recharge and discount inputs and identifies approximations', t => {
+  const h=boot(t),doc=h.w.document;
+  h.input('discount','8');h.click('#plan-settings');
+  assert.match(doc.getElementById('plan-recharge-calculation').textContent,/1538 ÷ 100 = 15\.38/);
+  assert.match(doc.getElementById('plan-multiplier-formula').textContent,/客户折扣 ÷ 采购折扣/);
+  assert.match(doc.getElementById('plan-multiplier-substitution').textContent,/（1538 ÷ 100）×（8 ÷ 7\.35）÷ 10/);
+  assert.equal(doc.getElementById('plan-ideal-value').textContent,'≈ 1.674013605442');
+  h.click('#close-drawer');h.input('purchase-discount','10');h.input('discount','10');h.click('#plan-settings');
+  assert.match(doc.getElementById('plan-derivation').textContent,/刊例价（10折）/);
+  assert.match(doc.getElementById('plan-derivation').textContent,/客户无折扣（10折）/);
+  assert.equal(doc.getElementById('plan-ideal-value').textContent,'= 1.538');
+  h.click('#close-drawer');h.input('pay','3');h.input('total','10');h.click('#plan-settings');
+  assert.match(doc.getElementById('plan-recharge-calculation').textContent,/10 ÷ 3 ≈ 3\.333333333333/);
+  assert.match(doc.getElementById('plan-multiplier-substitution').textContent,/（10 ÷ 3）×（10 ÷ 10）÷ 10/);
+  equal(h.api.pricing().usedM,E.div('1','3'),'rounded display does not enter the calculation');
+});
+
+test('margin derivation explains procurement cancellation while customer cash price still changes', t => {
+  const h=boot(t),doc=h.w.document;
+  h.input('target-mode','margin','change');h.input('target-margin','8.125');
+  const before=h.api.pricing().usedM,cashBefore=h.api.current().x.target;
+  h.click('#plan-settings');
+  assert.match(doc.getElementById('plan-multiplier-formula').textContent,/每元积分 ÷［（1 − 目标毛利率）× 10］/);
+  assert.match(doc.getElementById('plan-multiplier-substitution').textContent,/（1538 ÷ 100）÷［（1 − 8\.125%）× 10］/);
+  assert.match(doc.getElementById('plan-derivation').textContent,/采购成本在推导中约掉/);
+  h.click('#close-drawer');h.input('purchase-discount','5');h.click('#plan-settings');
+  equal(h.api.pricing().usedM,before);
+  assert.notEqual(E.cmp(h.api.current().x.target,cashBefore),0);
+  assert.equal(doc.getElementById('plan-ideal-value').textContent,'≈ 1.674013605442');
+});
+
+test('invalid multiplier drafts cannot apply and recover when returning to automatic calculation', t => {
+  const h=boot(t),doc=h.w.document;
+  h.click('#plan-settings');h.input('plan-mode','manual','change');h.input('plan-manual','');
+  assert.equal(doc.getElementById('save-plan').disabled,true);
+  assert.match(doc.getElementById('plan-error').textContent,/大于0/);
+  assert.equal(doc.getElementById('plan-used-value').textContent,'—');
+  h.input('plan-mode','ideal','change');
+  assert.equal(doc.getElementById('save-plan').disabled,false);
+  assert.equal(doc.getElementById('plan-error').textContent,'');
+  h.click('#save-plan');
+  assert.equal(h.api.getState().plan.mode,'ideal');
+  h.input('purchase-discount','10');h.input('discount','10');h.input('total','10');
+  const before=JSON.stringify(h.api.getState().plan);
+  h.click('#plan-settings');h.click('#plan-limit-precision');h.input('plan-digits','0','change');h.input('plan-round','truncate','change');
+  assert.equal(doc.getElementById('save-plan').disabled,true);
+  assert.match(doc.getElementById('plan-error').textContent,/倍率为0/);
+  doc.getElementById('save-plan').disabled=false;
+  h.click('#save-plan');
+  assert.equal(doc.getElementById('save-plan').disabled,true,'save handler validates even if button is enabled externally');
+  assert.equal(JSON.stringify(h.api.getState().plan),before,'invalid draft never reaches active state');
+  equal(h.api.pricing().usedM,'0.01');
+  h.input('plan-digits','2','change');
+  assert.equal(doc.getElementById('save-plan').disabled,false);
+  h.click('#save-plan');equal(h.api.pricing().usedM,'0.01');
 });
 
 test('manual mode and multiplier survive local storage reload and exported JSON round-trip', async t => {
