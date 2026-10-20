@@ -781,7 +781,14 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   assert.doesNotMatch(body.textContent,/官方原说明|官方如何说明|核验方法|项目 evidence|本工具的估算依据/);
   assert.ok(body.querySelector('a[href="'+h.w.ReelayModels.get('seedance-2.0').sources.minima.calculatorUrl+'"]'));
   assert.ok(body.querySelector('a[href="'+h.w.ReelayModels.get('seedance-2.5').sources.minima.calculatorUrl+'"]'));
-  assert.ok(body.querySelector('a[href="'+h.w.ReelayModels.get('seedance-2.0').sources.pricing.url+'"]'));
+  assert.ok(body.querySelector('.usage-prices a[href="https://ark.volcengine.com/region:cn-beijing/docs/model-pricing"]'));
+  assert.equal(body.querySelector('a[href$=".md"]'),null,'readable source links must open the normal documentation page');
+  for(const [model,tableId] of [['seedance-2.0','tblmNCuMjADrXtDf'],['seedance-2.5','tblheIYDXXwYM43b']]){
+    const link=[...body.querySelectorAll('a')].find(a=>a.getAttribute('href')===h.w.ReelayModels.get(model).sources.minima.url);
+    assert.ok(link,'each model family has a minimum usage table link');
+    assert.equal(new URL(link.href).searchParams.get('table'),tableId,'the two model families must open their separate official tables');
+    assert.ok(link.closest('section').querySelector('#usage-minimum-description'));
+  }
   assert.equal(body.querySelector('.source-formula'),null);
   assert.equal(doc.getElementById('usage-method'),null);
   // JSDOM has no layout; expose rectangles only to exercise the existing focus trap.
@@ -1179,7 +1186,8 @@ test('models: platform calculation details and the usage price table use the sel
     assert.equal(doc.getElementById('drawer-sub').textContent,spec.label+' · 规则版本 '+spec.version);
     const sourceLinks=[...doc.querySelectorAll('#drawer-body a')].map(el=>el.getAttribute('href'));
     assert.ok(sourceLinks.includes(spec.sources.minima.calculatorUrl));
-    assert.ok(sourceLinks.includes(spec.sources.pricing.url));
+    assert.ok(sourceLinks.includes(spec.sources.pricing.pageUrl));
+    assert.ok(sourceLinks.includes(spec.sources.minima.url));
     const currentRate=doc.querySelector('#usage-price-table [aria-current="true"]');
     assert.equal(currentRate.closest('tr').dataset.model,model);
     assert.equal(currentRate.textContent,E.fixed(spec.rates[task.res][task.video?1:0],2));
