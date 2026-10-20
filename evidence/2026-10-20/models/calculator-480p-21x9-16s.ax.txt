@@ -1,0 +1,207 @@
+Browser tab: 1880766573, Title: "seedance2.5价格计算器", URL: "https://bytedance.larkoffice.com/share/base/form/shrcnhVCMxKxcwW1QML5r9u8nvh".
+0 AXWebArea seedance2.5价格计算器, URL: bytedance.larkoffice.com/share/base/form/shrcnhVCMxKxcwW1QML5r9u8nvh
+	1 container zh-CN
+		2 container
+			3 button 查看提交记录
+				4 image
+				5 text 查看提交记录
+			6 button 分享
+				7 image
+				8 text 分享
+			9 text seedance2.5价格计算器
+			10 container
+				11 container
+					12 text 填写参数后展示视频估算价格-无需提交
+			13 container field-item-fldxqQNUkO
+				14 container
+					15 text 模型 *
+				16 container
+					130 content list
+						131 container
+							132 text seedance-2.5
+							133 image
+					18 image
+					19 container
+						20 text field (settable)
+						134 container
+							135 text seedance-2.5
+							136 image
+			22 container field-item-fldXiJ2g6j
+				23 container
+					24 text 输入是否包含视频 *
+				25 container
+					170 content list
+						171 container
+							172 text 输入包含视频
+							173 image
+					27 image
+					203 container
+						204 text field (settable)
+						205 container
+							206 text 输入不含视频
+							207 text 输入包含视频
+							208 image
+			174 container field-item-fldHsYwIgu
+				175 text 时长-输入视频（秒）
+				176 container
+					209 content list
+						210 container
+							211 text 2
+							212 image
+					178 image
+					179 container
+						180 text field (settable)
+						181 container
+							182 text 2
+							213 image
+							183 text 3
+							184 text 4
+							185 text 5
+							186 text 6
+							187 text 7
+							188 text 8
+							189 text 9
+							190 text 10
+							191 text 11
+							192 text 12
+							193 text 13
+							194 text 14
+			28 container field-item-fldcNvCwvx
+				29 container
+					30 text 时长-输出视频（秒） *
+				31 container
+					137 content list
+						138 container
+							139 text 16
+							140 image
+					33 image
+					34 container
+						35 text field (settable)
+						36 container
+							141 text 9
+							43 text 10
+							44 text 11
+							45 text 12
+							46 text 13
+							47 text 14
+							48 text 15
+							49 text 16
+							142 image
+							143 text 17
+							144 text 18
+							145 text 19
+							146 text 20
+							147 text 21
+							148 text 22
+							149 text 23
+			50 container field-item-fldMCNB6LD
+				51 container
+					52 text 分辨率 *
+				53 container
+					150 content list
+						151 container
+							152 text 480p
+							153 image
+					55 image
+					56 container
+						57 text field (settable)
+						58 container
+							59 text 480p
+							154 image
+							60 text 720p
+							61 text 1080p
+			62 container field-item-fldJ4QUegW
+				63 container
+					64 text 宽高比 *
+				65 container
+					66 container
+						67 container
+							68 text 输出视频的宽高比
+					69 container
+						155 content list
+							156 container
+								157 text 21:9
+								158 image
+						71 image
+						72 container
+							73 text field (settable)
+							74 container
+								75 text 21:9
+								159 image
+								76 text 16:9
+								77 text 4:3
+								78 text 1:1
+								79 text 3:4
+								80 text 9:16
+			81 container field-item-fld7gTzIBX
+				82 text 长边×短边
+				83 container
+					84 container
+						85 container
+							86 text 输出视频的长边像素值×短边像素值，由输出视频分辨率和宽高比共同决定
+					160 container
+						161 content list
+							162 text 992×432
+						163 container
+							164 text field (settable)
+							165 container
+								166 text 992×432
+								167 image
+			88 container field-item-fld10eswv1
+				89 container
+					90 text 帧率 *
+				91 container
+					92 content list
+						93 container
+							94 text 24
+							95 image
+					96 image
+					97 container
+						98 text field (settable)
+						99 container
+							100 text 24
+							101 image
+			102 container field-item-fldxTNE2R7
+				103 text 单价
+				104 container
+					105 container
+						106 container
+							107 text 单位：元/百万token
+					214 container
+						215 content list
+							216 text 42
+						217 container
+							218 text field (settable)
+							219 container
+								220 text 42
+								221 image
+			109 container field-item-fld0p1bMiB
+				110 text 估算 token 用量
+				111 container
+					112 container
+						113 container
+							114 text (输入视频时长+输出视频时长) × 输出视频的宽 × 输出视频的高 × 输出视频的帧率/1024
+						115 container
+							116 text 准确 token 用量以调用 API 后返回的 usage.completion_tokens 字段为准
+					222 text field Value: 160704, ID: number-editor-input-fld0p1bMiB
+			195 container field-item-fldbHEcb1g
+				196 text 最低 token 用量
+				197 container
+					198 container
+						199 container
+							200 text 输入包含视频时，存在最低 token 用量限制。如果估算 token 用量 ＜ 最低 token 用量，则按最低 token 用量计算视频价格。
+						201 container
+							202 text 最低 token 用量为估算值，实际以调用 API 后返回的 usage.completion_tokens 字段为准
+					223 text field Value: 271188, 271188, ID: number-editor-input-fldbHEcb1g
+			120 container field-item-fld9gudF3m
+				121 text 估算视频价格（元/个）
+				122 container
+					123 container
+						124 container
+							125 text 按 token 单价 × token 用量
+					224 text field Value: 11.39, ID: number-editor-input-fld9gudF3m
+			127 button 提交
+			128 text 飞书多维表格
+			129 text  提供技术支持
+
+The focused UI element is 0 AXWebArea seedance2.5价格计算器, URL: bytedance.larkoffice.com/share/base/form/shrcnhVCMxKxcwW1QML5r9u8nvh

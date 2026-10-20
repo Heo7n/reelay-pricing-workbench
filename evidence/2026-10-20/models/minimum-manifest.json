@@ -1,0 +1,175 @@
+{
+  "version": "volc-seedance25-2026-10-20",
+  "model": "seedance-2.5",
+  "verifiedAt": "2026-10-20",
+  "sourceTable": "tblheIYDXXwYM43b",
+  "sourceField": "fld0p1bMiB",
+  "sourceFormulaSha256": "f8d5a553af3196c22d8727d891644f99b13c28c67d662b1e922b90dcddfbefb9",
+  "sourceRows": 339,
+  "uniqueSourceRows": 324,
+  "duplicateRows": [
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "16",
+      "firstRow": 94,
+      "repeatedRow": 109,
+      "displayedTokens": "271188",
+      "tokens": "271188",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "17",
+      "firstRow": 95,
+      "repeatedRow": 110,
+      "displayedTokens": "291276",
+      "tokens": "291276",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "18",
+      "firstRow": 96,
+      "repeatedRow": 111,
+      "displayedTokens": "301320",
+      "tokens": "301320",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "19",
+      "firstRow": 97,
+      "repeatedRow": 112,
+      "displayedTokens": "321408",
+      "tokens": "321408",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "20",
+      "firstRow": 98,
+      "repeatedRow": 113,
+      "displayedTokens": "341496",
+      "tokens": "341496",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "21",
+      "firstRow": 99,
+      "repeatedRow": 114,
+      "displayedTokens": "351540",
+      "tokens": "351540",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "22",
+      "firstRow": 100,
+      "repeatedRow": 115,
+      "displayedTokens": "371628",
+      "tokens": "371628",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "23",
+      "firstRow": 101,
+      "repeatedRow": 116,
+      "displayedTokens": "391716",
+      "tokens": "391716",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "24",
+      "firstRow": 102,
+      "repeatedRow": 117,
+      "displayedTokens": "401760",
+      "tokens": "401760",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "25",
+      "firstRow": 103,
+      "repeatedRow": 118,
+      "displayedTokens": "421848",
+      "tokens": "421848",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "26",
+      "firstRow": 104,
+      "repeatedRow": 119,
+      "displayedTokens": "441936",
+      "tokens": "441936",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "27",
+      "firstRow": 105,
+      "repeatedRow": 120,
+      "displayedTokens": "451980",
+      "tokens": "451980",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "28",
+      "firstRow": 106,
+      "repeatedRow": 121,
+      "displayedTokens": "472068",
+      "tokens": "472068",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "29",
+      "firstRow": 107,
+      "repeatedRow": 122,
+      "displayedTokens": "492156",
+      "tokens": "492156",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    },
+    {
+      "resolution": "480p",
+      "ratio": "21:9",
+      "seconds": "30",
+      "firstRow": 108,
+      "repeatedRow": 123,
+      "displayedTokens": "502200",
+      "tokens": "502200",
+      "sourceFile": "evidence/2026-10-20/models/minimum-480p.clipboard.json"
+    }
+  ],
+  "specificationCount": 486,
+  "formulaEvaluationCount": 9831,
+  "sourceFiles": {
+    "evidence/2026-10-20/models/minimum-480p.clipboard.json": "581d11fc9887ddb0e75098e1d07452ed880b5f984c5896c65a904e3f36060069",
+    "evidence/2026-10-20/models/minimum-720p.clipboard.json": "2d09bc00d0ed1c288ddfd2a73857b403fcd5ccaedfc02361d6ea51b906dc34ab",
+    "evidence/2026-10-20/models/minimum-1080p.clipboard.json": "02aa927ebf4b2b2641b86fb83d6bad2a8e2023a2be878cf3d6cc01ba4c849a29",
+    "evidence/2026-10-20/models/seedance-2.5-calculator-public.html": "944cf465b833f63aee5b5833258d26005fff269b89f3c6d61d896ce892d83168",
+    "evidence/2026-10-20/models/seedance-2.5-calculator-fields.json": "45b8cda2e9b6c39ede25d81c762971196ec59ce2241394ecdb7c205ef57e1ac5",
+    "evidence/2026-10-20/models/create-video-generation-task-api.md": "b397daf9a72c5c93de6dcf66610dea543c4bbdd3a500a00a234135898abaee24",
+    "evidence/2026-10-20/models/documents-manifest.json": "bc898399ffb609d32af6645c9423c4d36cd5eeb52697b26cc7f2c00a7757e2f9"
+  },
+  "generatedFile": "generated-model-minima.js",
+  "generatedSha256": "fe92aca46079769ccdcf3c103398b4d6f275fc8f879863ffd465c80b9265425a"
+}

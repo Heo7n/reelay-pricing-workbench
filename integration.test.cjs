@@ -26,7 +26,7 @@ function boot(t, storedEntries = []) {
   w.HTMLElement.prototype.scrollIntoView = () => {};
   w.navigator.clipboard = {writeText:async () => {}};
   for (const [key,value] of storedEntries) w.localStorage.setItem(key,value);
-  for (const file of ['engine.js', 'generated-minima.js', 'data.js', 'app.js']) w.eval(read(file));
+  for (const file of ['engine.js', 'generated-minima.js', 'data.js', 'generated-model-minima.js', 'models.js', 'app.js']) w.eval(read(file));
   t.after(() => dom.window.close());
   const api = w.ReelayApp;
   const good = () => {
@@ -757,19 +757,23 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   assert.equal(modal.hidden,false);assert.equal(modal.classList.contains('centered'),true);
   const dialog=doc.getElementById('drawer');
   assert.equal(dialog.getAttribute('role'),'dialog');assert.equal(dialog.getAttribute('aria-modal'),'true');
-  assert.equal(doc.getElementById(dialog.getAttribute('aria-labelledby')).textContent,'用量与计价说明');
+  assert.equal(doc.getElementById(dialog.getAttribute('aria-labelledby')).textContent,'估价依据');
   assert.ok(doc.getElementById(dialog.getAttribute('aria-describedby')));
   assert.equal(doc.activeElement.id,'close-drawer');
   const body=doc.getElementById('drawer-body');
   assert.match(body.textContent,/最低 Token 用量也是估算值/);
   assert.match(body.textContent,/官方如何说明最低用量/);
   assert.match(body.textContent,/不是模型价格正文直接列出的公式/);
-  assert.match(body.textContent,/2026-10-20/);assert.match(body.textContent,/原式、四个视图的复制数据和官方计算器查表公式已保存/);
+  const source=h.w.ReelayModels.get(h.api.getState().task.model).sources.minima;
+  assert.match(body.textContent,/2026-10-20/);
+  assert.match(body.textContent,/原式和复制数据保存在项目 evidence 目录/);
+  assert.ok(body.textContent.includes(source.provenance),'the explanation identifies the selected model source');
   assert.doesNotMatch(body.textContent,/本次未重新取得|沿用.*快照/);
   assert.ok(body.querySelector('a[href="'+R.sources.minima.calculatorUrl+'"]'));
   assert.ok(body.querySelector('a[href="'+R.sources.pricing.url+'"]'));
   assert.ok(body.querySelector('a[href="'+R.sources.usage.url+'"]'));
   assert.match(body.querySelector('.source-formula').textContent,/MAX\(ROUNDUP/);
+  assert.equal(body.querySelector('.source-formula').textContent,source.sourceFormula,'the displayed formula is the captured source, not a paraphrase');
   assert.equal(doc.getElementById('usage-method').open,false);
   // JSDOM has no layout; expose rectangles only to exercise the existing focus trap.
   const focusable=[...dialog.querySelectorAll('button,a[href],summary')];
@@ -818,5 +822,344 @@ test('four quick configurations are true official token extrema over all support
     equal(h.api.current().calc.billedTokens,highest?expected.maximum:expected.minimum,name+' reaches the global official token extreme');
     equal(h.api.pricing().usedM,'1.65',name+' does not mutate the pricing multiplier');
     assert.equal(h.api.getState().plan.mode,'manual');
+  }
+});
+
+test('architecture: the default model stage contains no platform inputs or commercial results', t => {
+  const h=boot(t),doc=h.w.document;
+  const model=doc.getElementById('theory-workspace'),platform=doc.getElementById('platform-workspace'),actual=doc.getElementById('actual-workspace');
+  assert.equal(h.api.getState().workspace,'theory');
+  assert.equal(model.hidden,false);assert.equal(platform.hidden,true);assert.equal(actual.hidden,true);
+  const navigation=[...doc.querySelectorAll('.workspace-nav [data-workspace]')];
+  assert.deepEqual(navigation.map(el=>el.dataset.workspace),['theory','platform','actual']);
+  assert.equal(navigation[0].getAttribute('aria-current'),'page');
+  for(const id of ['model','seconds','vin-slider','token-rate','token-estimate','token-minimum','cost-p','usage-help']){
+    assert.ok(model.contains(doc.getElementById(id)),id+' belongs to the independent model estimate');
+  }
+  for(const id of ['pay','total','purchase-discount','target-mode','manual-m','cost-c','calculation','add-task','table']){
+    assert.equal(model.contains(doc.getElementById(id)),false,id+' must not appear in the model section');
+    assert.ok(platform.contains(doc.getElementById(id)),id+' belongs to platform pricing');
+  }
+  assert.equal(doc.querySelector('.quick-config').open,false);
+  assert.equal(doc.getElementById('platform-comparison').open,false);
+  const estimate=h.api.quote().calc;
+  h.click('#open-platform');
+  assert.equal(h.api.getState().workspace,'platform');
+  assert.equal(model.hidden,true);assert.equal(platform.hidden,false);assert.equal(actual.hidden,true);
+  assert.equal(navigation[1].getAttribute('aria-current'),'page');
+  assert.ok(doc.getElementById('platform-quote').textContent.trim(),'the next stage carries the model context');
+  equal(h.api.quote().calc.P,estimate.P,'navigation does not modify the model quote');
+  h.click('.workspace-nav [data-workspace="actual"]');
+  assert.equal(actual.hidden,false);assert.equal(platform.hidden,true);assert.equal(model.hidden,true);
+  h.click('#back-theory');
+  assert.equal(model.hidden,false);assert.equal(actual.hidden,true);
+});
+
+test('architecture: invalid recharge input clears only platform results and leaves model estimates usable', t => {
+  const h=boot(t),doc=h.w.document,before=h.api.quote().calc;
+  const shown=Object.fromEntries(['cost-p','token-rate','token-estimate','token-minimum'].map(id=>[id,doc.getElementById(id).textContent]));
+  for(const invalid of ['', 'not-a-price', '0']){
+    h.input('pay',invalid);
+    assert.equal(doc.getElementById('globalError').hidden,true,'platform errors do not invalidate model parameters');
+    assert.equal(doc.getElementById('platformError').hidden,false);
+    assert.equal(doc.getElementById('usage-summary').hidden,false);
+    assert.equal(doc.getElementById('usage-help').disabled,false);
+    assert.equal(doc.getElementById('cost-c').textContent,'—');
+    for(const [id,value] of Object.entries(shown))assert.equal(doc.getElementById(id).textContent,value,id+' remains current');
+    const independent=h.api.quote().calc;
+    equal(independent.P,before.P);equal(independent.tokens,before.tokens);equal(independent.billedTokens,before.billedTokens);
+    for(const id of ['raw-points','integer-points']){
+      const el=doc.getElementById(id);
+      assert.ok(!el||el.textContent.trim()==='—',id+' cannot retain a stale commercial result');
+    }
+    h.click('#usage-help');
+    assert.equal(doc.getElementById('modal').hidden,false);
+    assert.match(doc.getElementById('drawer-body').textContent,/usage\.completion_tokens/);
+    h.click('#close-drawer');
+  }
+  h.input('pay','100');
+  assert.equal(doc.getElementById('platformError').hidden,true);
+  assert.ok(doc.getElementById('integer-points'));
+  equal(h.api.current().x.P,before.P);
+});
+
+test('architecture: model drafts and quote exports remain independent of an invalid platform plan', async t => {
+  const h=boot(t),doc=h.w.document;
+  h.input('pay','200');
+  const lastValidPlan=plain(h.api.getState().plan);
+  h.input('pay','');
+  h.input('model','seedance-2.5','change');
+  h.input('seconds','30');
+  h.input('vin-slider','30');
+  assert.equal(doc.getElementById('platformError').hidden,false);
+  assert.match(doc.getElementById('storage-status').textContent,/模型草稿已保存/);
+  assert.match(doc.getElementById('storage-status').textContent,/平台保留上次有效方案/);
+  assert.equal(h.api.getState().plan.pay,'','saving a model draft does not silently repair the visible platform input');
+  const stored=JSON.parse(h.w.localStorage.getItem('reelay_pricing_v9_official'));
+  assert.equal(stored.task.model,'seedance-2.5');
+  assert.equal(stored.task.seconds,'30');assert.equal(stored.task.vin,'30');
+  assert.deepEqual(stored.plan,lastValidPlan,'only the last valid platform plan is persisted');
+  h.click('#export');
+  assert.equal(doc.getElementById('export-quote').disabled,false);
+  assert.equal(doc.getElementById('export-json').disabled,true);
+  assert.equal(doc.getElementById('export-summary').disabled,true);
+  h.click('#export-quote');
+  assert.equal(h.downloads.length,1);
+  const summary=await h.downloads[0].blob.text();
+  assert.match(summary,/Seedance 2\.5/);
+  assert.match(summary,/30秒/);
+  assert.match(summary,/单价：42 元 \/ 百万 Token/);
+  assert.match(summary,/基础估算：576,000 Token/);
+  assert.match(summary,/估算视频价格：¥24\.192/);
+  assert.doesNotMatch(summary,/采购|充值|积分|毛利|倍率|现金/,'the standalone model summary contains no platform amounts');
+  const entries=Array.from({length:h.w.localStorage.length},(_,i)=>{
+    const key=h.w.localStorage.key(i);return[key,h.w.localStorage.getItem(key)];
+  });
+  const restored=boot(t,entries),state=restored.api.getState();
+  assert.equal(state.task.model,'seedance-2.5');
+  assert.equal(state.task.seconds,'30');assert.equal(state.task.vin,'30');
+  assert.deepEqual(plain(state.plan),lastValidPlan);
+  assert.equal(restored.w.document.getElementById('pay').value,'200');
+  assert.equal(restored.w.document.getElementById('platformError').hidden,true);
+  equal(restored.api.quote().calc.P,h.api.quote().calc.P);
+});
+
+test('architecture: stage navigation keeps visible focus and the 2.5 matrix can load a 30-second quote', t => {
+  const h=boot(t),doc=h.w.document;
+  const navigation=stage=>doc.querySelector('.workspace-nav [data-workspace="'+stage+'"]');
+  h.input('model','seedance-2.5','change');
+  h.click('#open-platform');
+  assert.equal(doc.activeElement,navigation('platform'),'the model handoff focuses the destination navigation');
+  h.click('#platform-comparison > summary');
+  h.click('[data-tab="matrix"]');
+  const headings=[...doc.querySelectorAll('#table th')].map(el=>el.textContent);
+  for(const seconds of ['20','25','30'])assert.ok(headings.includes(seconds+'秒'));
+  const thirty=[...doc.querySelectorAll('[data-matrix]')].find(el=>{
+    const task=JSON.parse(el.dataset.matrix);return task.res==='1080p'&&task.seconds==='30';
+  });
+  assert.ok(thirty,'the full 30-second 1080p specification is available');
+  const expected=h.api.quote(JSON.parse(thirty.dataset.matrix)).calc.P;
+  thirty.focus();thirty.click();h.good();
+  const selected=h.api.getState();
+  assert.equal(selected.workspace,'theory');
+  assert.equal(selected.task.model,'seedance-2.5');
+  assert.equal(selected.task.res,'1080p');assert.equal(selected.task.seconds,'30');
+  assert.equal(doc.getElementById('seconds').value,'30');
+  assert.equal(doc.getElementById('theory-workspace').hidden,false);
+  assert.equal(doc.activeElement,navigation('theory'),'loading a matrix cell moves focus out of the hidden comparison');
+  equal(h.api.quote().calc.P,expected);
+  h.click('.workspace-nav [data-workspace="actual"]');
+  assert.equal(doc.activeElement,navigation('actual'));
+  assert.equal(navigation('actual').getAttribute('aria-current'),'page');
+  h.click('#back-theory');
+  assert.equal(doc.activeElement,navigation('theory'));
+  assert.equal(navigation('theory').getAttribute('aria-current'),'page');
+  h.click('.workspace-nav [data-workspace="platform"]');
+  assert.equal(doc.activeElement,navigation('platform'));
+});
+
+test('models: selecting 2.5 uses its 30-second limit and exact 480p pixel map', t => {
+  const h=boot(t),doc=h.w.document;
+  assert.deepEqual([...doc.getElementById('model').options].map(option=>option.value).sort(),
+    ['seedance-2.0','seedance-2.0-fast','seedance-2.5'].sort());
+  h.input('model','seedance-2.5','change');
+  h.click('[data-video="false"]');h.click('[data-ratio="16:9"]');h.click('[data-res="480p"]');
+  assert.equal(doc.getElementById('seconds').max,'30');
+  assert.equal(doc.getElementById('vin-slider').max,'30');
+  assert.match(doc.getElementById('seconds-max-label').textContent,/30/);
+  assert.match(doc.getElementById('pixels').textContent,/854\s*×\s*480/);
+  h.input('seconds','30');
+  const quote=h.api.quote();
+  assert.equal(h.api.getState().task.model,'seedance-2.5');
+  assert.equal(h.api.getState().task.seconds,'30');
+  assert.deepEqual(plain(quote.calc.wh),[854,480]);
+  equal(quote.calc.tokens,'288225');
+  equal(quote.calc.rate,'70');
+  equal(quote.calc.P,'20.17575');
+  assert.equal(doc.getElementById('token-minimum').textContent,'不适用');
+  assert.equal(doc.querySelector('[data-res="4k"]'),null,'2.5 has no unverified 4K option');
+});
+
+test('models: switching from 2.5 to Fast constrains unsupported values and tells the user', t => {
+  const h=boot(t),doc=h.w.document;
+  h.input('model','seedance-2.5','change');
+  h.click('[data-res="1080p"]');
+  h.input('seconds','30');h.input('vin-slider','30');
+  h.input('model','seedance-2.0-fast','change');
+  const task=h.api.getState().task;
+  assert.equal(task.model,'seedance-2.0-fast');
+  assert.equal(task.seconds,'15');assert.equal(task.vin,'15');
+  assert.deepEqual([...doc.querySelectorAll('[data-res]')].map(el=>el.dataset.res),['480p','720p']);
+  assert.ok(['480p','720p'].includes(task.res),'resolution must belong to the selected model');
+  assert.equal(doc.getElementById('seconds').max,'15');assert.equal(doc.getElementById('vin-slider').max,'15');
+  assert.equal(doc.querySelector('[data-res="1080p"]'),null);assert.equal(doc.querySelector('[data-res="4k"]'),null);
+  assert.match(doc.getElementById('toast').textContent,/15/);
+  assert.match(doc.getElementById('toast').textContent,/调整|改为|设为|切换|限制/);
+  assert.equal(doc.getElementById('globalError').hidden,true);
+  equal(h.api.quote().calc.rate,'22');
+});
+
+test('models: legacy drafts, saved tasks and observations explicitly migrate to standard 2.0', t => {
+  const initial=boot(t),legacy=plain(initial.api.defaults());
+  legacy.tasks=[{id:'legacy-standard-task',title:'旧标准模型任务',params:{...legacy.task},qty:'2'}];
+  delete legacy.task.model;delete legacy.tasks[0].params.model;
+  for(const observation of legacy.observations)delete observation.params.model;
+  for(const reference of legacy.references)if(reference.params)delete reference.params.model;
+  legacy.observations[2].params.vin='7.2';legacy.observations[2].usage='123456';
+  const original=JSON.stringify(legacy);
+  const h=boot(t,[['reelay_pricing_v9_official',original]]);
+  const migrated=h.api.getState();
+  assert.equal(migrated.task.model,'seedance-2.0');
+  assert.equal(migrated.tasks[0].params.model,'seedance-2.0');
+  assert.ok(migrated.observations.every(row=>row.params.model==='seedance-2.0'));
+  assert.equal(migrated.observations[2].params.vin,'7.2','historical real duration is not rounded by model migration');
+  assert.equal(migrated.observations[2].usage,'123456');
+  assert.equal(migrated.observations[2].P,legacy.observations[2].P);
+  assert.equal(JSON.stringify(legacy),original,'loading does not rewrite the source object');
+  const persisted=JSON.parse(h.w.localStorage.getItem('reelay_pricing_v9_official'));
+  assert.equal(persisted.task.model,'seedance-2.0');
+  assert.ok(persisted.observations.every(row=>row.params.model==='seedance-2.0'));
+  h.input('model','seedance-2.5','change');
+  assert.ok(h.api.getState().observations.every(row=>row.params.model==='seedance-2.0'),'changing the active model does not relabel old bills');
+});
+
+test('models: task identity, minimum overrides and JSON exports stay scoped to their model', async t => {
+  const h=boot(t);
+  const common={res:'480p',ratio:'16:9',seconds:'4',video:true,vin:'2'};
+  const standard={...common,model:'seedance-2.0'},fast={...common,model:'seedance-2.0-fast'},newer={...common,model:'seedance-2.5'};
+  const variants=[standard,fast,newer];
+  assert.equal(new Set(variants.map(task=>h.api.key(task))).size,3);
+  assert.equal(new Set(variants.map(task=>h.api.minimumKey(task))).size,3);
+  const fastBefore=h.api.quote(fast).calc.P;
+  h.update(s=>{
+    s.task=standard;
+    s.rules.minima[h.api.minimumKey(standard)]={tokens:'1000000',kind:'manual',note:'仅标准 2.0 适用的协议门槛'};
+    s.tasks=variants.map((params,i)=>({id:'model-task-'+i,title:'模型任务 '+i,params,qty:'1'}));
+  });
+  equal(h.api.quote(standard).calc.billedTokens,'1000000');
+  equal(h.api.quote(fast).calc.P,fastBefore,'a standard-model override cannot leak into Fast');
+  assert.equal(h.api.quote(fast).rule.kind,'official');
+  h.input('model','seedance-2.5','change');
+  h.click('#export');h.click('#export-json');
+  const payload=JSON.parse(await h.downloads[0].blob.text());
+  assert.equal(payload.state.task.model,'seedance-2.5');
+  assert.deepEqual(payload.state.tasks.map(row=>row.params.model),variants.map(task=>task.model));
+  assert.ok(payload.state.observations.every(row=>row.params.model==='seedance-2.0'));
+  const reloaded=h.api.migrate(payload).value;
+  assert.equal(reloaded.task.model,'seedance-2.5');
+  assert.deepEqual(plain(reloaded.tasks).map(row=>row.params.model),variants.map(task=>task.model));
+  h.api.setState(reloaded);h.good();
+  equal(h.api.quote(fast).calc.P,fastBefore);
+});
+
+test('models: API usage is priced by each observation model, independently of the current selection', t => {
+  const h=boot(t),doc=h.w.document;
+  const cases=[['seedance-2.5','7'],['seedance-2.0','4.6'],['seedance-2.0-fast','3.7']];
+  h.update(s=>{
+    s.task={model:'seedance-2.0-fast',res:'480p',ratio:'16:9',seconds:'4',video:false,vin:'2'};
+    s.observations=cases.map(([model],i)=>({
+      id:'usage-model-'+i,title:'模型用量记录 '+i,
+      params:{model,res:'480p',ratio:'16:9',seconds:'4',video:false,vin:'2'},
+      P:'8',C:'5',N:'',usage:'100000',date:'2026-10-20',note:'API completion_tokens 原记录'
+    }));
+  });
+  const selected=h.api.getState().task.model;
+  for(const [i,[model,expected]] of cases.entries()){
+    h.api.openDetails('actual','usage-model-'+i);h.good();
+    const usage=[...doc.querySelectorAll('#drawer-body .detail-section')].find(section=>section.textContent.includes('completion_tokens ='));
+    assert.ok(usage,'the actual usage reconciliation is present for '+model);
+    assert.ok(usage.textContent.includes('¥'+E.fixed(expected,12)),model+' applies its own current list rate');
+    assert.equal(h.api.getState().task.model,selected);
+    const row=h.api.getState().observations[i];
+    assert.equal(row.params.model,model);assert.equal(row.P,'8');assert.equal(row.C,'5');assert.equal(row.usage,'100000');
+    h.click('#close-drawer');
+  }
+});
+
+test('models: importing an invalid observed output duration cannot normalize it into an accepted auto value', t => {
+  const h=boot(t),before=JSON.stringify(h.api.getState());
+  for(const model of ['seedance-2.0','seedance-2.0-fast','seedance-2.5']){
+    const invalid=plain(h.api.defaults());
+    invalid.observations[0].params={model,res:'480p',ratio:'1:1',seconds:'-1',video:true,vin:'2'};
+    const original=JSON.stringify(invalid);
+    assert.equal(h.api.validState(invalid),false,model+' rejects a negative observed output duration');
+    assert.throws(()=>h.api.migrate({format:'reelay.pricing.v9',state:invalid}),/方案参数无效/);
+    assert.equal(JSON.stringify(invalid),original,'rejected import leaves its input untouched');
+    assert.equal(JSON.stringify(h.api.getState()),before,'rejected import cannot replace the active draft');
+  }
+});
+
+test('models: upgrading Oct19 standard rules preserves a current 2.5 manual rule in its own namespace', t => {
+  const h=boot(t),legacy=plain(h.api.defaults()),previous=R.PREVIOUS_VERSIONS[0];
+  const standard={model:'seedance-2.0',res:'480p',ratio:'1:1',seconds:'4',video:true,vin:'2'};
+  const newer={...standard,model:'seedance-2.5'};
+  legacy.rules.version=previous;
+  legacy.rules.minima=Object.fromEntries(Object.entries(legacy.rules.minima).map(([key,row])=>[
+    key.replace(R.VERSION,previous),row
+  ]));
+  const oldStandardKey=R.key(standard,previous),newerKey=h.api.minimumKey(newer);
+  legacy.rules.minima[oldStandardKey]={tokens:'100000',kind:'manual',note:'旧标准版专用门槛'};
+  legacy.rules.minima[newerKey]={tokens:'900000',kind:'manual',note:'当前 2.5 专用门槛'};
+  const original=JSON.stringify(legacy),migrated=h.api.migrate({format:'reelay.pricing.v9',state:legacy}).value;
+  assert.equal(migrated.rules.version,R.VERSION);
+  assert.equal(migrated.rules.previousVersion,previous);
+  assert.equal(migrated.rules.minima[R.key(standard)].tokens,'100000');
+  assert.equal(migrated.rules.minima[R.key(standard)].note,'旧标准版专用门槛');
+  assert.equal(migrated.rules.minima[newerKey].tokens,'900000');
+  assert.equal(migrated.rules.minima[newerKey].note,'当前 2.5 专用门槛');
+  assert.equal(migrated.rules.minima[newerKey].kind,'manual');
+  assert.equal(Object.hasOwn(migrated.rules.minima,oldStandardKey),false);
+  assert.equal(JSON.stringify(legacy),original,'mixed-version migration is non-destructive');
+  h.api.setState(migrated);h.good();
+  equal(h.api.quote(standard).calc.billedTokens,'100000');
+  equal(h.api.quote(newer).calc.billedTokens,'900000');
+});
+
+test('architecture: an incomplete composer does not hide saved actual records or block their calculation details', t => {
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations[2].usage='100000';});
+  const record=plain(h.api.getState().observations[2]),beforeRows=plain(h.api.getActualRows());
+  const vin=doc.getElementById('vin');
+  vin.value='';vin.dispatchEvent(new h.w.Event('input',{bubbles:true}));
+  assert.equal(h.api.getState().task.vin,'');
+  assert.equal(doc.getElementById('globalError').hidden,false);
+  doc.querySelector('.workspace-nav [data-workspace="actual"]').click();
+  assert.equal(h.api.getState().workspace,'actual');
+  assert.equal(doc.getElementById('actual-workspace').hidden,false);
+  assert.equal(h.api.getState().task.vin,'','viewing records does not silently rewrite the incomplete draft');
+  assert.deepEqual(plain(h.api.getActualRows()),beforeRows,'all historical reconciliation rows remain available');
+  assert.ok(doc.getElementById('actual-table').textContent.includes(record.title));
+  const button=[...doc.querySelectorAll('[data-observation]')].find(el=>el.dataset.observation===record.id);
+  assert.ok(button);button.click();
+  assert.equal(doc.getElementById('modal').hidden,false);
+  const detail=doc.getElementById('drawer-body').textContent;
+  assert.ok(detail.includes(record.title));assert.ok(detail.includes(record.P));assert.ok(detail.includes(record.C));
+  assert.match(detail,/completion_tokens = 100000/);
+  assert.doesNotMatch(detail,/NaN|Infinity|undefined/);
+  assert.deepEqual(plain(h.api.getState().observations[2]),record);
+  doc.getElementById('close-drawer').click();
+  h.input('vin','2');h.good();
+});
+
+test('models: platform calculation details and their source dialog use the selected Fast or 2.5 identity', t => {
+  const h=boot(t),doc=h.w.document;
+  for(const model of ['seedance-2.0-fast','seedance-2.5']){
+    h.input('model',model,'change');
+    const spec=h.w.ReelayModels.get(model),task=h.api.getState().task;
+    h.api.openDetails('theory');h.good();
+    const section=[...doc.querySelectorAll('#drawer-body .detail-section')]
+      .find(el=>el.querySelector('h3').textContent.includes('最低用量估算'));
+    assert.ok(section);
+    assert.ok(section.textContent.includes('匹配范围：'+spec.label+' · '+spec.version+' · '+task.res+' · '+task.ratio+' · 输出'+task.seconds+'秒'));
+    assert.equal(section.textContent.includes('匹配范围：Seedance 2.0 · '+R.VERSION),false,'source scope must not fall back to the standard model');
+    assert.ok(section.textContent.includes(h.api.quote().rule.note));
+    h.click('#detail-open-rule');
+    assert.equal(doc.getElementById('drawer-title').textContent,'估价依据');
+    assert.equal(doc.getElementById('drawer-sub').textContent,spec.label+' · 规则版本 '+spec.version);
+    const sourceLinks=[...doc.querySelectorAll('#drawer-body a')].map(el=>el.getAttribute('href'));
+    assert.ok(sourceLinks.includes(spec.sources.minima.calculatorUrl));
+    assert.ok(sourceLinks.includes(spec.sources.minima.views[task.res]));
+    assert.equal(doc.querySelector('#drawer-body .source-formula').textContent,spec.sources.minima.sourceFormula);
+    h.click('#close-drawer');
   }
 });

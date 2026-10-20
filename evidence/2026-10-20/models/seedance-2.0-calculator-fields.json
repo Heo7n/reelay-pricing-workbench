@@ -1,0 +1,338 @@
+{
+  "sourceUrl": "https://bytedance.larkoffice.com/share/base/form/shrcnP1Bl0mqCP9OHCbjpe1oBkf",
+  "retrievedAt": "2026-10-20T14:07:19.3465118+08:00",
+  "httpStatus": 200,
+  "method": "Anonymous HTTP GET; decoded literal JSON in HTML window.formMetaContent.Snapshot; no webpage script execution",
+  "htmlSha256": "c80128be0de30f8d42c447f2b10ac38dadee144f7740fa44b80d17330feb0ad5",
+  "calculatorName": "seedance2.0价格计算器",
+  "fields": [
+    {
+      "id": "fldMgWWXcK",
+      "name": "索引",
+      "type": 1,
+      "formula": null,
+      "options": null,
+      "description": {
+        "content": []
+      }
+    },
+    {
+      "id": "fldXiJ2g6j",
+      "name": "输入是否包含视频",
+      "type": 3,
+      "formula": null,
+      "options": [],
+      "description": {}
+    },
+    {
+      "id": "fldxTNE2R7",
+      "name": "单价",
+      "type": 19,
+      "formula": "bitable::$table[tblO430STIkdT5uo].FILTER(CurrentValue.$column[fldoaBWGbE]=bitable::$table[tblQUnjJVVCmE1m3].$field[fldxqQNUkO]&&CurrentValue.$column[fldC6EsDG9]=bitable::$table[tblQUnjJVVCmE1m3].$field[fldMCNB6LD]&&CurrentValue.$column[fldmbq87UC]=bitable::$table[tblQUnjJVVCmE1m3].$field[fldXiJ2g6j]).$column[fldavC5O4t].LISTCOMBINE()",
+      "options": null,
+      "description": {
+        "content": [
+          {
+            "type": "text",
+            "text": "单位：元/百万token"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fldHsYwIgu",
+      "name": "时长-输入视频（秒）",
+      "type": 3,
+      "formula": null,
+      "options": [
+        {
+          "id": "optgaMV1he",
+          "name": "2",
+          "color": 2
+        },
+        {
+          "color": 3,
+          "id": "optW2sKXux",
+          "name": "3"
+        },
+        {
+          "color": 4,
+          "id": "opt93Z85tF",
+          "name": "4"
+        },
+        {
+          "name": "5",
+          "color": 5,
+          "id": "optiYpEDjz"
+        },
+        {
+          "color": 6,
+          "id": "optxpX3u6S",
+          "name": "6"
+        },
+        {
+          "color": 7,
+          "id": "optZWf8UPt",
+          "name": "7"
+        },
+        {
+          "color": 8,
+          "id": "optHGllJJH",
+          "name": "8"
+        },
+        {
+          "color": 9,
+          "id": "optfjVzqKu",
+          "name": "9"
+        },
+        {
+          "color": 10,
+          "id": "optbgQ6rvg",
+          "name": "10"
+        },
+        {
+          "name": "11",
+          "color": 0,
+          "id": "optWzw5pvx"
+        },
+        {
+          "name": "12",
+          "color": 1,
+          "id": "opthKwvdRX"
+        },
+        {
+          "id": "optqp5EVgX",
+          "name": "13",
+          "color": 2
+        },
+        {
+          "color": 3,
+          "id": "optTa20AG3",
+          "name": "14"
+        },
+        {
+          "name": "15",
+          "color": 4,
+          "id": "optAkH6mbF"
+        }
+      ],
+      "description": {
+        "content": []
+      }
+    },
+    {
+      "id": "fld7gTzIBX",
+      "name": "长边×短边",
+      "type": 19,
+      "formula": "bitable::$table[tbleOTdizsTbL8vH].FILTER(CurrentValue.$column[fldKa2ZcuN]=bitable::$table[tblQUnjJVVCmE1m3].$field[fldMCNB6LD]&&CurrentValue.$column[fldE9D0soJ]=bitable::$table[tblQUnjJVVCmE1m3].$field[fldJ4QUegW]).$column[fldNMbQHmN].LISTCOMBINE()",
+      "options": null,
+      "description": {}
+    },
+    {
+      "id": "fld10eswv1",
+      "name": "帧率",
+      "type": 3,
+      "formula": null,
+      "options": [
+        {
+          "color": 0,
+          "id": "optwnG3uXY",
+          "name": "24"
+        }
+      ],
+      "description": {}
+    },
+    {
+      "id": "fldcNvCwvx",
+      "name": "时长-输出视频（秒）",
+      "type": 3,
+      "formula": null,
+      "options": [
+        {
+          "id": "opto92B1OX",
+          "name": "4",
+          "color": 0
+        },
+        {
+          "color": 1,
+          "id": "optXYrtSdZ",
+          "name": "5"
+        },
+        {
+          "color": 2,
+          "id": "optn7nWsQC",
+          "name": "6"
+        },
+        {
+          "color": 3,
+          "id": "optWyTAoSb",
+          "name": "7"
+        },
+        {
+          "name": "8",
+          "color": 4,
+          "id": "optqJ1w9UU"
+        },
+        {
+          "id": "optEzzgNJV",
+          "name": "9",
+          "color": 5
+        },
+        {
+          "color": 0,
+          "id": "optfCrjJYu",
+          "name": "10"
+        },
+        {
+          "id": "optsDbyxzJ",
+          "name": "11",
+          "color": 6
+        },
+        {
+          "name": "12",
+          "color": 7,
+          "id": "optBgyTOMl"
+        },
+        {
+          "color": 8,
+          "id": "optGLPMxY2",
+          "name": "13"
+        },
+        {
+          "id": "optbA925K3",
+          "name": "14",
+          "color": 9
+        },
+        {
+          "id": "optou23C5y",
+          "name": "15",
+          "color": 10
+        }
+      ],
+      "description": {}
+    },
+    {
+      "id": "fldJ4QUegW",
+      "name": "宽高比",
+      "type": 3,
+      "formula": null,
+      "options": [
+        {
+          "color": 0,
+          "id": "optN65QIf9",
+          "name": "21:9"
+        },
+        {
+          "name": "16:9",
+          "color": 3,
+          "id": "opt5nBZCGz"
+        },
+        {
+          "color": 1,
+          "id": "optCVAZsOF",
+          "name": "4:3"
+        },
+        {
+          "color": 5,
+          "id": "opttHO7UsJ",
+          "name": "1:1"
+        },
+        {
+          "name": "3:4",
+          "color": 4,
+          "id": "optcpbq1nY"
+        },
+        {
+          "name": "9:16",
+          "color": 2,
+          "id": "optUqqaOxv"
+        }
+      ],
+      "description": {}
+    },
+    {
+      "id": "fldMCNB6LD",
+      "name": "分辨率",
+      "type": 3,
+      "formula": null,
+      "options": [
+        {
+          "name": "480p",
+          "color": 0,
+          "id": "optpycOhkP"
+        },
+        {
+          "color": 1,
+          "id": "optdhtumEG",
+          "name": "720p"
+        },
+        {
+          "name": "1080p",
+          "color": 2,
+          "id": "optefchk0F"
+        },
+        {
+          "color": 3,
+          "id": "optWnTTDi6",
+          "name": "4k"
+        }
+      ],
+      "description": {}
+    },
+    {
+      "id": "fld9gudF3m",
+      "name": "视频价格（元/个）",
+      "type": 20,
+      "formula": "IF(bitable::$table[tblQUnjJVVCmE1m3].$field[fldXiJ2g6j]=\"输入包含视频\",bitable::$table[tblQUnjJVVCmE1m3].$field[fldxTNE2R7]*MAX(VALUE(bitable::$table[tblQUnjJVVCmE1m3].$field[fld0p1bMiB]),VALUE(bitable::$table[tblQUnjJVVCmE1m3].$field[fldbHEcb1g]))/1000000,bitable::$table[tblQUnjJVVCmE1m3].$field[fldxTNE2R7]*VALUE(bitable::$table[tblQUnjJVVCmE1m3].$field[fld0p1bMiB])/1000000)",
+      "options": null,
+      "description": {
+        "content": [
+          {
+            "text": "（元/个）",
+            "type": "text"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fld0p1bMiB",
+      "name": "估算 token 用量",
+      "type": 20,
+      "formula": "(bitable::$table[tblQUnjJVVCmE1m3].$field[fldHsYwIgu]+bitable::$table[tblQUnjJVVCmE1m3].$field[fldcNvCwvx])*VALUE(REGEXEXTRACT(bitable::$table[tblQUnjJVVCmE1m3].$field[fld7gTzIBX],\"(\\d+)×\"))*VALUE(REGEXEXTRACT(bitable::$table[tblQUnjJVVCmE1m3].$field[fld7gTzIBX],\"×(\\d+)\"))*bitable::$table[tblQUnjJVVCmE1m3].$field[fld10eswv1]/1024",
+      "options": null,
+      "description": {}
+    },
+    {
+      "id": "fldbHEcb1g",
+      "name": "最低 token 用量",
+      "type": 19,
+      "formula": "bitable::$table[tblmNCuMjADrXtDf].FILTER(CurrentValue.$column[fldHsYwIgu]!=\"\"&&CurrentValue.$column[fldMCNB6LD]=bitable::$table[tblQUnjJVVCmE1m3].$field[fldMCNB6LD]&&CurrentValue.$column[fldJ4QUegW].CONTAIN(bitable::$table[tblQUnjJVVCmE1m3].$field[fldJ4QUegW])&&CurrentValue.$column[fldcNvCwvx]=bitable::$table[tblQUnjJVVCmE1m3].$field[fldcNvCwvx]).$column[fld0p1bMiB].LISTCOMBINE()",
+      "options": null,
+      "description": {}
+    },
+    {
+      "id": "fldxqQNUkO",
+      "name": "模型",
+      "type": 3,
+      "formula": null,
+      "options": [
+        {
+          "color": 0,
+          "id": "optIPVImLr",
+          "name": "seedance-2.0"
+        },
+        {
+          "id": "opterXOadG",
+          "name": "seedance-2.0-fast",
+          "color": 1
+        },
+        {
+          "color": 2,
+          "id": "optSrwvEYa",
+          "name": "seedance-2.0-mini"
+        }
+      ],
+      "description": {}
+    }
+  ]
+}

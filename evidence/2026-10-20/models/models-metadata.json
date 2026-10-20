@@ -1,0 +1,408 @@
+{
+  "verifiedAt": "2026-10-20",
+  "timezone": "Asia/Shanghai",
+  "scope": "标准刊例费率和按固定输出规格估价；特殊任务的adaptive/-1约束另外列出",
+  "ratesUnit": "CNY per 1000000 completion tokens",
+  "ratePairOrder": [
+    "withoutVideo",
+    "withVideo"
+  ],
+  "sources": {
+    "pricing": "model-pricing.md",
+    "parameters": "create-video-generation-task-api.md",
+    "usage": "get-video-generation-task-api.md",
+    "documentRequests": "documents-manifest.json"
+  },
+  "outputFps": 24,
+  "ratios": [
+    "21:9",
+    "16:9",
+    "4:3",
+    "1:1",
+    "3:4",
+    "9:16"
+  ],
+  "baseFormula": "(inputSeconds + outputSeconds) * outputWidth * outputHeight * 24 / 1024",
+  "estimationRule": "withVideo: max(baseTokens, model-specific minimum lookup); withoutVideo: baseTokens",
+  "models": [
+    {
+      "id": "seedance-2.5",
+      "resolutions": [
+        "480p",
+        "720p",
+        "1080p"
+      ],
+      "outputSeconds": {
+        "min": 4,
+        "max": 30,
+        "integerDuration": true,
+        "automaticDurationValue": -1
+      },
+      "referenceVideo": {
+        "singleMin": 2,
+        "singleMax": 30,
+        "totalMax": 30,
+        "maximumCount": 10,
+        "editingSingleMin": 4
+      },
+      "rates": {
+        "480p": [
+          "70",
+          "42"
+        ],
+        "720p": [
+          "70",
+          "42"
+        ],
+        "1080p": [
+          "77",
+          "46"
+        ]
+      },
+      "dimensions": {
+        "480p": {
+          "16:9": [
+            854,
+            480
+          ],
+          "4:3": [
+            752,
+            560
+          ],
+          "1:1": [
+            640,
+            640
+          ],
+          "3:4": [
+            560,
+            752
+          ],
+          "9:16": [
+            480,
+            854
+          ],
+          "21:9": [
+            992,
+            432
+          ]
+        },
+        "720p": {
+          "16:9": [
+            1280,
+            720
+          ],
+          "4:3": [
+            1112,
+            834
+          ],
+          "1:1": [
+            960,
+            960
+          ],
+          "3:4": [
+            834,
+            1112
+          ],
+          "9:16": [
+            720,
+            1280
+          ],
+          "21:9": [
+            1470,
+            630
+          ]
+        },
+        "1080p": {
+          "16:9": [
+            1920,
+            1080
+          ],
+          "4:3": [
+            1664,
+            1248
+          ],
+          "1:1": [
+            1440,
+            1440
+          ],
+          "3:4": [
+            1248,
+            1664
+          ],
+          "9:16": [
+            1080,
+            1920
+          ],
+          "21:9": [
+            2206,
+            946
+          ]
+        }
+      },
+      "minimum": {
+        "tableId": "tblheIYDXXwYM43b",
+        "fieldId": "fld0p1bMiB",
+        "calculatorSource": "https://bytedance.larkoffice.com/share/base/form/shrcnhVCMxKxcwW1QML5r9u8nvh",
+        "calculatorCapture": "seedance-2.5-calculator-fields.json",
+        "lookupFormula": "bitable::$table[tblheIYDXXwYM43b].FILTER(CurrentValue.$column[fldHsYwIgu]!=\"\"&&CurrentValue.$column[fldMCNB6LD]=bitable::$table[tblybhvNR0ukb7qp].$field[fldMCNB6LD]&&CurrentValue.$column[fldJ4QUegW].CONTAIN(bitable::$table[tblybhvNR0ukb7qp].$field[fldJ4QUegW])&&CurrentValue.$column[fldcNvCwvx]=bitable::$table[tblybhvNR0ukb7qp].$field[fldcNvCwvx]).$column[fld0p1bMiB].LISTCOMBINE()",
+        "tableValuesIncludedInThisHttpCapture": false
+      }
+    },
+    {
+      "id": "seedance-2.0",
+      "resolutions": [
+        "480p",
+        "720p",
+        "1080p",
+        "4k"
+      ],
+      "outputSeconds": {
+        "min": 4,
+        "max": 15,
+        "integerDuration": true,
+        "automaticDurationValue": -1
+      },
+      "referenceVideo": {
+        "singleMin": 2,
+        "singleMax": 15,
+        "totalMax": 15,
+        "maximumCount": 3
+      },
+      "rates": {
+        "480p": [
+          "46",
+          "28"
+        ],
+        "720p": [
+          "46",
+          "28"
+        ],
+        "1080p": [
+          "51",
+          "31"
+        ],
+        "4k": [
+          "26",
+          "16"
+        ]
+      },
+      "dimensions": {
+        "480p": {
+          "16:9": [
+            864,
+            496
+          ],
+          "4:3": [
+            752,
+            560
+          ],
+          "1:1": [
+            640,
+            640
+          ],
+          "3:4": [
+            560,
+            752
+          ],
+          "9:16": [
+            496,
+            864
+          ],
+          "21:9": [
+            992,
+            432
+          ]
+        },
+        "720p": {
+          "16:9": [
+            1280,
+            720
+          ],
+          "4:3": [
+            1112,
+            834
+          ],
+          "1:1": [
+            960,
+            960
+          ],
+          "3:4": [
+            834,
+            1112
+          ],
+          "9:16": [
+            720,
+            1280
+          ],
+          "21:9": [
+            1470,
+            630
+          ]
+        },
+        "1080p": {
+          "16:9": [
+            1920,
+            1080
+          ],
+          "4:3": [
+            1664,
+            1248
+          ],
+          "1:1": [
+            1440,
+            1440
+          ],
+          "3:4": [
+            1248,
+            1664
+          ],
+          "9:16": [
+            1080,
+            1920
+          ],
+          "21:9": [
+            2206,
+            946
+          ]
+        },
+        "4k": {
+          "16:9": [
+            3840,
+            2160
+          ],
+          "4:3": [
+            3326,
+            2494
+          ],
+          "1:1": [
+            2880,
+            2880
+          ],
+          "3:4": [
+            2494,
+            3326
+          ],
+          "9:16": [
+            2160,
+            3840
+          ],
+          "21:9": [
+            4398,
+            1886
+          ]
+        }
+      },
+      "minimum": {
+        "tableId": "tblmNCuMjADrXtDf",
+        "fieldId": "fld0p1bMiB",
+        "calculatorSource": "https://bytedance.larkoffice.com/share/base/form/shrcnP1Bl0mqCP9OHCbjpe1oBkf",
+        "calculatorCapture": "seedance-2.0-calculator-fields.json",
+        "lookupFormula": "bitable::$table[tblmNCuMjADrXtDf].FILTER(CurrentValue.$column[fldHsYwIgu]!=\"\"&&CurrentValue.$column[fldMCNB6LD]=bitable::$table[tblQUnjJVVCmE1m3].$field[fldMCNB6LD]&&CurrentValue.$column[fldJ4QUegW].CONTAIN(bitable::$table[tblQUnjJVVCmE1m3].$field[fldJ4QUegW])&&CurrentValue.$column[fldcNvCwvx]=bitable::$table[tblQUnjJVVCmE1m3].$field[fldcNvCwvx]).$column[fld0p1bMiB].LISTCOMBINE()",
+        "tableValuesIncludedInThisHttpCapture": false
+      }
+    },
+    {
+      "id": "seedance-2.0-fast",
+      "resolutions": [
+        "480p",
+        "720p"
+      ],
+      "outputSeconds": {
+        "min": 4,
+        "max": 15,
+        "integerDuration": true,
+        "automaticDurationValue": -1
+      },
+      "referenceVideo": {
+        "singleMin": 2,
+        "singleMax": 15,
+        "totalMax": 15,
+        "maximumCount": 3
+      },
+      "rates": {
+        "480p": [
+          "37",
+          "22"
+        ],
+        "720p": [
+          "37",
+          "22"
+        ]
+      },
+      "dimensions": {
+        "480p": {
+          "16:9": [
+            864,
+            496
+          ],
+          "4:3": [
+            752,
+            560
+          ],
+          "1:1": [
+            640,
+            640
+          ],
+          "3:4": [
+            560,
+            752
+          ],
+          "9:16": [
+            496,
+            864
+          ],
+          "21:9": [
+            992,
+            432
+          ]
+        },
+        "720p": {
+          "16:9": [
+            1280,
+            720
+          ],
+          "4:3": [
+            1112,
+            834
+          ],
+          "1:1": [
+            960,
+            960
+          ],
+          "3:4": [
+            834,
+            1112
+          ],
+          "9:16": [
+            720,
+            1280
+          ],
+          "21:9": [
+            1470,
+            630
+          ]
+        }
+      },
+      "minimum": {
+        "tableId": "tblmNCuMjADrXtDf",
+        "fieldId": "fld0p1bMiB",
+        "calculatorSource": "https://bytedance.larkoffice.com/share/base/form/shrcnP1Bl0mqCP9OHCbjpe1oBkf",
+        "calculatorCapture": "seedance-2.0-calculator-fields.json",
+        "lookupFormula": "bitable::$table[tblmNCuMjADrXtDf].FILTER(CurrentValue.$column[fldHsYwIgu]!=\"\"&&CurrentValue.$column[fldMCNB6LD]=bitable::$table[tblQUnjJVVCmE1m3].$field[fldMCNB6LD]&&CurrentValue.$column[fldJ4QUegW].CONTAIN(bitable::$table[tblQUnjJVVCmE1m3].$field[fldJ4QUegW])&&CurrentValue.$column[fldcNvCwvx]=bitable::$table[tblQUnjJVVCmE1m3].$field[fldcNvCwvx]).$column[fld0p1bMiB].LISTCOMBINE()",
+        "tableValuesIncludedInThisHttpCapture": false,
+        "sharedMinimumWith": "seedance-2.0",
+        "sharingEvidence": "同一官方计算器包含standard/fast/mini模型选项；最低用量lookup只筛分辨率、比例、输出时长，不筛模型。费率lookup独立筛模型。仅共用fast支持的480p/720p。"
+      }
+    }
+  ],
+  "limitations": [
+    "最低用量也是估算值，准确用量以API usage.completion_tokens为准。",
+    "2.5在480p16:9及9:16与2.0系列像素不同，不能只更换费率复用整个2.0计算器。",
+    "2.5最低表必须独立取得，当前HTTP快照仅确认lookup目标，不含表内记录；root另外取得表格复制证据。",
+    "2.5编辑/延长/首帧与首尾帧任务ratio仅adaptive；编辑duration仅-1，待编辑视频4–30秒。",
+    "frames参数仅Seedance1.0系列支持；三模型使用duration整数选项，实际生成时长可能有偏差。",
+    "2.5 Draft两次独立任务分别计费；正式视频沿用Step1的输入是否含视频及输入时长，Draft不计入输入时长。",
+    "查询API最低用量提示目前仅点名2.0系列；定价页明确2.5也有最低用量，并以completion_tokens为准确用量。",
+    "定价页两种模型最低表链接均指向tblheIYDXXwYM43b；模型映射以各自calculator实际lookup为准。"
+  ]
+}
