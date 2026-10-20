@@ -109,14 +109,17 @@
 .vin-value>span{font-size:10px;color:var(--muted)}.vin-value:focus-within{border-color:#b8c8e5}.vin-value input:focus-visible{outline-offset:0}
 .basis-note b{display:block;margin-bottom:3px}.basis-note small{display:block;margin-top:4px;font-size:10px;font-variant-numeric:tabular-nums}
 /* Compact usage inputs explain the existing list-price estimate. */
-.usage-summary{margin:0 0 13px}.usage-rate-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:7px;padding:7px 0 10px;color:var(--muted);font-size:11px}.usage-rate-line b{font-weight:550;color:var(--sub)}.usage-rate-line small{font-size:10px}
+.usage-summary{margin:0 0 13px}
 .usage-metrics{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin:0 0 10px}
 .usage-token{min-width:0;padding:10px 12px;border:1px solid transparent;border-radius:7px;background:#f7f8fa}.usage-metrics dt{display:flex;align-items:center;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--muted);margin-bottom:4px;line-height:1.6}.usage-metrics dd{margin:0;font:550 17px/1.5 Inter,"Segoe UI",Arial,sans-serif;color:var(--sub);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .usage-token.is-adopted{background:var(--tint);border-color:#dce5fb}.usage-token.is-adopted dd{color:var(--accent);font-weight:600}.usage-adopted{padding:0 5px;border-radius:4px;background:#e1e9fc;color:var(--accent);font-size:9px;line-height:1.8;white-space:nowrap}.usage-rule-kind{font-size:9px;color:var(--amber);white-space:nowrap}
-.usage-help{margin-left:auto;font-size:11px}.usage-status{display:block;margin:0 0 10px;color:var(--amber);font-size:10px}.usage-status[hidden]{margin:0}
+.usage-help{font-size:11px}.usage-status{display:block;margin:0 0 10px;color:var(--amber);font-size:10px}.usage-status[hidden]{margin:0}
 .panel-bg.centered{align-items:center;justify-content:center;padding:24px}.panel-bg.centered .drawer{width:700px;max-width:100%;height:auto;max-height:calc(100dvh - 48px);border-radius:14px;animation:usage-dialog-in .16s ease-out;overflow:hidden;box-shadow:0 18px 80px #18253b33}.panel-bg.centered .drawer-body{min-height:0;overflow-y:auto;overscroll-behavior:contain}.panel-bg.centered .drawer-header{flex-shrink:0}
 @keyframes usage-dialog-in{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
-.usage-explanation{font-size:12px;line-height:1.85;color:var(--sub);overflow-wrap:anywhere}.usage-explanation .usage-lead{padding:11px 13px;border-radius:8px;background:var(--tint);color:var(--accent);font-size:13px}.usage-explanation h3{font-size:14px;margin:20px 0 7px}.usage-explanation p+p{margin-top:8px}.usage-source-links{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:11px;margin-top:9px}.usage-explanation code{font-size:11px}.usage-current{background:#f7f8fa;border-radius:8px;padding:11px 13px;margin-top:8px;font-variant-numeric:tabular-nums}.usage-method{border-top:1px solid var(--line);padding-top:12px;margin-top:18px}.usage-method>summary{cursor:pointer;font-size:12px;color:var(--sub)}.usage-method .formula{margin:10px 0;font-size:12px}.usage-method .source-formula{font-size:10px;white-space:pre-wrap;overflow-wrap:anywhere}.usage-method .footnote{margin-top:8px;font-size:11px}
+.usage-explanation{font-size:12px;line-height:1.85;color:var(--sub);overflow-wrap:anywhere}.usage-explanation h3{font-size:13px;font-weight:600;color:var(--ink);margin:0 0 9px}.usage-explanation section+section{margin-top:22px}
+.usage-section-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px}.usage-section-heading>span{font-size:11px;color:var(--muted)}
+.usage-table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;margin-top:3px}.usage-price-table{width:100%;min-width:470px;border-collapse:collapse;margin:0;font-size:12px}.usage-price-table th,.usage-price-table td{padding:9px 11px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line);font-size:12px;line-height:1.6}.usage-price-table thead th{background:#f7f8fa;color:var(--sub);font-weight:500}.usage-price-table tbody th{background:none;color:var(--ink);font-weight:550;vertical-align:top}.usage-price-table .num,.usage-price-table thead th:nth-last-child(-n+2){text-align:right}.usage-price-table tr:last-child td,.usage-price-table tr:last-child th{border-bottom:0}.usage-price-table .selected-rate{background:var(--tint);color:var(--accent);font-weight:650}
+.usage-definition>p{white-space:pre-line;margin:0}.usage-definition .usage-override{margin-top:10px;padding:9px 11px;background:var(--amberbg);color:var(--amber);border-radius:6px}.usage-source-links{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:11px;margin-top:22px;padding-top:12px;border-top:1px solid var(--line)}
 @media(max-width:600px){.panel-bg.centered{padding:12px}.panel-bg.centered .drawer{max-height:calc(100dvh - 24px);border-radius:11px}}
 @media(prefers-reduced-motion:reduce){.panel-bg.centered .drawer{animation:none}}
 @media(max-width:600px){.usage-token{padding:9px 10px}.usage-metrics dd{font-size:16px}}
@@ -194,8 +197,9 @@
 .generation-panel .ratios{gap:7px}.generation-panel .ratios button{height:54px}
 .generation-panel .model-cost-section{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
 .estimate-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.estimate-actions{display:flex;align-items:center;gap:8px}
 .result-section-title{font-size:12px;line-height:1.6;font-weight:600;color:var(--sub);margin:0}
-.generation-panel .usage-summary{margin:0}.generation-panel .usage-rate-line{padding:0 0 12px}
+.generation-panel .usage-summary{margin:0}
 .generation-panel .usage-metrics{gap:8px;margin:0 0 14px}.generation-panel .usage-token{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px}
 .generation-panel .usage-metrics dt{min-width:0;margin:0}.generation-panel .usage-metrics dd{max-width:60%;flex-shrink:0;font-size:21px;line-height:1.5;text-align:right}
 .generation-panel .usage-status{margin:0 0 12px}
@@ -240,7 +244,7 @@
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.3</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.4</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
 <section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
@@ -258,16 +262,15 @@
 <button id="task-rule" hidden>本规格计算规则</button>
 
 <section class="model-cost-section" aria-labelledby="model-cost-title">
-<div class="estimate-heading"><h3 class="result-section-title" id="model-cost-title">用量与费用</h3><span id="cost-badge" class="badge blue" hidden></span></div>
+<div class="estimate-heading"><h3 class="result-section-title" id="model-cost-title">用量与费用</h3><div class="estimate-actions"><span id="cost-badge" class="badge blue" hidden></span><button class="link usage-help" id="usage-help" aria-haspopup="dialog">用量说明 ⓘ</button></div></div>
 <div class="usage-summary" id="usage-summary">
-<div class="usage-rate-line"><span>刊例单价</span><b class="num" id="token-rate">—</b><small>元 / 百万 Token</small><button class="link usage-help" id="usage-help" aria-haspopup="dialog">用量说明 ⓘ</button></div>
 <dl class="usage-metrics" id="usage-metrics" aria-label="估算与最低 Token 用量">
 <div class="usage-token" id="token-estimate-metric"><dt title="按生成参数计算，尚未应用最低用量"><span id="token-estimate-label">估算 Token 用量</span><span class="usage-adopted" id="token-estimate-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-estimate">—</dd></div>
 <div class="usage-token" id="token-minimum-metric"><dt><span id="token-minimum-label">最低 Token 用量</span><span class="usage-rule-kind" id="token-minimum-kind" hidden></span><span class="usage-adopted" id="token-minimum-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-minimum">—</dd></div>
 </dl>
 <div id="coverage-note" class="usage-status" hidden></div>
 </div>
-<div class="video-price"><div class="video-price-label"><span>视频费用估算</span></div><div class="video-price-amount"><div class="cost-number num" id="cost-p">—</div><span>/ 次</span></div></div>
+<div class="video-price"><div class="video-price-label"><span>估算视频价格（元/个）</span></div><div class="video-price-amount"><div class="cost-number num" id="cost-p">—</div></div></div>
 </section>
 <section class="quick-config" aria-labelledby="quick-config-title"><h3 class="result-section-title" id="quick-config-title">快捷配置</h3><div class="quick-examples"><button class="btn sm" data-example="none-min"><span>无视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="none-max"><span>无视频输入 · 最高用量</span><small></small></button><button class="btn sm" data-example="video-min"><span>有视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="video-max"><span>有视频输入 · 最高用量</span><small></small></button></div></section>
 <button id="show-formula" hidden>公式明细</button>

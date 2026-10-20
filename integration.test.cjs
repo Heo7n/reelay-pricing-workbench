@@ -518,7 +518,7 @@ test('compact reference slider and number stay synchronized across edits, preset
   for(const seconds of [2,8,15,3]){h.input('vin-slider',String(seconds));value(seconds);}
   assert.equal(doc.getElementById('coverage-note').hidden,true,'3-second input exactly reaches the 4-second output threshold');
   h.input('vin-slider','2');value(2);
-  assert.equal(doc.getElementById('coverage-note').hidden,false);
+  assert.equal(doc.getElementById('coverage-note').hidden,true);
   input.focus();h.input('vin','7.2');value(8);key('Escape');value(2);
   input.focus();h.input('vin','9.2');value(10);key('Enter');value(10);
   input.focus();input.value='';input.dispatchEvent(new h.w.Event('input',{bubbles:true}));
@@ -621,12 +621,12 @@ test('legacy range drafts and imports resolve to fixed tasks while preserving pr
   assert.match(v7.note,/旧范围参数已设为/);
 });
 
-test('minimum-usage notice appears only when a fixed task actually triggers its threshold', t => {
+test('minimum usage is indicated by the adopted label without a repeated notice', t => {
   const h=boot(t), doc=h.w.document, note=doc.getElementById('coverage-note');
   equal(h.api.current().calc.tokens,'57600');
   equal(h.api.current().calc.billedTokens,'67200');
-  assert.equal(note.hidden,false);
-  assert.match(note.textContent,/触发最低用量/);
+  assert.equal(note.hidden,true);
+  assert.equal(note.textContent,'');
   assert.equal(doc.getElementById('token-estimate').textContent,'57,600');
   assert.equal(doc.getElementById('token-minimum').textContent,'67,200');
   assert.equal(doc.getElementById('token-minimum-adopted').hidden,false);
@@ -644,8 +644,8 @@ test('minimum-usage notice appears only when a fixed task actually triggers its 
   });
   equal(h.api.current().calc.tokens,'76800');
   equal(h.api.current().calc.billedTokens,'100000');
-  assert.equal(note.hidden,false);
-  assert.match(note.textContent,/触发最低用量/);
+  assert.equal(note.hidden,true);
+  assert.equal(doc.getElementById('token-minimum-adopted').hidden,false);
   assert.match(doc.getElementById('cost-badge').textContent,/人工门槛/);
   h.input('vin','15');
   assert.equal(note.hidden,true,'an untriggered manual rule keeps only its provenance badge');
@@ -676,26 +676,22 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   assert.equal(doc.getElementById('usage-details'),null,'the inline disclosure is replaced by a dialog');
   assert.equal(doc.getElementById('modal').hidden,true);
   h.click('#usage-help');
-  assert.equal(doc.getElementById('usage-method').open,false,'formula provenance is secondary to the official explanation');
-  assert.equal(shown('token-rate'),'28');
+  assert.equal(doc.getElementById('usage-method'),null);
+  assert.equal(shown('token-rate'),'28.00');
   assert.equal(shown('token-estimate'),'57,600');
   assert.equal(shown('token-minimum'),'67,200');
   assert.equal(adopted('minimum'),'67,200');
   assert.match(explanation().textContent,/usage.completion_tokens/);
-  assert.match(explanation().textContent,/不再补一次门槛/);
-  assert.match(explanation().textContent,/不相加/);
-  doc.getElementById('usage-method').open=true;
+  assert.match(explanation().textContent,/如果估算 token 用量 ＜ 最低 token 用量/);
   h.update(s=>{s.task={res:'1080p',ratio:'16:9',seconds:'5',video:true,vin:'2'};});
-  assert.equal(doc.getElementById('usage-method').open,true,'updates retain the formula disclosure state');
-  assert.equal(shown('token-rate'),'31');
+  assert.equal(shown('token-rate'),'31.00');
   assert.equal(shown('token-estimate'),'340,200');
   assert.equal(shown('token-minimum'),'437,400');
   assert.equal(adopted('minimum'),'437,400');
   equal(h.api.current().x.P,'13.5594');
-  assert.equal(shown('cost-p'),'¥13.559400');
-  assert.match(explanation().textContent,/13.5594/);
+  assert.equal(shown('cost-p'),'13.559400');
   h.input('purchase-discount','10');
-  assert.equal(shown('token-rate'),'31');assert.equal(adopted('minimum'),'437,400');
+  assert.equal(shown('token-rate'),'31.00');assert.equal(adopted('minimum'),'437,400');
   equal(h.api.current().x.C,'13.5594');
   h.input('vin-slider','4');
   assert.equal(shown('token-estimate'),shown('token-minimum'));
@@ -705,11 +701,11 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   assert.equal(shown('token-estimate'),'486,000');assert.equal(adopted('estimate'),'486,000');
   assert.equal(doc.getElementById('coverage-note').hidden,true);
   h.click('[data-video="false"]');
-  assert.equal(shown('token-rate'),'51');assert.equal(shown('token-minimum'),'不适用');
+  assert.equal(shown('token-rate'),'51.00');assert.equal(shown('token-minimum'),'不适用');
   assert.equal(doc.getElementById('token-minimum-metric').hidden,true);
   assert.equal(shown('token-estimate-label'),'估算 Token 用量');
   assert.equal(shown('token-estimate'),'243,000');assert.equal(adopted('estimate'),'243,000');
-  assert.match(explanation().textContent,/无视频输入，不应用最低用量/);
+  assert.equal(doc.querySelectorAll('#usage-price-table [aria-current="true"]').length,1);
   let fractional;
   for(const res of Object.keys(E.DIMS))for(const ratio of Object.keys(E.DIMS[res])){
     const task={res,ratio,seconds:'5',video:true,vin:'2'};
@@ -729,7 +725,7 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   assert.equal(shown('token-minimum'),'≈ 76,800');
   assert.equal(adopted('minimum'),'≈ 76,800','selection compares exact values, not rounded display values');
   assert.equal(doc.getElementById('token-minimum').title,'76,800.000000000001 Token');
-  assert.equal(doc.getElementById('coverage-note').hidden,false,'exact rule comparison is not rounded for display');
+  assert.equal(doc.getElementById('coverage-note').hidden,true,'the adopted badge is sufficient even for an exact fractional threshold');
   assert.match(explanation().textContent,/76,800.000000000001/);
   assert.match(explanation().textContent,/人工精度 <来源> 测试/);
   assert.equal(explanation().querySelector('来源'),null,'rule source is escaped');
@@ -742,7 +738,7 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   input.dispatchEvent(new h.w.Event('input',{bubbles:true}));
   assert.equal(doc.getElementById('globalError').hidden,false);
   assert.equal(doc.getElementById('usage-summary').hidden,true);
-  for(const id of ['token-rate','token-estimate','token-minimum'])assert.equal(shown(id),'—');
+  for(const id of ['token-estimate','token-minimum'])assert.equal(shown(id),'—');
   assert.equal(explanation(),null);
   assert.match(doc.getElementById('drawer-body').textContent,/当前输入无效/);
   assert.equal(doc.querySelectorAll('.usage-token.is-adopted').length,0);
@@ -754,7 +750,9 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   const h=boot(t),doc=h.w.document,help=doc.getElementById('usage-help'),modal=doc.getElementById('modal');
   assert.equal(doc.getElementById('cost-badge').textContent,'参数预估');
   assert.equal(doc.getElementById('token-minimum-label').textContent,'最低 Token 用量');
-  assert.equal(help.closest('.usage-rate-line').contains(doc.getElementById('token-rate')),true);
+  assert.ok(help.closest('.estimate-heading'));
+  assert.equal(doc.querySelector('.usage-rate-line'),null);
+  assert.equal(doc.getElementById('token-rate'),null,'rates appear only inside the explanation dialog');
   assert.equal(help.getAttribute('aria-haspopup'),'dialog');
   const before=JSON.stringify(h.api.getState());
   help.focus();h.click('#usage-help');
@@ -765,20 +763,27 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   assert.ok(doc.getElementById(dialog.getAttribute('aria-describedby')));
   assert.equal(doc.activeElement.id,'close-drawer');
   const body=doc.getElementById('drawer-body');
-  assert.match(body.textContent,/最低 Token 用量也是估算值/);
-  assert.match(body.textContent,/官方如何说明最低用量/);
-  assert.match(body.textContent,/不是模型价格正文直接列出的公式/);
-  const source=h.w.ReelayModels.get(h.api.getState().task.model).sources.minima;
-  assert.match(body.textContent,/2026-10-20/);
-  assert.match(body.textContent,/原式和复制数据保存在项目 evidence 目录/);
-  assert.ok(body.textContent.includes(source.provenance),'the explanation identifies the selected model source');
-  assert.doesNotMatch(body.textContent,/本次未重新取得|沿用.*快照/);
-  assert.ok(body.querySelector('a[href="'+R.sources.minima.calculatorUrl+'"]'));
-  assert.ok(body.querySelector('a[href="'+R.sources.pricing.url+'"]'));
-  assert.ok(body.querySelector('a[href="'+R.sources.usage.url+'"]'));
-  assert.match(body.querySelector('.source-formula').textContent,/MAX\(ROUNDUP/);
-  assert.equal(body.querySelector('.source-formula').textContent,source.sourceFormula,'the displayed formula is the captured source, not a paraphrase');
-  assert.equal(doc.getElementById('usage-method').open,false);
+  const parse=require('./source-rules.cjs').extractCalculatorSnapshot;
+  for(const model of ['seedance-2.0','seedance-2.5']){
+    const source=parse(read('evidence/2026-10-20/models/'+model+'-calculator-public.html'));
+    for(const [field,id] of [['fld0p1bMiB','usage-estimate-description'],['fldbHEcb1g','usage-minimum-description']]){
+      const description=source.viewProperty.fieldInfos[field].description.content.map(part=>part.text||'').join('');
+      assert.equal(doc.getElementById(id).textContent,description,'use the calculator form display text exactly');
+    }
+  }
+  const priceRows=[...body.querySelectorAll('#usage-price-table tbody tr')];
+  assert.equal(priceRows.length,6);
+  for(const row of priceRows){
+    const model=h.w.ReelayModels.get(row.dataset.model),rates=[...row.querySelectorAll('td.num')].map(el=>el.textContent);
+    for(const res of row.dataset.resolutions.split(','))assert.deepEqual(rates,Array.from(model.rates[res],value=>E.fixed(value,2)));
+  }
+  assert.equal(body.querySelectorAll('#usage-price-table [aria-current="true"]').length,1);
+  assert.doesNotMatch(body.textContent,/官方原说明|官方如何说明|核验方法|项目 evidence|本工具的估算依据/);
+  assert.ok(body.querySelector('a[href="'+h.w.ReelayModels.get('seedance-2.0').sources.minima.calculatorUrl+'"]'));
+  assert.ok(body.querySelector('a[href="'+h.w.ReelayModels.get('seedance-2.5').sources.minima.calculatorUrl+'"]'));
+  assert.ok(body.querySelector('a[href="'+h.w.ReelayModels.get('seedance-2.0').sources.pricing.url+'"]'));
+  assert.equal(body.querySelector('.source-formula'),null);
+  assert.equal(doc.getElementById('usage-method'),null);
   // JSDOM has no layout; expose rectangles only to exercise the existing focus trap.
   const focusable=[...dialog.querySelectorAll('button,a[href],summary')];
   for(const el of focusable)el.getClientRects=()=>[{}];
@@ -845,11 +850,11 @@ test('architecture: one workbench groups generation and its estimate on the left
   assert.equal(work.lastElementChild,plan);
   assert.ok(generation.compareDocumentPosition(plan)&h.w.Node.DOCUMENT_POSITION_FOLLOWING);
   for(const id of ['pay','total','purchase-discount','target-mode','manual-m'])assert.ok(plan.contains(doc.getElementById(id)));
-  for(const id of ['model','seconds','vin-slider','token-rate','token-estimate','token-minimum','cost-p','usage-help','cost-c','calculation','add-task']){
+  for(const id of ['model','seconds','vin-slider','token-estimate','token-minimum','cost-p','usage-help','cost-c','calculation','add-task']){
     const el=doc.getElementById(id);assert.ok(work.contains(el),id+' is in the same parameter/result area');
     assert.equal(el.closest('[hidden]'),null,id+' needs no stage switch');
   }
-  for(const id of ['model','seconds','vin-slider','token-rate','token-estimate','token-minimum','cost-p','usage-help','globalError'])assert.ok(generation.contains(doc.getElementById(id)),id+' stays with generation');
+  for(const id of ['model','seconds','vin-slider','token-estimate','token-minimum','cost-p','usage-help','globalError'])assert.ok(generation.contains(doc.getElementById(id)),id+' stays with generation');
   for(const id of ['purchase-discount','procurement-status','cost-c','integer-points','actual-cash','platformError'])assert.ok(plan.contains(doc.getElementById(id)),id+' stays with platform pricing');
   assert.equal(generation.querySelectorAll('#cost-p').length,1,'video estimate and list-price cost are the same amount');
   assert.equal(plan.contains(doc.getElementById('cost-p')),false,'list-price cost is not duplicated in the platform panel');
@@ -883,7 +888,7 @@ test('architecture: one workbench groups generation and its estimate on the left
 
 test('architecture: invalid recharge input clears only platform results and leaves model estimates usable', t => {
   const h=boot(t),doc=h.w.document,before=h.api.quote().calc;
-  const shown=Object.fromEntries(['cost-p','token-rate','token-estimate','token-minimum'].map(id=>[id,doc.getElementById(id).textContent]));
+  const shown=Object.fromEntries(['cost-p','token-estimate','token-minimum'].map(id=>[id,doc.getElementById(id).textContent]));
   for(const invalid of ['', 'not-a-price', '0']){
     h.input('pay',invalid);
     assert.equal(doc.getElementById('globalError').hidden,true,'platform errors do not invalidate model parameters');
@@ -1157,7 +1162,7 @@ test('architecture: an incomplete composer does not hide saved actual records or
   h.input('vin','2');h.good();
 });
 
-test('models: platform calculation details and their source dialog use the selected Fast or 2.5 identity', t => {
+test('models: platform calculation details and the usage price table use the selected Fast or 2.5 identity', t => {
   const h=boot(t),doc=h.w.document;
   for(const model of ['seedance-2.0-fast','seedance-2.5']){
     h.input('model',model,'change');
@@ -1174,8 +1179,10 @@ test('models: platform calculation details and their source dialog use the selec
     assert.equal(doc.getElementById('drawer-sub').textContent,spec.label+' · 规则版本 '+spec.version);
     const sourceLinks=[...doc.querySelectorAll('#drawer-body a')].map(el=>el.getAttribute('href'));
     assert.ok(sourceLinks.includes(spec.sources.minima.calculatorUrl));
-    assert.ok(sourceLinks.includes(spec.sources.minima.views[task.res]));
-    assert.equal(doc.querySelector('#drawer-body .source-formula').textContent,spec.sources.minima.sourceFormula);
+    assert.ok(sourceLinks.includes(spec.sources.pricing.url));
+    const currentRate=doc.querySelector('#usage-price-table [aria-current="true"]');
+    assert.equal(currentRate.closest('tr').dataset.model,model);
+    assert.equal(currentRate.textContent,E.fixed(spec.rates[task.res][task.video?1:0],2));
     h.click('#close-drawer');
   }
 });

@@ -109,14 +109,17 @@
 .vin-value>span{font-size:10px;color:var(--muted)}.vin-value:focus-within{border-color:#b8c8e5}.vin-value input:focus-visible{outline-offset:0}
 .basis-note b{display:block;margin-bottom:3px}.basis-note small{display:block;margin-top:4px;font-size:10px;font-variant-numeric:tabular-nums}
 /* Compact usage inputs explain the existing list-price estimate. */
-.usage-summary{margin:0 0 13px}.usage-rate-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:7px;padding:7px 0 10px;color:var(--muted);font-size:11px}.usage-rate-line b{font-weight:550;color:var(--sub)}.usage-rate-line small{font-size:10px}
+.usage-summary{margin:0 0 13px}
 .usage-metrics{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin:0 0 10px}
 .usage-token{min-width:0;padding:10px 12px;border:1px solid transparent;border-radius:7px;background:#f7f8fa}.usage-metrics dt{display:flex;align-items:center;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--muted);margin-bottom:4px;line-height:1.6}.usage-metrics dd{margin:0;font:550 17px/1.5 Inter,"Segoe UI",Arial,sans-serif;color:var(--sub);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .usage-token.is-adopted{background:var(--tint);border-color:#dce5fb}.usage-token.is-adopted dd{color:var(--accent);font-weight:600}.usage-adopted{padding:0 5px;border-radius:4px;background:#e1e9fc;color:var(--accent);font-size:9px;line-height:1.8;white-space:nowrap}.usage-rule-kind{font-size:9px;color:var(--amber);white-space:nowrap}
-.usage-help{margin-left:auto;font-size:11px}.usage-status{display:block;margin:0 0 10px;color:var(--amber);font-size:10px}.usage-status[hidden]{margin:0}
+.usage-help{font-size:11px}.usage-status{display:block;margin:0 0 10px;color:var(--amber);font-size:10px}.usage-status[hidden]{margin:0}
 .panel-bg.centered{align-items:center;justify-content:center;padding:24px}.panel-bg.centered .drawer{width:700px;max-width:100%;height:auto;max-height:calc(100dvh - 48px);border-radius:14px;animation:usage-dialog-in .16s ease-out;overflow:hidden;box-shadow:0 18px 80px #18253b33}.panel-bg.centered .drawer-body{min-height:0;overflow-y:auto;overscroll-behavior:contain}.panel-bg.centered .drawer-header{flex-shrink:0}
 @keyframes usage-dialog-in{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
-.usage-explanation{font-size:12px;line-height:1.85;color:var(--sub);overflow-wrap:anywhere}.usage-explanation .usage-lead{padding:11px 13px;border-radius:8px;background:var(--tint);color:var(--accent);font-size:13px}.usage-explanation h3{font-size:14px;margin:20px 0 7px}.usage-explanation p+p{margin-top:8px}.usage-source-links{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:11px;margin-top:9px}.usage-explanation code{font-size:11px}.usage-current{background:#f7f8fa;border-radius:8px;padding:11px 13px;margin-top:8px;font-variant-numeric:tabular-nums}.usage-method{border-top:1px solid var(--line);padding-top:12px;margin-top:18px}.usage-method>summary{cursor:pointer;font-size:12px;color:var(--sub)}.usage-method .formula{margin:10px 0;font-size:12px}.usage-method .source-formula{font-size:10px;white-space:pre-wrap;overflow-wrap:anywhere}.usage-method .footnote{margin-top:8px;font-size:11px}
+.usage-explanation{font-size:12px;line-height:1.85;color:var(--sub);overflow-wrap:anywhere}.usage-explanation h3{font-size:13px;font-weight:600;color:var(--ink);margin:0 0 9px}.usage-explanation section+section{margin-top:22px}
+.usage-section-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px}.usage-section-heading>span{font-size:11px;color:var(--muted)}
+.usage-table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;margin-top:3px}.usage-price-table{width:100%;min-width:470px;border-collapse:collapse;margin:0;font-size:12px}.usage-price-table th,.usage-price-table td{padding:9px 11px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line);font-size:12px;line-height:1.6}.usage-price-table thead th{background:#f7f8fa;color:var(--sub);font-weight:500}.usage-price-table tbody th{background:none;color:var(--ink);font-weight:550;vertical-align:top}.usage-price-table .num,.usage-price-table thead th:nth-last-child(-n+2){text-align:right}.usage-price-table tr:last-child td,.usage-price-table tr:last-child th{border-bottom:0}.usage-price-table .selected-rate{background:var(--tint);color:var(--accent);font-weight:650}
+.usage-definition>p{white-space:pre-line;margin:0}.usage-definition .usage-override{margin-top:10px;padding:9px 11px;background:var(--amberbg);color:var(--amber);border-radius:6px}.usage-source-links{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:11px;margin-top:22px;padding-top:12px;border-top:1px solid var(--line)}
 @media(max-width:600px){.panel-bg.centered{padding:12px}.panel-bg.centered .drawer{max-height:calc(100dvh - 24px);border-radius:11px}}
 @media(prefers-reduced-motion:reduce){.panel-bg.centered .drawer{animation:none}}
 @media(max-width:600px){.usage-token{padding:9px 10px}.usage-metrics dd{font-size:16px}}
@@ -194,8 +197,9 @@
 .generation-panel .ratios{gap:7px}.generation-panel .ratios button{height:54px}
 .generation-panel .model-cost-section{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
 .estimate-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.estimate-actions{display:flex;align-items:center;gap:8px}
 .result-section-title{font-size:12px;line-height:1.6;font-weight:600;color:var(--sub);margin:0}
-.generation-panel .usage-summary{margin:0}.generation-panel .usage-rate-line{padding:0 0 12px}
+.generation-panel .usage-summary{margin:0}
 .generation-panel .usage-metrics{gap:8px;margin:0 0 14px}.generation-panel .usage-token{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px}
 .generation-panel .usage-metrics dt{min-width:0;margin:0}.generation-panel .usage-metrics dd{max-width:60%;flex-shrink:0;font-size:21px;line-height:1.5;text-align:right}
 .generation-panel .usage-status{margin:0 0 12px}
@@ -240,7 +244,7 @@
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.3</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.4</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
 <section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
@@ -258,16 +262,15 @@
 <button id="task-rule" hidden>本规格计算规则</button>
 
 <section class="model-cost-section" aria-labelledby="model-cost-title">
-<div class="estimate-heading"><h3 class="result-section-title" id="model-cost-title">用量与费用</h3><span id="cost-badge" class="badge blue" hidden></span></div>
+<div class="estimate-heading"><h3 class="result-section-title" id="model-cost-title">用量与费用</h3><div class="estimate-actions"><span id="cost-badge" class="badge blue" hidden></span><button class="link usage-help" id="usage-help" aria-haspopup="dialog">用量说明 ⓘ</button></div></div>
 <div class="usage-summary" id="usage-summary">
-<div class="usage-rate-line"><span>刊例单价</span><b class="num" id="token-rate">—</b><small>元 / 百万 Token</small><button class="link usage-help" id="usage-help" aria-haspopup="dialog">用量说明 ⓘ</button></div>
 <dl class="usage-metrics" id="usage-metrics" aria-label="估算与最低 Token 用量">
 <div class="usage-token" id="token-estimate-metric"><dt title="按生成参数计算，尚未应用最低用量"><span id="token-estimate-label">估算 Token 用量</span><span class="usage-adopted" id="token-estimate-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-estimate">—</dd></div>
 <div class="usage-token" id="token-minimum-metric"><dt><span id="token-minimum-label">最低 Token 用量</span><span class="usage-rule-kind" id="token-minimum-kind" hidden></span><span class="usage-adopted" id="token-minimum-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-minimum">—</dd></div>
 </dl>
 <div id="coverage-note" class="usage-status" hidden></div>
 </div>
-<div class="video-price"><div class="video-price-label"><span>视频费用估算</span></div><div class="video-price-amount"><div class="cost-number num" id="cost-p">—</div><span>/ 次</span></div></div>
+<div class="video-price"><div class="video-price-label"><span>估算视频价格（元/个）</span></div><div class="video-price-amount"><div class="cost-number num" id="cost-p">—</div></div></div>
 </section>
 <section class="quick-config" aria-labelledby="quick-config-title"><h3 class="result-section-title" id="quick-config-title">快捷配置</h3><div class="quick-examples"><button class="btn sm" data-example="none-min"><span>无视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="none-max"><span>无视频输入 · 最高用量</span><small></small></button><button class="btn sm" data-example="video-min"><span>有视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="video-max"><span>有视频输入 · 最高用量</span><small></small></button></div></section>
 <button id="show-formula" hidden>公式明细</button>
@@ -18046,7 +18049,7 @@ function persist(){
  saved.plan.procurementModel=state.task.model;saved.plan.q=saved.plan.procurementByModel[state.task.model];
  try{localStorage.setItem(KEY,JSON.stringify(saved));$('storage-status').innerHTML='<i class="live-dot"></i>'+ (platformValid?'本地草稿已保存':'模型草稿已保存 · 平台保留上次有效方案');}catch(_){$('storage-status').textContent='浏览器未保存草稿，请导出方案留存。';}
 }
-function openDrawer(name,title,subtitle,html,wide=false){lastFocus=document.activeElement;drawerName=name;$('drawer-title').textContent=title;$('drawer-sub').textContent=subtitle;$('drawer-body').innerHTML=html;$('drawer-footer').hidden=true;$('drawer').classList.toggle('wide',wide);$('modal').classList.toggle('centered',name==='usage');$('modal').hidden=false;document.body.classList.add('modal-open');$('close-drawer').focus();}
+function openDrawer(name,title,subtitle,html,wide=false){lastFocus=document.activeElement;drawerName=name;$('drawer-title').textContent=title;$('drawer-sub').textContent=subtitle;$('drawer-sub').hidden=!subtitle;$('drawer-body').innerHTML=html;$('drawer-footer').hidden=true;$('drawer').classList.toggle('wide',wide);$('modal').classList.toggle('centered',name==='usage');$('modal').hidden=false;document.body.classList.add('modal-open');$('close-drawer').focus();}
 function closeDrawer(){if($('modal').hidden)return;$('modal').hidden=true;document.body.classList.remove('modal-open');drawerName='';if(lastFocus?.isConnected)lastFocus.focus();}
 function table(headers,rows,cls=''){return'<table class="'+cls+'"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>';}
 const td=(s,cls='number')=>'<td class="'+cls+'">'+s+'</td>',minus=(a,b)=>{const d=sub(a,b);return(cmp(d,0)>0?'+':'')+num(d,10);};
@@ -18121,7 +18124,6 @@ function renderUsage(v,t){
  $('usage-metrics').setAttribute('aria-label',t.video?'估算与最低 Token 用量':'估算 Token 用量');
  $('token-minimum-metric').hidden=!t.video;
  const show=(id,value)=>{const el=$(id),rounded=num(value,8);el.textContent=(cmp(rounded,value)!==0?'≈ ':'')+tokenText(value,8);el.title=tokenText(value)+' Token';};
- $('token-rate').textContent=num(c.rate,6);
  show('token-estimate',c.tokens);
  $('token-minimum').removeAttribute('title');
  if(hasMinimum)show('token-minimum',rule.tokens);else $('token-minimum').textContent=t.video?'待补齐':'不适用';
@@ -18135,28 +18137,40 @@ function renderUsage(v,t){
  }
  const note=$('coverage-note');note.hidden=true;note.textContent='';
  if(v.partial){note.hidden=false;note.textContent='最低用量待补齐 · 仅基础估算';}
- else if(hasMinimum&&cmp(c.tokens,rule.tokens)<0){note.hidden=false;note.textContent='预计触发最低用量'+(manual?' · 人工门槛':'');}
  if(drawerName==='usage'&&!$('modal').hidden)renderUsagePanel(v,t);
 }
+// Form display descriptions, verified against viewProperty.fieldInfos in both captured calculators.
+const USAGE_DESCRIPTIONS=Object.freeze({
+ estimate:'(输入视频时长+输出视频时长) × 输出视频的宽 × 输出视频的高 × 输出视频的帧率/1024\n准确 token 用量以调用 API 后返回的 usage.completion_tokens 字段为准',
+ minimum:'输入包含视频时，存在最低 token 用量限制。如果估算 token 用量 ＜ 最低 token 用量，则按最低 token 用量计算视频价格。\n最低 token 用量为估算值，实际以调用 API 后返回的 usage.completion_tokens 字段为准'
+});
+function usageRateTable(t){
+ const rows=[];
+ for(const id of ['seedance-2.5','seedance-2.0','seedance-2.0-fast']){
+  const model=M.get(id),groups=[];
+  for(const res of model.resolutions){
+   const rates=model.rates[res],last=groups.at(-1);
+   if(last&&last.rates.join('|')===rates.join('|'))last.resolutions.push(res);
+   else groups.push({rates,resolutions:[res]});
+  }
+  groups.forEach((group,index)=>{
+   const selected=id===t.model&&group.resolutions.includes(t.res);
+   rows.push(`<tr data-model="${esc(id)}" data-resolutions="${group.resolutions.join(',')}">${index===0?`<th scope="rowgroup" rowspan="${groups.length}">${esc(model.label)}</th>`:''}<td>${group.resolutions.map(res=>res==='4k'?'4K':res).join('、')}</td>${group.rates.map((rate,i)=>`<td class="num${selected&&i===(t.video?1:0)?' selected-rate':''}"${selected&&i===(t.video?1:0)?' id="token-rate" aria-current="true"':''}>${fixed(rate,2)}</td>`).join('')}</tr>`);
+  });
+ }
+ return `<div class="usage-table-scroll"><table class="usage-price-table" id="usage-price-table"><thead><tr><th scope="col">模型</th><th scope="col">分辨率</th><th scope="col">无视频输入</th><th scope="col">有视频输入</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+}
 function usageExplanation(v,t){
- const c=v.calc,rule=v.rule,manual=rule?.kind==='manual',hasMinimum=t.video&&!!rule;
- const source=M.get(t.model).sources.minima,tableUrl=source.views[t.res]||source.url;
- const base=`(${esc(t.seconds)} + ${t.video?esc(t.vin):'0'}) × ${c.wh[0]} × ${c.wh[1]} × 24 ÷ 1024`;
- const decision=v.partial?'最低用量规则尚未补齐，本次仅为基础试算，无法确定完整费用。':!t.video?`无视频输入，不应用最低用量，采用基础估算 ${tokenText(c.tokens)} Token。`:cmp(c.tokens,rule.tokens)<0?`基础估算 ${tokenText(c.tokens)} Token 低于${manual?'人工设置的':'最低用量估算'} ${tokenText(rule.tokens)} Token，本次采用后者。`:cmp(c.tokens,rule.tokens)===0?`两项同为 ${tokenText(c.tokens)} Token，采用基础估算，无需补足用量。`:`基础估算 ${tokenText(c.tokens)} Token 已高于最低值 ${tokenText(rule.tokens)} Token，本次采用基础估算。`;
- const applied=hasMinimum?`max(${tokenText(c.tokens)}, ${tokenText(rule.tokens)}) = ${tokenText(c.billedTokens)}`:tokenText(c.billedTokens);
- const minimumMethod=manual?`<p>本任务的最低值来自人工覆盖：${tokenText(rule.tokens)} Token。来源：${esc(rule.note)}。</p>`:!t.video?'<p>无视频输入，本次不使用最低用量估算。</p>':!rule?'<p>本规格最低用量待补齐，暂不提供完整估价。</p>':`<p>与官方 ${esc(M.get(t.model).label)} 计算器一致：按输出分辨率、画面比例和时长查最低用量，再与基础估算取较大值，两者不相加。</p><div class="formula">${esc(label(t))} → 最低 ${tokenText(rule.tokens)} Token</div><p class="footnote">表格显示 ${esc(rule.displayedTokens)} Token；本工具保留原始公式的小数精度，不提前取整。核验日期 ${esc(source.verifiedAt)}。</p><details class="record-notes"><summary>官方表格原式与核验方法</summary><pre class="formula source-formula">${esc(source.sourceFormula)}</pre><p>上面是当前官方表格“最低token用量”字段的原式，其中确有 ROUNDUP(输出时长 × 2 / 3, 0)。它不是模型价格正文直接列出的公式，也不是输入素材的最低时长要求。</p><p class="footnote">${esc(source.provenance||'')} ${esc(source.precision||'')} 原式和复制数据保存在项目 evidence 目录；运行时读取经过来源核验的表值。</p></details><div class="usage-source-links"><a href="${esc(source.calculatorUrl)}" target="_blank" rel="noopener">官方计算器 ↗</a><a href="${esc(tableUrl)}" target="_blank" rel="noopener">对应最低用量表 ↗</a></div>`;
- return `<div class="usage-explanation" id="usage-explanation"><p class="usage-lead">最低 Token 用量也是估算值，最终计费用量以 API 返回为准。</p><h3>官方如何说明最低用量</h3><p>含视频输入的任务存在最低 Token 用量限制。基础估算低于对应最低值时，按最低值估价；最低值与输出分辨率、宽高比和输出时长有关。官方表格的原文说明是：“估算值，实际以调用 API 后返回信息中的 usage 字段为准”。</p><p>查询任务返回的 <code>usage.completion_tokens</code> 已体现最低用量限制，可用于计费对账，不再补一次门槛。<code>total_tokens</code> 与它相等，不重复相加。</p><div class="usage-source-links"><a href="${esc(R.sources.pricing.url)}" target="_blank" rel="noopener">官方模型价格 · 最低用量说明 ↗</a><a href="${esc(R.sources.usage.url)}" target="_blank" rel="noopener">官方 API · usage 字段 ↗</a></div><h3>当前配置如何估价</h3><p>${esc(label(t))} · ${esc(vinLabel(t))}</p><div class="usage-current">${decision}<br>${manual?'本次最低值为人工覆盖。<br>':''}刊例费用 P = ${tokenText(c.billedTokens)} × ${num(c.rate,6)} ÷ 1,000,000 = ¥${num(c.P,18)}。</div><p>这里估算的是模型刊例价。按预计输出规格计算；编辑、延长等任务的实际输出规格确定后应重新估价。</p><details class="usage-method" id="usage-method"><summary>本工具的估算依据与公式</summary>${minimumMethod}<div class="formula">估算 Token 用量 = ${base} = ${tokenText(c.tokens)}<br>估价采用 Token${v.partial?'（仅基础）':''} = ${applied}</div><p class="footnote">“采用”标记只表示本次估价选用的数值；两者相等时标记基础估算。显示精度不参与计算，Token 不提前取整。生成任务中的输入秒数按本工具的整秒选项设置；原始实测时长不改写。</p></details></div>`;
+ const manual=v.rule?.kind==='manual',source=M.get(t.model).sources;
+ const override=manual?`<p class="usage-override">本次最低用量：${tokenText(v.rule.tokens)} Token（人工设置）<br>${esc(v.rule.note)}</p>`:v.partial?'<p class="usage-override">本规格最低用量待补齐。</p>':'';
+ return `<div class="usage-explanation" id="usage-explanation"><section class="usage-prices"><div class="usage-section-heading"><h3>Seedance 系列模型刊例价</h3><span>元 / 百万 Token</span></div>${usageRateTable(t)}</section><section class="usage-definition"><h3>估算 Token 用量</h3><p id="usage-estimate-description">${esc(USAGE_DESCRIPTIONS.estimate)}</p></section><section class="usage-definition"><h3>最低 Token 用量</h3><p id="usage-minimum-description">${esc(USAGE_DESCRIPTIONS.minimum)}</p>${override}</section><div class="usage-source-links"><a href="${esc(source.pricing.url)}" target="_blank" rel="noopener">模型价格 ↗</a><a href="${esc(M.get('seedance-2.0').sources.minima.calculatorUrl)}" target="_blank" rel="noopener">Seedance 2.0 / Fast 计算器 ↗</a><a href="${esc(M.get('seedance-2.5').sources.minima.calculatorUrl)}" target="_blank" rel="noopener">Seedance 2.5 计算器 ↗</a></div></div>`;
 }
-function renderUsagePanel(v,t){
- const methodOpen=$('usage-method')?.open||false;
- $('drawer-body').innerHTML=usageExplanation(v,t);
- if(methodOpen)$('usage-method').open=true;
-}
-function openUsage(){if(!modelValid)return;openDrawer('usage','用量说明',M.get(state.task.model).label+' · 用量与计价说明',usageExplanation(quote(),state.task));}
+function renderUsagePanel(v,t){$('drawer-body').innerHTML=usageExplanation(v,t);}
+function openUsage(){if(!modelValid)return;openDrawer('usage','用量说明','',usageExplanation(quote(),state.task));}
 function renderQuote(){
  const v=quote(),c=v.calc;
  $('cost-badge').hidden=!v.partial&&v.rule?.kind!=='manual';$('cost-badge').textContent=coverage(v);$('cost-badge').className='badge '+(v.partial?'amber':'blue');renderUsage(v,state.task);
- $('cost-p').innerHTML=v.partial?'—':'<small>¥</small>'+fixed(c.P,6);
+ $('cost-p').textContent=v.partial?'—':fixed(c.P,6);
  return v;
 }
 function renderResult(){const v=current(),p=pricing(),x=v.x;
@@ -18208,7 +18222,7 @@ function render(){
  }catch(e){
   $('globalError').hidden=false;$('globalError').textContent=e.message;$('cost-p').textContent='—';
   $('coverage-note').hidden=true;$('usage-summary').hidden=true;$('usage-help').disabled=true;
-  for(const id of ['token-rate','token-estimate','token-minimum']){$(id).textContent='—';$(id).removeAttribute('title');}
+  for(const id of ['token-estimate','token-minimum']){$(id).textContent='—';$(id).removeAttribute('title');}
   for(const name of ['estimate','minimum']){$('token-'+name+'-metric').classList.remove('is-adopted');$('token-'+name+'-adopted').hidden=true;}
   if(drawerName==='usage')$('drawer-body').innerHTML='<p class="notice red">当前输入无效，请先修正生成参数。</p>';
  }
@@ -18296,7 +18310,7 @@ function openDetails(mode='theory',recordId='',contextTask=null){
  const view=chosen==='actual'?actualBreakdown(selected,p):theoryBreakdown(t,p);
  const tabs=`<div class="detail-switch" role="tablist" aria-label="计算展开口径"><button role="tab" aria-selected="${chosen==='theory'}" data-detail-mode="theory" class="${chosen==='theory'?'active':''}">参数估算明细</button><button role="tab" aria-selected="${chosen==='actual'}" data-detail-mode="actual" class="${chosen==='actual'?'active':''}">实测金额复算展开</button></div>`;
  const content=tabs+detailPlan(p,t.model||'seedance-2.0')+selector+view.html+detailBusinessMath(p)+`<div class="actions" style="margin-top:20px"><button class="btn" id="export-calculation">导出这份计算明细 ↓</button><button class="btn" id="close-only">关闭</button></div>`;
- detailContext.text=[`Reelay V9.5.3 · ${chosen==='actual'?'平台实测金额复算':'参数估算明细'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
+ detailContext.text=[`Reelay V9.5.4 · ${chosen==='actual'?'平台实测金额复算':'参数估算明细'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
  openDrawer('calculation','定价明细',label(t)+' / '+vinLabel(t)+' · 不改变主表输入',content,true);
 }
 let ruleContext=null;
@@ -18357,11 +18371,11 @@ function addTask(){const v=current();if(!v.x||!globalValid)return;if(state.tasks
 function openNewRecharge(){openDrawer('recharge','添加充值方案','不改变实测数据，也不执行实际充值。',`<div class="grid2"><div><label class="fieldlabel" for="r-pay">实付金额</label><input class="input" id="r-pay" inputmode="decimal" value="100"></div><div><label class="fieldlabel" for="r-total">到账总积分</label><input class="input" id="r-total" inputmode="decimal" value="1500"></div></div><div class="inline-error" id="r-error"></div><button class="btn primary" id="save-recharge">加入对比</button>`);}
 function download(name,text,type='text/plain;charset=utf-8'){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 const filename=()=>state.plan.company.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,50)||'Reelay方案';
-function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.5.3 · 视频成本与定价','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
+function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.5.4 · 视频成本与定价','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
 function exportJSON(){
  const procurementProfiles=Object.keys(PROCUREMENT_MODELS).map(model=>procurementInfo(model));
  const taskEstimates=state.tasks.map(row=>{const v=theory(row.params);return v.x?exportRow(row.title,v,v.x,row.qty):{model:row.params.model,...procurementInfo(row.params.model),scope:'规则缺项，未生成收费估算'};});
- download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.5.3',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
+ download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.5.4',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
 }
 function csvCell(x){let s=String(x??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
 function exportCSV(actual=false){const rows=actual?actualRows:tableRows;if(!rows.length)return toast('没有可导出记录。');const titles=actual?{scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',procurementRatio:'当前复算采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',record:'记录',params:'规格',coverage:'估算依据',theoryP:'刊例费用P',recordedP:'平台记录P',deltaP:'实测P减估算P',theoryC:'采购成本C',recordedC:'平台记录C',deltaC:'实测C减估算C',recordedN:'平台实际扣分_空白为未知',recalcN:'当前复算扣分_非历史',recalcCash:'当前复算金额',recalcProfit:'当前复算模型毛利',pay:'当前充值实付',total:'当前到账积分',M:'当前倍率',targetMode:'当前目标模式',usage:'API_completion_tokens_原记录',note:'备注'}:{scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',targetMode:'定价目标模式',targetMargin:'目标模型毛利率百分数_毛利模式',procurementRatio:'采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',profit:'每笔模型毛利',margin:'取整后测算模型毛利率百分数',scenario:'场景',coverage:'估算依据',ruleVersion:'规则版本',quantity:'数量_逐笔先取整',pay:'实付元',total:'到账积分',discount:'目标客户折扣',M:'定价倍率',P:'刊例费用P',C:'采购成本C',raw:'取整前积分',N:'每笔预计扣分_非实际',target:'目标金额',cash:'每笔折合金额',gap:'与目标差额'};const ks=Object.keys(titles),csv='\ufeff'+[ks.map(k=>csvCell(titles[k])).join(','),...rows.map(r=>ks.map(k=>csvCell(r[k])).join(','))].join('\r\n');download(filename()+(actual?'_实测对照':'_理论_'+state.tab)+'.csv',csv,'text/csv;charset=utf-8');}
