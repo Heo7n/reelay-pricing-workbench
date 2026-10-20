@@ -706,6 +706,9 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   assert.equal(doc.getElementById('coverage-note').hidden,true);
   h.click('[data-video="false"]');
   assert.equal(shown('token-rate'),'51');assert.equal(shown('token-minimum'),'不适用');
+  assert.equal(doc.getElementById('token-minimum-metric').hidden,true);
+  assert.equal(shown('token-estimate-label'),'估算 Token 用量');
+  assert.ok(doc.getElementById('usage-metrics').classList.contains('is-single'));
   assert.equal(shown('token-estimate'),'243,000');assert.equal(adopted('estimate'),'243,000');
   assert.match(explanation().textContent,/无视频输入，不应用最低用量/);
   let fractional;
@@ -715,6 +718,9 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   }
   assert.ok(fractional,'there are official mappings with fractional token estimates');
   h.update(s=>{s.task=fractional;});
+  assert.equal(doc.getElementById('token-minimum-metric').hidden,false);
+  assert.equal(shown('token-estimate-label'),'基础 Token 估算');
+  assert.equal(doc.getElementById('usage-metrics').classList.contains('is-single'),false);
   equal(shown('token-estimate').replaceAll(',',''),h.api.current().calc.tokens);
   equal(adopted().replaceAll(',',''),h.api.current().calc.billedTokens);
   h.update(s=>{
@@ -749,7 +755,7 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
 test('usage explanation opens as a centered, sourced dialog and restores focus when dismissed', t => {
   const h=boot(t),doc=h.w.document,help=doc.getElementById('usage-help'),modal=doc.getElementById('modal');
   assert.equal(doc.getElementById('cost-badge').textContent,'参数预估');
-  assert.equal(doc.getElementById('token-minimum-label').textContent,'最低 Token 估算');
+  assert.equal(doc.getElementById('token-minimum-label').textContent,'最低 Token 用量');
   assert.equal(help.closest('.usage-rate-line').contains(doc.getElementById('token-rate')),true);
   assert.equal(help.getAttribute('aria-haspopup'),'dialog');
   const before=JSON.stringify(h.api.getState());
@@ -851,9 +857,9 @@ test('architecture: one workbench groups generation and its estimate on the left
   assert.equal(plan.contains(doc.getElementById('cost-p')),false,'list-price cost is not duplicated in the platform panel');
   assert.equal(generation.contains(doc.getElementById('cost-c')),false,'procurement is platform-dependent');
   assert.equal(doc.getElementById('pixels').closest('[hidden]'),null,'pixel dimensions remain visible below aspect ratios');
-  assert.match(doc.querySelector('.output-preview').textContent,/24 fps/);
-  assert.ok(doc.querySelector('[data-field="ratio"]').contains(doc.getElementById('preview-frame')));
-  assert.ok(doc.getElementById('preview-meta').contains(doc.getElementById('pixels')));
+  assert.match(doc.querySelector('.pixel-line').textContent,/24 fps/);
+  assert.ok(doc.querySelector('[data-field="ratio"]').contains(doc.getElementById('pixels')));
+  assert.equal(doc.getElementById('preview-frame'),null);
   const blocks=[...plan.querySelector('.plan-grid').children];
   assert.ok(blocks[0].classList.contains('foundation-block'));
   assert.ok(blocks[1].classList.contains('procurement-block'));

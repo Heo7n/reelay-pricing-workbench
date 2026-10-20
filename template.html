@@ -111,6 +111,7 @@
 /* Compact usage inputs explain the existing list-price estimate. */
 .usage-summary{margin:0 0 13px}.usage-rate-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:7px;padding:7px 0 10px;color:var(--muted);font-size:11px}.usage-rate-line b{font-weight:550;color:var(--sub)}.usage-rate-line small{font-size:10px}
 .usage-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 10px}
+.usage-metrics.is-single{grid-template-columns:minmax(0,1fr)}
 .usage-token{min-width:0;padding:10px 12px;border:1px solid transparent;border-radius:7px;background:#f7f8fa}.usage-metrics dt{display:flex;align-items:center;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--muted);margin-bottom:4px;line-height:1.6}.usage-metrics dd{margin:0;font:550 17px/1.5 Inter,"Segoe UI",Arial,sans-serif;color:var(--sub);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .usage-token.is-adopted{background:var(--tint);border-color:#dce5fb}.usage-token.is-adopted dd{color:var(--accent);font-weight:600}.usage-adopted{padding:0 5px;border-radius:4px;background:#e1e9fc;color:var(--accent);font-size:9px;line-height:1.8;white-space:nowrap}.usage-rule-kind{font-size:9px;color:var(--amber);white-space:nowrap}
 .usage-help{margin-left:auto;font-size:11px}.usage-status{display:block;margin:0 0 10px;color:var(--amber);font-size:10px}.usage-status[hidden]{margin:0}
@@ -192,9 +193,6 @@
 .generation-panel .field .label{font-size:12px;margin-bottom:8px}
 .generation-panel .segs button{padding:7px 8px}
 .generation-panel .ratios{gap:7px}.generation-panel .ratios button{height:54px}
-.output-preview{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:12px;min-height:54px;margin-top:10px;padding:8px 10px;border:1px solid #e8ecf1;border-radius:8px;background:#f7f8fa}
-.preview-stage{display:flex;align-items:center;justify-content:center;height:34px}.aspect-preview{flex:none;border:1px solid #91a4c3;border-radius:2px;background:#e9eef8}
-.preview-specs{display:flex;flex-direction:column;gap:1px;min-width:0}.preview-specs #pixels{font-size:12px;font-weight:550;color:var(--sub);overflow-wrap:anywhere}.preview-specs>span:last-child{font-size:10px;color:var(--muted)}
 .generation-panel .model-cost-section{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
 .estimate-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
 .result-section-title{font-size:12px;line-height:1.6;font-weight:600;color:var(--sub);margin:0}
@@ -246,7 +244,7 @@
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.1</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.2</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
 <section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
@@ -257,7 +255,7 @@
 <div class="fields-layout">
 <div class="field" data-field="video"><div class="label">视频输入</div><div class="segs" id="video-options"><button data-video="false">无视频输入</button><button data-video="true">有视频输入</button></div><div class="reference-controls" data-field="vin" id="video-detail"><label for="vin-slider" id="vin-label">输入视频总时长</label><input class="duration-slider reference-slider" type="range" id="vin-slider" aria-labelledby="vin-label" min="2" max="15" step="1" value="2"><div class="vin-value"><input class="num" type="number" id="vin" aria-label="输入视频总时长（整秒）" inputmode="numeric" min="2" max="15" step="1" value="2"><span>秒</span></div></div></div>
 <div class="field" data-field="resolution"><div class="label">输出分辨率</div><div class="segs" id="res-options"></div></div>
-<div class="field" data-field="ratio"><div class="label">画面比例</div><div class="ratios" id="ratio-options"></div><div class="output-preview" role="group" aria-label="输出画面规格"><div class="preview-stage" aria-hidden="true"><div id="preview-frame" class="aspect-preview"></div></div><div class="preview-specs" id="preview-meta"><span class="num" id="pixels"></span><span>24 fps</span></div></div></div>
+<div class="field" data-field="ratio"><div class="label">画面比例</div><div class="ratios" id="ratio-options"></div><div class="pixel-line"><span class="num" id="pixels"></span><span>24 fps</span></div></div>
 <div class="field" data-field="seconds"><div class="label slider-label"><label for="seconds">输出时长</label><output class="slider-value num" id="seconds-value" for="seconds">4 秒</output></div><div id="seconds-fixed"><input class="duration-slider" type="range" id="seconds" aria-label="输出秒数" min="4" max="15" step="1" value="4"><div class="slider-scale"><span>4 秒</span><span id="seconds-max-label">15 秒</span></div></div></div>
 </div>
 
@@ -267,9 +265,9 @@
 <div class="estimate-heading"><h3 class="result-section-title" id="model-cost-title">用量与费用</h3><span id="cost-badge" class="badge blue" hidden></span></div>
 <div class="usage-summary" id="usage-summary">
 <div class="usage-rate-line"><span>刊例单价</span><b class="num" id="token-rate">—</b><small>元 / 百万 Token</small><button class="link usage-help" id="usage-help" aria-haspopup="dialog">用量说明 ⓘ</button></div>
-<dl class="usage-metrics" aria-label="基础与最低 Token 估算">
-<div class="usage-token" id="token-estimate-metric"><dt title="按生成参数计算，尚未应用最低用量"><span>基础 Token 估算</span><span class="usage-adopted" id="token-estimate-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-estimate">—</dd></div>
-<div class="usage-token" id="token-minimum-metric"><dt><span id="token-minimum-label">最低 Token 估算</span><span class="usage-rule-kind" id="token-minimum-kind" hidden></span><span class="usage-adopted" id="token-minimum-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-minimum">—</dd></div>
+<dl class="usage-metrics" id="usage-metrics" aria-label="基础估算与最低 Token 用量">
+<div class="usage-token" id="token-estimate-metric"><dt title="按生成参数计算，尚未应用最低用量"><span id="token-estimate-label">基础 Token 估算</span><span class="usage-adopted" id="token-estimate-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-estimate">—</dd></div>
+<div class="usage-token" id="token-minimum-metric"><dt><span id="token-minimum-label">最低 Token 用量</span><span class="usage-rule-kind" id="token-minimum-kind" hidden></span><span class="usage-adopted" id="token-minimum-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-minimum">—</dd></div>
 </dl>
 <div id="coverage-note" class="usage-status" hidden></div>
 </div>
