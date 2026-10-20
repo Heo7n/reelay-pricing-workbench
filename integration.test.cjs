@@ -26,7 +26,7 @@ function boot(t, storedEntries = []) {
   w.HTMLElement.prototype.scrollIntoView = () => {};
   w.navigator.clipboard = {writeText:async () => {}};
   for (const [key,value] of storedEntries) w.localStorage.setItem(key,value);
-  for (const file of ['engine.js', 'data.js', 'app.js']) w.eval(read(file));
+  for (const file of ['engine.js', 'generated-minima.js', 'data.js', 'app.js']) w.eval(read(file));
   t.after(() => dom.window.close());
   const api = w.ReelayApp;
   const good = () => {
@@ -44,7 +44,7 @@ function boot(t, storedEntries = []) {
   return {w,api,downloads,good,update,input,click};
 }
 
-test('all 192 captured official table display values agree with exact rule evaluations', () => {
+test('all 192 historical Oct19 display values remain consistent with the newly verified lookup', () => {
   const evidence = JSON.parse(read('official-table-evidence.json'));
   const minima = R.buildMinima();
   assert.equal(Object.keys(minima).length, 288);
@@ -208,6 +208,72 @@ test('official rules cannot be silently replaced by imported values claiming off
   source.rules.version='unrecognized-rule-version';
   assert.throws(()=>h.api.migrate({format:'reelay.pricing.v9',state:source}),/规则版本/);
   assert.equal(JSON.stringify(h.api.getState()),before);
+});
+
+test('verified lookup preserves fractional tokens and rejects mismatched rule identities', () => {
+  const task={model:'seedance-2.0',res:'720p',ratio:'4:3',seconds:'4',video:true,vin:'2'};
+  const below=R.estimate(task);
+  equal(below.tokens,'130416.75');
+  equal(below.minimum,'152152.875');
+  equal(below.billedTokens,'152152.875');
+  equal(below.P,'4.2602805');
+  assert.equal(below.minimumSource.kind,'official');
+  equal(R.estimate({...task,vin:'3'}).billedTokens,'152152.875');
+  equal(R.estimate({...task,vin:'3.0001'}).billedTokens,'152155.0486125','raw observations keep fractional input seconds');
+  equal(R.estimate({...task,vin:'15'}).billedTokens,'412986.375');
+  const noVideo=R.estimate({...task,video:false});
+  equal(noVideo.billedTokens,'86944.5');equal(noVideo.P,'3.999447');
+  assert.equal(noVideo.minimumSource,null);
+  assert.throws(()=>R.estimate({...task,model:'seedance-2.5'}),/标准版/);
+  assert.throws(()=>R.estimate(task,undefined,'unverified'),/版本/);
+  assert.throws(()=>R.estimate(task,{...R.officialMinimum(task),tokens:'152153'}),/快照/);
+  assert.throws(()=>R.estimate(task,{tokens:'1',kind:'unknown'}),/来源/);
+  equal(R.estimate(task,{tokens:'200000',kind:'manual',note:'contract'}).billedTokens,'200000');
+  assert.equal(R.estimate(task,null).partial,true);
+});
+
+test('runtime lookup and MAX agree with the captured full formula for all 4032 video configurations', () => {
+  const source=require('./source-rules.cjs');
+  const table=source.parseClipboard(read('evidence/2026-10-20/minimum-480p.clipboard.json'));
+  const formula=source.compileFormula(table.header.find(h=>h.id==='fld0p1bMiB').property.formula);
+  let cases=0;
+  for(const res of R.RESOLUTIONS)for(const ratio of R.RATIOS)for(let seconds=4;seconds<=15;seconds++){
+    const [width,height]=E.DIMS[res][ratio];
+    for(const vin of [0,...Array.from({length:14},(_,i)=>i+2)]){
+      const task={res,ratio,seconds:String(seconds),video:vin>0,vin:String(vin)};
+      const original=formula.evaluate({'时长-输入视频（秒）':String(vin),'时长-输出视频（秒）':String(seconds),'长边（像素）':String(width),'短边（像素）':String(height),'帧率':'24'});
+      equal(R.estimate(task).billedTokens,original,`${res}/${ratio}/${seconds}/${vin}`);
+      if(vin>0)cases++;
+    }
+  }
+  assert.equal(cases,4032);
+});
+
+test('Oct19 drafts upgrade without losing pricing, explicit overrides or raw observations', t => {
+  const first=boot(t),old=first.api.getState(),previous=R.PREVIOUS_VERSIONS[0];
+  old.plan.mode='manual';old.plan.manualM='1.65';old.plan.q='1';old.plan.discount='10';
+  old.observations[2].params.vin='3.0001';old.observations[2].usage='67201';
+  old.rules.version=previous;
+  old.rules.minima=Object.fromEntries(Object.entries(old.rules.minima).map(([key,row])=>[
+    key.replace(R.VERSION,previous),{tokens:row.tokens,note:row.note,kind:row.kind}
+  ]));
+  const manualKey=R.key(old.task,previous);
+  old.rules.minima[manualKey]={tokens:'100000',note:'明确的采购约定',kind:'manual'};
+  const staleTask={res:'1080p',ratio:'16:9',seconds:'5'},staleKey=R.key(staleTask,previous);
+  old.rules.minima[staleKey]={tokens:'999999',note:'旧版本官方值',kind:'official'};
+  const serialized=JSON.stringify(old);
+  const h=boot(t,[['reelay_pricing_v9_official',serialized]]),now=h.api.getState();
+  assert.equal(now.rules.version,R.VERSION);assert.equal(now.rules.previousVersion,previous);
+  assert.equal(now.plan.manualM,'1.65');assert.equal(now.plan.mode,'manual');assert.equal(now.plan.q,'1');
+  assert.equal(now.rules.minima[R.key(old.task)].kind,'manual');
+  assert.equal(now.rules.minima[R.key(old.task)].tokens,'100000');
+  assert.equal(now.rules.minima[R.key(staleTask)].kind,'official');
+  assert.equal(now.rules.minima[R.key(staleTask)].tokens,'437400');
+  assert.equal(now.rules.legacyMinima[staleKey].tokens,'999999','stale official values are archived, never converted into active manual overrides');
+  assert.equal(now.observations[2].params.vin,'3.0001');assert.equal(now.observations[2].usage,'67201');
+  assert.equal(JSON.stringify(old),serialized,'migration leaves its input untouched');
+  assert.ok(Object.keys(now.rules.minima).every(k=>k.includes(R.VERSION)));
+  assert.equal(h.api.current().rule.kind,'manual');
 });
 
 test('standard procurement can use either the exact cash target or a manually specified multiplier', t => {
@@ -602,7 +668,9 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   assert.match(body.textContent,/最低 Token 用量也是估算值/);
   assert.match(body.textContent,/官方如何说明最低用量/);
   assert.match(body.textContent,/不是模型价格正文直接列出的公式/);
-  assert.match(body.textContent,/2026-10-19/);assert.match(body.textContent,/本次未重新取得飞书表内公式/);
+  assert.match(body.textContent,/2026-10-20/);assert.match(body.textContent,/原式、四个视图的复制数据和官方计算器查表公式已保存/);
+  assert.doesNotMatch(body.textContent,/本次未重新取得|沿用.*快照/);
+  assert.ok(body.querySelector('a[href="'+R.sources.minima.calculatorUrl+'"]'));
   assert.ok(body.querySelector('a[href="'+R.sources.pricing.url+'"]'));
   assert.ok(body.querySelector('a[href="'+R.sources.usage.url+'"]'));
   assert.match(body.querySelector('.source-formula').textContent,/MAX\(ROUNDUP/);

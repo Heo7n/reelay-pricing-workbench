@@ -74,7 +74,7 @@
 
 .rule-status{font-size:11px;color:#246f60;margin:12px 0 8px}.plan-principle{border-top:1px solid var(--line);padding:10px 0;font-size:11px;color:var(--sub)}.purchase-control{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.purchase-control input{width:67px;border:1px solid var(--line);border-radius:5px;padding:3px 5px;font:inherit}.purchase-control label{color:var(--sub)}#target-mode{border:0;background:transparent;font:inherit;font-weight:600;padding:0;max-width:100%;color:var(--ink)}.economics-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:12px;padding:14px 0 2px;border-top:1px solid var(--line);margin-top:14px}.economics-grid span{display:block;font-size:11px;color:var(--sub)}.economics-grid b{font:600 20px/1.8 var(--font);color:var(--green)}.economics-grid b.loss,.loss{color:var(--red)}.quick-examples{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 13px}.principle-steps{display:grid;gap:12px;margin-bottom:20px}.principle-steps section{border:1px solid var(--line);border-radius:9px;padding:14px}.principle-steps b{display:block;color:var(--accent);margin-bottom:5px}#migration-note{margin-top:10px}.result-note .link{margin-left:5px}pre.formula{white-space:pre-wrap;font-size:11px}.plan-foot{flex-wrap:wrap}.badge.green{background:#eaf6ef;color:#246f60}@media(max-width:540px){.economics-grid{gap:7px}.economics-grid b{font-size:16px}.economics-grid span{font-size:10px}.purchase-control .muted{font-size:9px}.plan-principle{font-size:10px}}
 
-/* V9.2: task controls and explicit manual pricing. */
+/* V9.3: task controls and explicit manual pricing. */
 .slider-label .slider-value{margin-left:auto}.composer>.head{margin-bottom:14px}
 .slider-value{font-size:18px;line-height:1.4;font-weight:600;color:var(--accent);white-space:nowrap}
 .duration-slider{--range-progress:0%;appearance:none;-webkit-appearance:none;width:100%;height:28px;margin:0;background:transparent;cursor:pointer;accent-color:var(--accent)}
@@ -174,7 +174,7 @@
 
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">企业定价 / 计算工作台</div></div><div class="actions"><button class="link" id="open-rules">计算规则</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出方案 ↗</button></div></div></header>
-<main class="wrap"><div class="rule-status" id="rule-status"></div><section class="intro"><div><h1>看清每次生成的成本与利润。</h1><p>任务成本、积分定价与毛利测算。</p></div><div class="intro-meta"><span class="scope">Seedance 2.0 · 标准版</span><span>V9.2</span></div></section>
+<main class="wrap"><div class="rule-status" id="rule-status"></div><section class="intro"><div><h1>看清每次生成的成本与利润。</h1><p>任务成本、积分定价与毛利测算。</p></div><div class="intro-meta"><span class="scope">Seedance 2.0 · 标准版</span><span>V9.3</span></div></section>
 <nav class="workspace-nav" aria-label="工作区"><button data-workspace="theory" class="active">理论试算</button><button data-workspace="actual">实测对照</button></nav>
 <section id="theory-workspace">
 <section class="card plan" aria-label="积分定价方案">
@@ -226,7 +226,7 @@
 <section class="card compare"><div class="compare-top head"><h2>理论方案对比</h2><button class="link" id="table-export">导出当前对照 ↓</button></div><nav class="tabs" aria-label="理论对比视图"><button data-tab="discounts">折扣对照</button><button data-tab="tasks">任务清单 <b id="task-count">0</b></button><button data-tab="matrix">参数矩阵</button><button data-tab="recharges">充值对照</button></nav><div class="table-tools" id="table-tools"></div><div class="mobile-hint">左右滑动查看完整计算列 ↔</div><div class="table-scroll" id="table"></div><div class="table-end" id="table-end"></div></section>
 </section>
 <section id="actual-workspace" hidden><div class="card reconcile-card"><div class="sheet-intro"><div><h2>实测金额与当前定价</h2><p>保留原始金额，按当前方案复算积分。</p></div><div class="action-wrap"><button class="btn" id="actual-export">导出实测对照</button><button class="btn primary" id="add-observation">＋ 录入实测</button></div></div><div class="independence">复算扣分不代表历史实扣；未记录项留空。</div><div class="table-scroll" id="actual-table"></div><div class="method-strip"><span>差额 = 平台实测 − 理论值</span></div><details class="record-notes"><summary>其他参考 · 官方预估转述</summary><div class="reference-other" id="other-references"></div></details></div><div class="workspace-foot"><span>差额原因需结合实际账单核对。</span><button class="link" id="back-theory">返回理论试算 →</button></div></section>
-<footer class="bottom"><span id="storage-status"><i class="live-dot"></i>本地草稿</span><span>Seedance 2.0 标准版 · 官方规则快照 2026-10-19 <button class="link" style="font-size:10px;margin-left:12px" id="reset">重置</button></span></footer>
+<footer class="bottom"><span id="storage-status"><i class="live-dot"></i>本地草稿</span><span>Seedance 2.0 标准版 · 用量规则已核验 2026-10-20 <button class="link" style="font-size:10px;margin-left:12px" id="reset">重置</button></span></footer>
 </main><div class="panel-bg" id="modal" hidden><section class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-describedby="drawer-sub"><div class="drawer-header"><div><h2 id="drawer-title"></h2><p id="drawer-sub"></p></div><button class="btn icon" id="close-drawer" aria-label="关闭面板">×</button></div><div class="drawer-body" id="drawer-body"></div><div class="drawer-footer" id="drawer-footer" hidden></div></section></div><div class="toast" id="toast" role="status"></div><input type="file" id="file" class="file-input" accept=".json,application/json">
 <script>
 /* Reelay V9 · Exact decimal/rational accounting engine.
@@ -319,156 +319,4947 @@ if(typeof module!=='undefined')module.exports=root.ReelayMath;
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
-<script>/* Reelay V9 · Versioned official Seedance 2.0 estimation rules.
- * Formula provenance: the official Lark table's normal copy output
- * (text/bitable, header.property.formula), not a fit to displayed numbers.
- * These are exact evaluations of an estimation formula, not API billing usage.
- */
+<script>/* Generated by source-rules.cjs from captured evidence. Do not edit by hand. */
+(function(root){
+'use strict';
+const snapshot = {
+  "version": "volc-seedance20-2026-10-20",
+  "model": "seedance-2.0",
+  "verifiedAt": "2026-10-20",
+  "sourceFormula": "IF(VALUE([时长-输入视频（秒）])>0,(MAX(ROUNDUP(VALUE([时长-输出视频（秒）])*2/3,0),VALUE([时长-输入视频（秒）]))+VALUE([时长-输出视频（秒）]))*VALUE([长边（像素）])*VALUE([短边（像素）])*VALUE([帧率])/1024,VALUE([时长-输出视频（秒）])*VALUE([长边（像素）])*VALUE([短边（像素）])*VALUE([帧率])/1024)",
+  "sourceFormulaSha256": "f8d5a553af3196c22d8727d891644f99b13c28c67d662b1e922b90dcddfbefb9",
+  "sourceDescription": "估算值，实际以调用 API 后返回信息中的 usage 字段为准",
+  "sourceUrl": "https://bytedance.larkoffice.com/share/base/form/shrcnP1Bl0mqCP9OHCbjpe1oBkf",
+  "sourceTable": "tblmNCuMjADrXtDf",
+  "sourceField": "fld0p1bMiB",
+  "derivation": "Evaluate the captured source formula for every official input-duration option and select the exact minimum; verify zero-decimal display against each copied row.",
+  "inputSeconds": [
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15"
+  ],
+  "outputSeconds": [
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15"
+  ],
+  "fps": "24",
+  "sourceRows": 192,
+  "specificationCount": 288,
+  "formulaEvaluationCount": 4032,
+  "rowsByResolution": {
+    "480p": 48,
+    "720p": 48,
+    "1080p": 48,
+    "4k": 48
+  },
+  "sourceFiles": {
+    "evidence/2026-10-20/minimum-480p.clipboard.json": "cdae33dc3ece0f14fa986aa82690ad26253f6dd532197f7899f3da9df03ed2d5",
+    "evidence/2026-10-20/minimum-720p.clipboard.json": "536d9383028e1c5fdc7028b17efadd73586c67a340ae56c5db78d2b8b15bcdf4",
+    "evidence/2026-10-20/minimum-1080p.clipboard.json": "6310a191bf38e45107bdb568bea4e1b4c8180c4b86b566839950d33a38ccafd4",
+    "evidence/2026-10-20/minimum-4k.clipboard.json": "60d51b98e1440e0ee3ab93d6ef29bbc0cc6b8c0f4a226fb2c6e78184c64edd75",
+    "evidence/2026-10-20/calculator-fields.json": "b98c01da2356f68f9f808338bf15222697ff0216607990aaf3785d5977ac41cb",
+    "evidence/2026-10-20/calculator-public.html": "602cc6bb1fa4fd72ac168902003504f1f584a0bb8fe6267b436781ca666c18bf"
+  },
+  "entries": {
+    "480p|16:9|4": {
+      "tokens": "70308",
+      "displayedTokens": "70308",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 1,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "480p|9:16|4": {
+      "tokens": "70308",
+      "displayedTokens": "70308",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 1,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "480p|16:9|5": {
+      "tokens": "90396",
+      "displayedTokens": "90396",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 2,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "480p|9:16|5": {
+      "tokens": "90396",
+      "displayedTokens": "90396",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 2,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "480p|16:9|6": {
+      "tokens": "100440",
+      "displayedTokens": "100440",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 3,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "480p|9:16|6": {
+      "tokens": "100440",
+      "displayedTokens": "100440",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 3,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "480p|16:9|7": {
+      "tokens": "120528",
+      "displayedTokens": "120528",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 4,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "480p|9:16|7": {
+      "tokens": "120528",
+      "displayedTokens": "120528",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 4,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "480p|16:9|8": {
+      "tokens": "140616",
+      "displayedTokens": "140616",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 5,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "480p|9:16|8": {
+      "tokens": "140616",
+      "displayedTokens": "140616",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 5,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "480p|16:9|9": {
+      "tokens": "150660",
+      "displayedTokens": "150660",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 6,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "480p|9:16|9": {
+      "tokens": "150660",
+      "displayedTokens": "150660",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 6,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "480p|16:9|10": {
+      "tokens": "170748",
+      "displayedTokens": "170748",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 7,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "480p|9:16|10": {
+      "tokens": "170748",
+      "displayedTokens": "170748",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 7,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "480p|16:9|11": {
+      "tokens": "190836",
+      "displayedTokens": "190836",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 8,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "480p|9:16|11": {
+      "tokens": "190836",
+      "displayedTokens": "190836",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 8,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "480p|16:9|12": {
+      "tokens": "200880",
+      "displayedTokens": "200880",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 9,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "480p|9:16|12": {
+      "tokens": "200880",
+      "displayedTokens": "200880",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 9,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "480p|16:9|13": {
+      "tokens": "220968",
+      "displayedTokens": "220968",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 10,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "480p|9:16|13": {
+      "tokens": "220968",
+      "displayedTokens": "220968",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 10,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "480p|16:9|14": {
+      "tokens": "241056",
+      "displayedTokens": "241056",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 11,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "480p|9:16|14": {
+      "tokens": "241056",
+      "displayedTokens": "241056",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 11,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "480p|16:9|15": {
+      "tokens": "251100",
+      "displayedTokens": "251100",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 12,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "480p|9:16|15": {
+      "tokens": "251100",
+      "displayedTokens": "251100",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 12,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "480p|4:3|4": {
+      "tokens": "69090",
+      "displayedTokens": "69090",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 13,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "480p|3:4|4": {
+      "tokens": "69090",
+      "displayedTokens": "69090",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 13,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "480p|4:3|5": {
+      "tokens": "88830",
+      "displayedTokens": "88830",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 14,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "480p|3:4|5": {
+      "tokens": "88830",
+      "displayedTokens": "88830",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 14,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "480p|4:3|6": {
+      "tokens": "98700",
+      "displayedTokens": "98700",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 15,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "480p|3:4|6": {
+      "tokens": "98700",
+      "displayedTokens": "98700",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 15,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "480p|4:3|7": {
+      "tokens": "118440",
+      "displayedTokens": "118440",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 16,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "480p|3:4|7": {
+      "tokens": "118440",
+      "displayedTokens": "118440",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 16,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "480p|4:3|8": {
+      "tokens": "138180",
+      "displayedTokens": "138180",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 17,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "480p|3:4|8": {
+      "tokens": "138180",
+      "displayedTokens": "138180",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 17,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "480p|4:3|9": {
+      "tokens": "148050",
+      "displayedTokens": "148050",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 18,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "480p|3:4|9": {
+      "tokens": "148050",
+      "displayedTokens": "148050",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 18,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "480p|4:3|10": {
+      "tokens": "167790",
+      "displayedTokens": "167790",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 19,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "480p|3:4|10": {
+      "tokens": "167790",
+      "displayedTokens": "167790",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 19,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "480p|4:3|11": {
+      "tokens": "187530",
+      "displayedTokens": "187530",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 20,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "480p|3:4|11": {
+      "tokens": "187530",
+      "displayedTokens": "187530",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 20,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "480p|4:3|12": {
+      "tokens": "197400",
+      "displayedTokens": "197400",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 21,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "480p|3:4|12": {
+      "tokens": "197400",
+      "displayedTokens": "197400",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 21,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "480p|4:3|13": {
+      "tokens": "217140",
+      "displayedTokens": "217140",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 22,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "480p|3:4|13": {
+      "tokens": "217140",
+      "displayedTokens": "217140",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 22,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "480p|4:3|14": {
+      "tokens": "236880",
+      "displayedTokens": "236880",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 23,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "480p|3:4|14": {
+      "tokens": "236880",
+      "displayedTokens": "236880",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 23,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "480p|4:3|15": {
+      "tokens": "246750",
+      "displayedTokens": "246750",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 24,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "480p|3:4|15": {
+      "tokens": "246750",
+      "displayedTokens": "246750",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 24,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "480p|1:1|4": {
+      "tokens": "67200",
+      "displayedTokens": "67200",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 25,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "480p|1:1|5": {
+      "tokens": "86400",
+      "displayedTokens": "86400",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 26,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "480p|1:1|6": {
+      "tokens": "96000",
+      "displayedTokens": "96000",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 27,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "480p|1:1|7": {
+      "tokens": "115200",
+      "displayedTokens": "115200",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 28,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "480p|1:1|8": {
+      "tokens": "134400",
+      "displayedTokens": "134400",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 29,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "480p|1:1|9": {
+      "tokens": "144000",
+      "displayedTokens": "144000",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 30,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "480p|1:1|10": {
+      "tokens": "163200",
+      "displayedTokens": "163200",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 31,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "480p|1:1|11": {
+      "tokens": "182400",
+      "displayedTokens": "182400",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 32,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "480p|1:1|12": {
+      "tokens": "192000",
+      "displayedTokens": "192000",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 33,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "480p|1:1|13": {
+      "tokens": "211200",
+      "displayedTokens": "211200",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 34,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "480p|1:1|14": {
+      "tokens": "230400",
+      "displayedTokens": "230400",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 35,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "480p|1:1|15": {
+      "tokens": "240000",
+      "displayedTokens": "240000",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 36,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "480p|21:9|4": {
+      "tokens": "70308",
+      "displayedTokens": "70308",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 37,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "480p|21:9|5": {
+      "tokens": "90396",
+      "displayedTokens": "90396",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 38,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "480p|21:9|6": {
+      "tokens": "100440",
+      "displayedTokens": "100440",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 39,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "480p|21:9|7": {
+      "tokens": "120528",
+      "displayedTokens": "120528",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 40,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "480p|21:9|8": {
+      "tokens": "140616",
+      "displayedTokens": "140616",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 41,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "480p|21:9|9": {
+      "tokens": "150660",
+      "displayedTokens": "150660",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 42,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "480p|21:9|10": {
+      "tokens": "170748",
+      "displayedTokens": "170748",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 43,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "480p|21:9|11": {
+      "tokens": "190836",
+      "displayedTokens": "190836",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 44,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "480p|21:9|12": {
+      "tokens": "200880",
+      "displayedTokens": "200880",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 45,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "480p|21:9|13": {
+      "tokens": "220968",
+      "displayedTokens": "220968",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 46,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "480p|21:9|14": {
+      "tokens": "241056",
+      "displayedTokens": "241056",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 47,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "480p|21:9|15": {
+      "tokens": "251100",
+      "displayedTokens": "251100",
+      "sourceFile": "evidence/2026-10-20/minimum-480p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vew2CR2JYM",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 48,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "720p|16:9|4": {
+      "tokens": "151200",
+      "displayedTokens": "151200",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 1,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "720p|9:16|4": {
+      "tokens": "151200",
+      "displayedTokens": "151200",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 1,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "720p|16:9|5": {
+      "tokens": "194400",
+      "displayedTokens": "194400",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 2,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "720p|9:16|5": {
+      "tokens": "194400",
+      "displayedTokens": "194400",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 2,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "720p|16:9|6": {
+      "tokens": "216000",
+      "displayedTokens": "216000",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 3,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "720p|9:16|6": {
+      "tokens": "216000",
+      "displayedTokens": "216000",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 3,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "720p|16:9|7": {
+      "tokens": "259200",
+      "displayedTokens": "259200",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 4,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "720p|9:16|7": {
+      "tokens": "259200",
+      "displayedTokens": "259200",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 4,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "720p|16:9|8": {
+      "tokens": "302400",
+      "displayedTokens": "302400",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 5,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "720p|9:16|8": {
+      "tokens": "302400",
+      "displayedTokens": "302400",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 5,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "720p|16:9|9": {
+      "tokens": "324000",
+      "displayedTokens": "324000",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 6,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "720p|9:16|9": {
+      "tokens": "324000",
+      "displayedTokens": "324000",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 6,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "720p|16:9|10": {
+      "tokens": "367200",
+      "displayedTokens": "367200",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 7,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "720p|9:16|10": {
+      "tokens": "367200",
+      "displayedTokens": "367200",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 7,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "720p|16:9|11": {
+      "tokens": "410400",
+      "displayedTokens": "410400",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 8,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "720p|9:16|11": {
+      "tokens": "410400",
+      "displayedTokens": "410400",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 8,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "720p|16:9|12": {
+      "tokens": "432000",
+      "displayedTokens": "432000",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 9,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "720p|9:16|12": {
+      "tokens": "432000",
+      "displayedTokens": "432000",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 9,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "720p|16:9|13": {
+      "tokens": "475200",
+      "displayedTokens": "475200",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 10,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "720p|9:16|13": {
+      "tokens": "475200",
+      "displayedTokens": "475200",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 10,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "720p|16:9|14": {
+      "tokens": "518400",
+      "displayedTokens": "518400",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 11,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "720p|9:16|14": {
+      "tokens": "518400",
+      "displayedTokens": "518400",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 11,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "720p|16:9|15": {
+      "tokens": "540000",
+      "displayedTokens": "540000",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 12,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "720p|9:16|15": {
+      "tokens": "540000",
+      "displayedTokens": "540000",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 12,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "720p|4:3|4": {
+      "tokens": "152152.875",
+      "displayedTokens": "152153",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 13,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "720p|3:4|4": {
+      "tokens": "152152.875",
+      "displayedTokens": "152153",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 13,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "720p|4:3|5": {
+      "tokens": "195625.125",
+      "displayedTokens": "195625",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 14,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "720p|3:4|5": {
+      "tokens": "195625.125",
+      "displayedTokens": "195625",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 14,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "720p|4:3|6": {
+      "tokens": "217361.25",
+      "displayedTokens": "217361",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 15,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "720p|3:4|6": {
+      "tokens": "217361.25",
+      "displayedTokens": "217361",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 15,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "720p|4:3|7": {
+      "tokens": "260833.5",
+      "displayedTokens": "260834",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 16,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "720p|3:4|7": {
+      "tokens": "260833.5",
+      "displayedTokens": "260834",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 16,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "720p|4:3|8": {
+      "tokens": "304305.75",
+      "displayedTokens": "304306",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 17,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "720p|3:4|8": {
+      "tokens": "304305.75",
+      "displayedTokens": "304306",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 17,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "720p|4:3|9": {
+      "tokens": "326041.875",
+      "displayedTokens": "326042",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 18,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "720p|3:4|9": {
+      "tokens": "326041.875",
+      "displayedTokens": "326042",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 18,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "720p|4:3|10": {
+      "tokens": "369514.125",
+      "displayedTokens": "369514",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 19,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "720p|3:4|10": {
+      "tokens": "369514.125",
+      "displayedTokens": "369514",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 19,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "720p|4:3|11": {
+      "tokens": "412986.375",
+      "displayedTokens": "412986",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 20,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "720p|3:4|11": {
+      "tokens": "412986.375",
+      "displayedTokens": "412986",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 20,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "720p|4:3|12": {
+      "tokens": "434722.5",
+      "displayedTokens": "434723",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 21,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "720p|3:4|12": {
+      "tokens": "434722.5",
+      "displayedTokens": "434723",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 21,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "720p|4:3|13": {
+      "tokens": "478194.75",
+      "displayedTokens": "478195",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 22,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "720p|3:4|13": {
+      "tokens": "478194.75",
+      "displayedTokens": "478195",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 22,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "720p|4:3|14": {
+      "tokens": "521667",
+      "displayedTokens": "521667",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 23,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "720p|3:4|14": {
+      "tokens": "521667",
+      "displayedTokens": "521667",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 23,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "720p|4:3|15": {
+      "tokens": "543403.125",
+      "displayedTokens": "543403",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 24,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "720p|3:4|15": {
+      "tokens": "543403.125",
+      "displayedTokens": "543403",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 24,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "720p|1:1|4": {
+      "tokens": "151200",
+      "displayedTokens": "151200",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 25,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "720p|1:1|5": {
+      "tokens": "194400",
+      "displayedTokens": "194400",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 26,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "720p|1:1|6": {
+      "tokens": "216000",
+      "displayedTokens": "216000",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 27,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "720p|1:1|7": {
+      "tokens": "259200",
+      "displayedTokens": "259200",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 28,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "720p|1:1|8": {
+      "tokens": "302400",
+      "displayedTokens": "302400",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 29,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "720p|1:1|9": {
+      "tokens": "324000",
+      "displayedTokens": "324000",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 30,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "720p|1:1|10": {
+      "tokens": "367200",
+      "displayedTokens": "367200",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 31,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "720p|1:1|11": {
+      "tokens": "410400",
+      "displayedTokens": "410400",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 32,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "720p|1:1|12": {
+      "tokens": "432000",
+      "displayedTokens": "432000",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 33,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "720p|1:1|13": {
+      "tokens": "475200",
+      "displayedTokens": "475200",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 34,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "720p|1:1|14": {
+      "tokens": "518400",
+      "displayedTokens": "518400",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 35,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "720p|1:1|15": {
+      "tokens": "540000",
+      "displayedTokens": "540000",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 36,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "720p|21:9|4": {
+      "tokens": "151938.28125",
+      "displayedTokens": "151938",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 37,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "720p|21:9|5": {
+      "tokens": "195349.21875",
+      "displayedTokens": "195349",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 38,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "720p|21:9|6": {
+      "tokens": "217054.6875",
+      "displayedTokens": "217055",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 39,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "720p|21:9|7": {
+      "tokens": "260465.625",
+      "displayedTokens": "260466",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 40,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "720p|21:9|8": {
+      "tokens": "303876.5625",
+      "displayedTokens": "303877",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 41,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "720p|21:9|9": {
+      "tokens": "325582.03125",
+      "displayedTokens": "325582",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 42,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "720p|21:9|10": {
+      "tokens": "368992.96875",
+      "displayedTokens": "368993",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 43,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "720p|21:9|11": {
+      "tokens": "412403.90625",
+      "displayedTokens": "412404",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 44,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "720p|21:9|12": {
+      "tokens": "434109.375",
+      "displayedTokens": "434109",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 45,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "720p|21:9|13": {
+      "tokens": "477520.3125",
+      "displayedTokens": "477520",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 46,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "720p|21:9|14": {
+      "tokens": "520931.25",
+      "displayedTokens": "520931",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 47,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "720p|21:9|15": {
+      "tokens": "542636.71875",
+      "displayedTokens": "542637",
+      "sourceFile": "evidence/2026-10-20/minimum-720p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewVBehIlq",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 48,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "1080p|16:9|4": {
+      "tokens": "340200",
+      "displayedTokens": "340200",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 1,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "1080p|9:16|4": {
+      "tokens": "340200",
+      "displayedTokens": "340200",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 1,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "1080p|16:9|5": {
+      "tokens": "437400",
+      "displayedTokens": "437400",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 2,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "1080p|9:16|5": {
+      "tokens": "437400",
+      "displayedTokens": "437400",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 2,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "1080p|16:9|6": {
+      "tokens": "486000",
+      "displayedTokens": "486000",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 3,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "1080p|9:16|6": {
+      "tokens": "486000",
+      "displayedTokens": "486000",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 3,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "1080p|16:9|7": {
+      "tokens": "583200",
+      "displayedTokens": "583200",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 4,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "1080p|9:16|7": {
+      "tokens": "583200",
+      "displayedTokens": "583200",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 4,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "1080p|16:9|8": {
+      "tokens": "680400",
+      "displayedTokens": "680400",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 5,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1080p|9:16|8": {
+      "tokens": "680400",
+      "displayedTokens": "680400",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 5,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1080p|16:9|9": {
+      "tokens": "729000",
+      "displayedTokens": "729000",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 6,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1080p|9:16|9": {
+      "tokens": "729000",
+      "displayedTokens": "729000",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 6,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1080p|16:9|10": {
+      "tokens": "826200",
+      "displayedTokens": "826200",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 7,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "1080p|9:16|10": {
+      "tokens": "826200",
+      "displayedTokens": "826200",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 7,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "1080p|16:9|11": {
+      "tokens": "923400",
+      "displayedTokens": "923400",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 8,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "1080p|9:16|11": {
+      "tokens": "923400",
+      "displayedTokens": "923400",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 8,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "1080p|16:9|12": {
+      "tokens": "972000",
+      "displayedTokens": "972000",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 9,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "1080p|9:16|12": {
+      "tokens": "972000",
+      "displayedTokens": "972000",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 9,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "1080p|16:9|13": {
+      "tokens": "1069200",
+      "displayedTokens": "1069200",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 10,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "1080p|9:16|13": {
+      "tokens": "1069200",
+      "displayedTokens": "1069200",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 10,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "1080p|16:9|14": {
+      "tokens": "1166400",
+      "displayedTokens": "1166400",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 11,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "1080p|9:16|14": {
+      "tokens": "1166400",
+      "displayedTokens": "1166400",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 11,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "1080p|16:9|15": {
+      "tokens": "1215000",
+      "displayedTokens": "1215000",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 12,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "1080p|9:16|15": {
+      "tokens": "1215000",
+      "displayedTokens": "1215000",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 12,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "1080p|4:3|4": {
+      "tokens": "340704",
+      "displayedTokens": "340704",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 13,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "1080p|3:4|4": {
+      "tokens": "340704",
+      "displayedTokens": "340704",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 13,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "1080p|4:3|5": {
+      "tokens": "438048",
+      "displayedTokens": "438048",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 14,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "1080p|3:4|5": {
+      "tokens": "438048",
+      "displayedTokens": "438048",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 14,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "1080p|4:3|6": {
+      "tokens": "486720",
+      "displayedTokens": "486720",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 15,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "1080p|3:4|6": {
+      "tokens": "486720",
+      "displayedTokens": "486720",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 15,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "1080p|4:3|7": {
+      "tokens": "584064",
+      "displayedTokens": "584064",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 16,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "1080p|3:4|7": {
+      "tokens": "584064",
+      "displayedTokens": "584064",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 16,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "1080p|4:3|8": {
+      "tokens": "681408",
+      "displayedTokens": "681408",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 17,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1080p|3:4|8": {
+      "tokens": "681408",
+      "displayedTokens": "681408",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 17,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1080p|4:3|9": {
+      "tokens": "730080",
+      "displayedTokens": "730080",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 18,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1080p|3:4|9": {
+      "tokens": "730080",
+      "displayedTokens": "730080",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 18,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1080p|4:3|10": {
+      "tokens": "827424",
+      "displayedTokens": "827424",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 19,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "1080p|3:4|10": {
+      "tokens": "827424",
+      "displayedTokens": "827424",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 19,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "1080p|4:3|11": {
+      "tokens": "924768",
+      "displayedTokens": "924768",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 20,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "1080p|3:4|11": {
+      "tokens": "924768",
+      "displayedTokens": "924768",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 20,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "1080p|4:3|12": {
+      "tokens": "973440",
+      "displayedTokens": "973440",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 21,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "1080p|3:4|12": {
+      "tokens": "973440",
+      "displayedTokens": "973440",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 21,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "1080p|4:3|13": {
+      "tokens": "1070784",
+      "displayedTokens": "1070784",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 22,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "1080p|3:4|13": {
+      "tokens": "1070784",
+      "displayedTokens": "1070784",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 22,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "1080p|4:3|14": {
+      "tokens": "1168128",
+      "displayedTokens": "1168128",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 23,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "1080p|3:4|14": {
+      "tokens": "1168128",
+      "displayedTokens": "1168128",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 23,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "1080p|4:3|15": {
+      "tokens": "1216800",
+      "displayedTokens": "1216800",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 24,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "1080p|3:4|15": {
+      "tokens": "1216800",
+      "displayedTokens": "1216800",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 24,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "1080p|1:1|4": {
+      "tokens": "340200",
+      "displayedTokens": "340200",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 25,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "1080p|1:1|5": {
+      "tokens": "437400",
+      "displayedTokens": "437400",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 26,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "1080p|1:1|6": {
+      "tokens": "486000",
+      "displayedTokens": "486000",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 27,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "1080p|1:1|7": {
+      "tokens": "583200",
+      "displayedTokens": "583200",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 28,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "1080p|1:1|8": {
+      "tokens": "680400",
+      "displayedTokens": "680400",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 29,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1080p|1:1|9": {
+      "tokens": "729000",
+      "displayedTokens": "729000",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 30,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1080p|1:1|10": {
+      "tokens": "826200",
+      "displayedTokens": "826200",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 31,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "1080p|1:1|11": {
+      "tokens": "923400",
+      "displayedTokens": "923400",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 32,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "1080p|1:1|12": {
+      "tokens": "972000",
+      "displayedTokens": "972000",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 33,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "1080p|1:1|13": {
+      "tokens": "1069200",
+      "displayedTokens": "1069200",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 34,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "1080p|1:1|14": {
+      "tokens": "1166400",
+      "displayedTokens": "1166400",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 35,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "1080p|1:1|15": {
+      "tokens": "1215000",
+      "displayedTokens": "1215000",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 36,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "1080p|21:9|4": {
+      "tokens": "342378.09375",
+      "displayedTokens": "342378",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 37,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "1080p|21:9|5": {
+      "tokens": "440200.40625",
+      "displayedTokens": "440200",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 38,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "1080p|21:9|6": {
+      "tokens": "489111.5625",
+      "displayedTokens": "489112",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 39,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "1080p|21:9|7": {
+      "tokens": "586933.875",
+      "displayedTokens": "586934",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 40,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "1080p|21:9|8": {
+      "tokens": "684756.1875",
+      "displayedTokens": "684756",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 41,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1080p|21:9|9": {
+      "tokens": "733667.34375",
+      "displayedTokens": "733667",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 42,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1080p|21:9|10": {
+      "tokens": "831489.65625",
+      "displayedTokens": "831490",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 43,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "1080p|21:9|11": {
+      "tokens": "929311.96875",
+      "displayedTokens": "929312",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 44,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "1080p|21:9|12": {
+      "tokens": "978223.125",
+      "displayedTokens": "978223",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 45,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "1080p|21:9|13": {
+      "tokens": "1076045.4375",
+      "displayedTokens": "1076045",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 46,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "1080p|21:9|14": {
+      "tokens": "1173867.75",
+      "displayedTokens": "1173868",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 47,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "1080p|21:9|15": {
+      "tokens": "1222778.90625",
+      "displayedTokens": "1222779",
+      "sourceFile": "evidence/2026-10-20/minimum-1080p.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewQ2CK6dj",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 48,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "4k|16:9|4": {
+      "tokens": "1360800",
+      "displayedTokens": "1360800",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 1,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "4k|9:16|4": {
+      "tokens": "1360800",
+      "displayedTokens": "1360800",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 1,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "4k|16:9|5": {
+      "tokens": "1749600",
+      "displayedTokens": "1749600",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 2,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "4k|9:16|5": {
+      "tokens": "1749600",
+      "displayedTokens": "1749600",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 2,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "4k|16:9|6": {
+      "tokens": "1944000",
+      "displayedTokens": "1944000",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 3,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "4k|9:16|6": {
+      "tokens": "1944000",
+      "displayedTokens": "1944000",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 3,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "4k|16:9|7": {
+      "tokens": "2332800",
+      "displayedTokens": "2332800",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 4,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "4k|9:16|7": {
+      "tokens": "2332800",
+      "displayedTokens": "2332800",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 4,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "4k|16:9|8": {
+      "tokens": "2721600",
+      "displayedTokens": "2721600",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 5,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "4k|9:16|8": {
+      "tokens": "2721600",
+      "displayedTokens": "2721600",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 5,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "4k|16:9|9": {
+      "tokens": "2916000",
+      "displayedTokens": "2916000",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 6,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "4k|9:16|9": {
+      "tokens": "2916000",
+      "displayedTokens": "2916000",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 6,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "4k|16:9|10": {
+      "tokens": "3304800",
+      "displayedTokens": "3304800",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 7,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "4k|9:16|10": {
+      "tokens": "3304800",
+      "displayedTokens": "3304800",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 7,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "4k|16:9|11": {
+      "tokens": "3693600",
+      "displayedTokens": "3693600",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 8,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "4k|9:16|11": {
+      "tokens": "3693600",
+      "displayedTokens": "3693600",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 8,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "4k|16:9|12": {
+      "tokens": "3888000",
+      "displayedTokens": "3888000",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 9,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "4k|9:16|12": {
+      "tokens": "3888000",
+      "displayedTokens": "3888000",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 9,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "4k|16:9|13": {
+      "tokens": "4276800",
+      "displayedTokens": "4276800",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 10,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "4k|9:16|13": {
+      "tokens": "4276800",
+      "displayedTokens": "4276800",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 10,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "4k|16:9|14": {
+      "tokens": "4665600",
+      "displayedTokens": "4665600",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 11,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "4k|9:16|14": {
+      "tokens": "4665600",
+      "displayedTokens": "4665600",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 11,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "4k|16:9|15": {
+      "tokens": "4860000",
+      "displayedTokens": "4860000",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 12,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "4k|9:16|15": {
+      "tokens": "4860000",
+      "displayedTokens": "4860000",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 12,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "4k|4:3|4": {
+      "tokens": "1360905.65625",
+      "displayedTokens": "1360906",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 13,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "4k|3:4|4": {
+      "tokens": "1360905.65625",
+      "displayedTokens": "1360906",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 13,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "4k|4:3|5": {
+      "tokens": "1749735.84375",
+      "displayedTokens": "1749736",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 14,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "4k|3:4|5": {
+      "tokens": "1749735.84375",
+      "displayedTokens": "1749736",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 14,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "4k|4:3|6": {
+      "tokens": "1944150.9375",
+      "displayedTokens": "1944151",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 15,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "4k|3:4|6": {
+      "tokens": "1944150.9375",
+      "displayedTokens": "1944151",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 15,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "4k|4:3|7": {
+      "tokens": "2332981.125",
+      "displayedTokens": "2332981",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 16,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "4k|3:4|7": {
+      "tokens": "2332981.125",
+      "displayedTokens": "2332981",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 16,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "4k|4:3|8": {
+      "tokens": "2721811.3125",
+      "displayedTokens": "2721811",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 17,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "4k|3:4|8": {
+      "tokens": "2721811.3125",
+      "displayedTokens": "2721811",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 17,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "4k|4:3|9": {
+      "tokens": "2916226.40625",
+      "displayedTokens": "2916226",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 18,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "4k|3:4|9": {
+      "tokens": "2916226.40625",
+      "displayedTokens": "2916226",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 18,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "4k|4:3|10": {
+      "tokens": "3305056.59375",
+      "displayedTokens": "3305057",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 19,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "4k|3:4|10": {
+      "tokens": "3305056.59375",
+      "displayedTokens": "3305057",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 19,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "4k|4:3|11": {
+      "tokens": "3693886.78125",
+      "displayedTokens": "3693887",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 20,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "4k|3:4|11": {
+      "tokens": "3693886.78125",
+      "displayedTokens": "3693887",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 20,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "4k|4:3|12": {
+      "tokens": "3888301.875",
+      "displayedTokens": "3888302",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 21,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "4k|3:4|12": {
+      "tokens": "3888301.875",
+      "displayedTokens": "3888302",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 21,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "4k|4:3|13": {
+      "tokens": "4277132.0625",
+      "displayedTokens": "4277132",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 22,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "4k|3:4|13": {
+      "tokens": "4277132.0625",
+      "displayedTokens": "4277132",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 22,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "4k|4:3|14": {
+      "tokens": "4665962.25",
+      "displayedTokens": "4665962",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 23,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "4k|3:4|14": {
+      "tokens": "4665962.25",
+      "displayedTokens": "4665962",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 23,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "4k|4:3|15": {
+      "tokens": "4860377.34375",
+      "displayedTokens": "4860377",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 24,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "4k|3:4|15": {
+      "tokens": "4860377.34375",
+      "displayedTokens": "4860377",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 24,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "4k|1:1|4": {
+      "tokens": "1360800",
+      "displayedTokens": "1360800",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 25,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "4k|1:1|5": {
+      "tokens": "1749600",
+      "displayedTokens": "1749600",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 26,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "4k|1:1|6": {
+      "tokens": "1944000",
+      "displayedTokens": "1944000",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 27,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "4k|1:1|7": {
+      "tokens": "2332800",
+      "displayedTokens": "2332800",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 28,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "4k|1:1|8": {
+      "tokens": "2721600",
+      "displayedTokens": "2721600",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 29,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "4k|1:1|9": {
+      "tokens": "2916000",
+      "displayedTokens": "2916000",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 30,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "4k|1:1|10": {
+      "tokens": "3304800",
+      "displayedTokens": "3304800",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 31,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "4k|1:1|11": {
+      "tokens": "3693600",
+      "displayedTokens": "3693600",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 32,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "4k|1:1|12": {
+      "tokens": "3888000",
+      "displayedTokens": "3888000",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 33,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "4k|1:1|13": {
+      "tokens": "4276800",
+      "displayedTokens": "4276800",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 34,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "4k|1:1|14": {
+      "tokens": "4665600",
+      "displayedTokens": "4665600",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 35,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "4k|1:1|15": {
+      "tokens": "4860000",
+      "displayedTokens": "4860000",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 36,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "4k|21:9|4": {
+      "tokens": "1360837.40625",
+      "displayedTokens": "1360837",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 37,
+      "minimizingInputSeconds": [
+        "2",
+        "3"
+      ]
+    },
+    "4k|21:9|5": {
+      "tokens": "1749648.09375",
+      "displayedTokens": "1749648",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 38,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "4k|21:9|6": {
+      "tokens": "1944053.4375",
+      "displayedTokens": "1944053",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 39,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "4k|21:9|7": {
+      "tokens": "2332864.125",
+      "displayedTokens": "2332864",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 40,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "4k|21:9|8": {
+      "tokens": "2721674.8125",
+      "displayedTokens": "2721675",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 41,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "4k|21:9|9": {
+      "tokens": "2916080.15625",
+      "displayedTokens": "2916080",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 42,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "4k|21:9|10": {
+      "tokens": "3304890.84375",
+      "displayedTokens": "3304891",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 43,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "4k|21:9|11": {
+      "tokens": "3693701.53125",
+      "displayedTokens": "3693702",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 44,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "4k|21:9|12": {
+      "tokens": "3888106.875",
+      "displayedTokens": "3888107",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 45,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "4k|21:9|13": {
+      "tokens": "4276917.5625",
+      "displayedTokens": "4276918",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 46,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "4k|21:9|14": {
+      "tokens": "4665728.25",
+      "displayedTokens": "4665728",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 47,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    },
+    "4k|21:9|15": {
+      "tokens": "4860133.59375",
+      "displayedTokens": "4860134",
+      "sourceFile": "evidence/2026-10-20/minimum-4k.clipboard.json",
+      "sourceTable": "tblmNCuMjADrXtDf",
+      "sourceView": "vewrMAE6IZ",
+      "sourceField": "fld0p1bMiB",
+      "sourceRow": 48,
+      "minimizingInputSeconds": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ]
+    }
+  }
+};
+root.ReelayMinimumSnapshot=snapshot;
+if(typeof module!=='undefined')module.exports=snapshot;
+})(typeof window!=='undefined'?window:globalThis);
+</script>
+<script>/* Reelay · source-validated Seedance 2.0 lookup; see evidence/README.md. */
 (function (root, factory) {
   'use strict';
-  if (typeof module === 'object' && module.exports) {
-    module.exports = factory(require('./engine.js'));
-  } else {
-    root.ReelayRules = factory(root.ReelayMath);
-  }
-})(typeof window !== 'undefined' ? window : globalThis, function (MathEngine) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./engine.js'), require('./generated-minima.js'));
+  else root.ReelayRules = factory(root.ReelayMath, root.ReelayMinimumSnapshot);
+})(typeof window !== 'undefined' ? window : globalThis, function (E, snapshot) {
   'use strict';
-  if (!MathEngine) throw new Error('ReelayRules requires ReelayMath');
-
-  const VERSION = 'volc-seedance20-2026-10-19';
+  if (!E || !snapshot) throw new Error('缺少经过核验的用量规则');
   const MODEL = 'seedance-2.0';
-  const VERIFIED_AT = '2026-10-19';
+  if (snapshot.model !== MODEL) throw new Error('用量表模型不匹配');
+  const VERSION = snapshot.version, VERIFIED_AT = snapshot.verifiedAt;
+  const PREVIOUS_VERSIONS = Object.freeze(['volc-seedance20-2026-10-19']);
   const TABLE_ID = 'tblmNCuMjADrXtDf';
   const BASE_URL = 'https://bytedance.larkoffice.com/wiki/FXaYwxzJ5i5Zdik32ipcWzt7nxd';
   const RESOLUTIONS = Object.freeze(['480p', '720p', '1080p', '4k']);
-  const RATIOS = Object.freeze(['16:9', '4:3', '1:1', '3:4', '9:16', '21:9']);
-  const VIEWS = Object.freeze({
-    '480p': 'vew2CR2JYM',
-    '720p': 'vewVBehIlq',
-    '1080p': 'vewQ2CK6dj',
-    '4k': 'vewrMAE6IZ'
-  });
-  const SOURCE_FORMULA = 'IF(VALUE([时长-输入视频（秒）])>0,(MAX(ROUNDUP(VALUE([时长-输出视频（秒）])*2/3,0),VALUE([时长-输入视频（秒）]))+VALUE([时长-输出视频（秒）]))*VALUE([长边（像素）])*VALUE([短边（像素）])*VALUE([帧率])/1024,VALUE([时长-输出视频（秒）])*VALUE([长边（像素）])*VALUE([短边（像素）])*VALUE([帧率])/1024)';
-  const SOURCE_DESCRIPTION = '估算值，实际以调用 API 后返回信息中的 usage 字段为准。';
-  const NOTE = '依据官方 Seedance 2.0 表格公式计算的最低用量估算值；保留公式的小数精度，表格显示可能按数字格式取整。实际计费用量以 API usage.completion_tokens 为准。';
-
-  function viewUrl(resolution) {
-    return BASE_URL + '?table=' + TABLE_ID + '&view=' + VIEWS[resolution];
-  }
-
+  const RATIOS = Object.freeze(['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
+  const VIEWS = Object.freeze({'480p':'vew2CR2JYM','720p':'vewVBehIlq','1080p':'vewQ2CK6dj','4k':'vewrMAE6IZ'});
+  const viewUrl = res => BASE_URL + '?table=' + TABLE_ID + '&view=' + VIEWS[res];
   const sources = Object.freeze({
-    version: VERSION,
-    model: MODEL,
-    verifiedAt: VERIFIED_AT,
-    timezone: 'Asia/Shanghai',
-    pricing: Object.freeze({
-      url: 'https://console.volcengine.com/ark/region:cn-beijing/docs/model-pricing',
-      publicUrl: 'https://docs.volcengine.com/docs/ark/model-pricing?lang=zh',
-      updatedAt: '2026-10-17',
-      verifiedAt: VERIFIED_AT,
-      note: '采用当前标准刊例费率；不自动应用已过期的限时优惠。'
-    }),
-    dimensions: Object.freeze({
-      url: 'https://console.volcengine.com/ark/region:cn-beijing/docs/create-video-generation-task-api',
-      verifiedAt: VERIFIED_AT,
-      note: 'Seedance 2.0 标准版支持 480p、720p、1080p、4k，输出帧率为 24 fps。'
-    }),
-    usage: Object.freeze({
-      url: 'https://console.volcengine.com/ark/region:cn-beijing/docs/get-video-generation-task-api',
-      verifiedAt: VERIFIED_AT,
-      note: 'usage.completion_tokens 已包含最低用量限制；total_tokens 与其相等，不重复加总或再次套用门槛。'
-    }),
+    version: VERSION, model: MODEL, verifiedAt: VERIFIED_AT, timezone: 'Asia/Shanghai',
+    pricing: Object.freeze({url:'https://console.volcengine.com/ark/region:cn-beijing/docs/model-pricing',updatedAt:'2026-10-19',verifiedAt:VERIFIED_AT,note:'标准刊例费率；不自动应用已过期的限时优惠。'}),
+    dimensions: Object.freeze({url:'https://console.volcengine.com/ark/region:cn-beijing/docs/create-video-generation-task-api',verifiedAt:'2026-10-19',note:'Seedance 2.0 标准版，24 fps。'}),
+    usage: Object.freeze({url:'https://console.volcengine.com/ark/region:cn-beijing/docs/get-video-generation-task-api',verifiedAt:VERIFIED_AT,note:'completion_tokens 已含最低用量；total_tokens 与其相等，不重复相加或补门槛。'}),
     minima: Object.freeze({
-      url: viewUrl('480p'),
-      tableId: TABLE_ID,
-      views: Object.freeze(Object.fromEntries(RESOLUTIONS.map(res => [res, viewUrl(res)]))),
-      verifiedAt: VERIFIED_AT,
-      provenance: '官方飞书表格正常选择并复制所得 text/bitable，读取“最低token用量”字段的 header.property.formula 与字段说明。',
-      sourceFormula: SOURCE_FORMULA,
-      sourceDescription: SOURCE_DESCRIPTION,
-      formulaNote: '下列阈值式由本工具从2026-10-19保存的表格公式字段分离出下限；与基础用量取较大值后的整体计算才与原字段公式等价，不是官方价格正文直接列出的公式。',
-      documentationReview: Object.freeze({verifiedAt: '2026-10-20', scope: '仅复核官方模型价格正文与任务查询API的最低用量说明；本次未重新取得飞书表内公式。', tableFormulaRechecked: false}),
-      minimumFormula: '(输出秒数 + ceil(输出秒数 × 2 / 3)) × 宽 × 高 × 24 / 1024',
-      combinedFormula: '(输出秒数 + max(输入视频总秒数, ceil(输出秒数 × 2 / 3))) × 宽 × 高 × 24 / 1024',
-      scope: '含视频输入的 Seedance 2.0 标准版；4 个分辨率 × 6 个固定宽高比 × 4–15 秒整数输出时长，共 288 个规格。',
-      precision: '仅对公式中的 2 × 输出秒数 / 3 向上取整；token 结果保留精确有限十进制，不按表格的显示格式预先取整。',
-      billingNotice: SOURCE_DESCRIPTION
+      url:viewUrl('480p'),tableId:TABLE_ID,fieldId:'fld0p1bMiB',
+      views:Object.freeze(Object.fromEntries(RESOLUTIONS.map(res=>[res,viewUrl(res)]))),
+      verifiedAt:VERIFIED_AT,
+      calculatorUrl:'https://bytedance.larkoffice.com/share/base/form/shrcnP1Bl0mqCP9OHCbjpe1oBkf',
+      sourceFormula:snapshot.sourceFormula,sourceDescription:snapshot.sourceDescription,
+      provenance:'当日刷新官方 Seedance 2.0 表格后正常复制四个视图；保留 text/bitable 原文、公式字段及官方计算器公开页面。',
+      method:'按分辨率、比例、输出时长查询已核验最低值；有视频时与基础估算取较大值，无视频时仅采用基础估算。',
+      precision:'构建时解释原始公式，在官方输入时长选项内求最低值并逐项核对192条显示记录；保留公式小数，展开为288个输出规格。',
+      evidencePath:'evidence/2026-10-20/',billingNotice:'估算值，实际以调用 API 后返回信息中的 usage 字段为准。'
     })
   });
-
-  // All quantities here have denominators dividing 1024. Long division preserves
-  // the exact terminating decimal without Number conversion or display rounding.
-  function exactDecimal(value) {
-    const q = MathEngine.dec(value);
-    const negative = q.n < 0n;
-    let numerator = negative ? -q.n : q.n;
-    let remainder = numerator % q.d;
-    let result = (numerator / q.d).toString();
-    if (remainder) {
-      result += '.';
-      let digits = 0;
-      while (remainder) {
-        if (++digits > 16) throw new Error('最低用量应为有限十进制');
-        remainder *= 10n;
-        result += (remainder / q.d).toString();
-        remainder %= q.d;
-      }
-    }
-    return (negative ? '-' : '') + result;
+  function assertModel(task) {
+    if (task.model !== undefined && task.model !== MODEL) throw new Error('用量规则仅适用于 Seedance 2.0 标准版');
   }
-
   function key(task, version = VERSION) {
-    const res = String(task.res).trim().toLowerCase();
-    const ratio = String(task.ratio).trim();
-    if (String(task.seconds).trim() === 'auto' || ratio === 'auto' || ratio === 'adaptive') return null;
-    const seconds = MathEngine.normalizeSeconds(task.seconds);
-    if (!RESOLUTIONS.includes(res) || !RATIOS.includes(ratio)) {
-      throw new Error('不支持的比例或分辨率');
-    }
-    return [MODEL, String(version), res, ratio, seconds].join('|');
+    assertModel(task);
+    const res=String(task.res).trim().toLowerCase(),ratio=String(task.ratio).trim();
+    if (String(task.seconds).trim()==='auto' || ratio==='auto' || ratio==='adaptive') return null;
+    const seconds=E.normalizeSeconds(task.seconds);
+    if (!RESOLUTIONS.includes(res) || !RATIOS.includes(ratio)) throw new Error('不支持的比例或分辨率');
+    return [MODEL,String(version),res,ratio,seconds].join('|');
   }
-
   function buildMinima() {
-    const minima = {};
-    for (const res of RESOLUTIONS) {
-      for (const ratio of RATIOS) {
-        const wh = MathEngine.DIMS[res][ratio];
-        const area = MathEngine.mul(String(wh[0]), String(wh[1]));
-        for (let seconds = 4; seconds <= 15; seconds++) {
-          const output = MathEngine.dec(String(seconds));
-          const referenceFloor = MathEngine.ceil(MathEngine.div(MathEngine.mul(output, '2'), '3'));
-          const tokens = MathEngine.div(
-            MathEngine.mul(MathEngine.mul(MathEngine.add(output, referenceFloor), area), '24'),
-            '1024'
-          );
-          minima[key({ res, ratio, seconds })] = {
-            tokens: exactDecimal(tokens),
-            note: NOTE,
-            kind: 'official',
-            sourceUrl: viewUrl(res),
-            verifiedAt: VERIFIED_AT
-          };
-        }
-      }
+    const result={};
+    for(const res of RESOLUTIONS) for(const ratio of RATIOS) for(let seconds=4;seconds<=15;seconds++) {
+      const row=snapshot.entries[[res,ratio,seconds].join('|')];
+      if(!row || E.cmp(row.tokens,0)<=0) throw new Error('官方最低用量快照缺项');
+      result[key({res,ratio,seconds})]={tokens:row.tokens,note:'官方最低用量表的估算值；按原始公式保留精度，实际以 API usage 为准。',kind:'official',model:MODEL,version:VERSION,sourceUrl:viewUrl(res),sourceFile:row.sourceFile,displayedTokens:row.displayedTokens,verifiedAt:VERIFIED_AT};
     }
-    return minima;
+    return result;
   }
-
-  const MINIMA = buildMinima();
-  for (const entry of Object.values(MINIMA)) Object.freeze(entry);
-  Object.freeze(MINIMA);
-
-  // The lookup is by output specification alone. The caller applies the returned
-  // minimum only when video input is present; input duration is never a key part.
-  function officialMinimum(task) {
-    const lookup = key(task);
-    return lookup ? MINIMA[lookup] || null : null;
+  const MINIMA=buildMinima();
+  Object.values(MINIMA).forEach(Object.freeze);Object.freeze(MINIMA);
+  function officialMinimum(task) {const lookup=key(task);return lookup?MINIMA[lookup]||null:null;}
+  // Source-aware boundary; API observations never enter the minimum lookup.
+  function estimate(task, minimum = officialMinimum(task), version = VERSION) {
+    assertModel(task);
+    if(version!==VERSION) throw new Error('用量规则版本不匹配');
+    const video=E.normalizeVideo(task.video);
+    if(video && minimum && !['official','manual'].includes(minimum.kind)) throw new Error('最低用量来源类型无效');
+    if(video && minimum?.kind==='official') {
+      const known=officialMinimum(task);
+      if(!known || minimum.model!==MODEL || minimum.version!==VERSION || E.cmp(minimum.tokens,known.tokens)!==0) throw new Error('官方用量记录与已核验快照不符');
+    }
+    const rule=video?minimum:null,calc=E.estimate(task,rule?.tokens||'');
+    return {...calc,status:rule?.kind==='official'?'rule-estimate':calc.status,ruleVersion:VERSION,minimumSource:rule?{kind:rule.kind,sourceUrl:rule.sourceUrl||null,verifiedAt:rule.verifiedAt||null}:null};
   }
-
-  return Object.freeze({
-    VERSION, MODEL, VERIFIED_AT, RESOLUTIONS, RATIOS, VIEWS,
-    sources, buildMinima, key, officialMinimum, MINIMA
-  });
+  return Object.freeze({VERSION,MODEL,VERIFIED_AT,PREVIOUS_VERSIONS,RESOLUTIONS,RATIOS,VIEWS,sources,buildMinima,key,officialMinimum,estimate,MINIMA});
 });
 </script><script>(()=>{'use strict';
 const E=window.ReelayMath,R=window.ReelayRules,{$}={$:id=>document.getElementById(id)};
@@ -490,7 +5281,7 @@ for(const video of [false,true])for(const extreme of ['min','max']){
  let best=null,bestTokens=null;
  for(const res of RES)for(const ratio of RATIOS)for(let s=4;s<=15;s++){
   const t=task(res,ratio,String(s),video,extreme==='min'?'2':'15');
-  const tokens=E.estimate(t,video?R.officialMinimum(t).tokens:'').billedTokens;
+  const tokens=R.estimate(t).billedTokens;
   if(best===null||(extreme==='min'?cmp(tokens,bestTokens)<0:cmp(tokens,bestTokens)>0)){best=t;bestTokens=tokens;}
  }
  QUICK_TASKS[(video?'video':'none')+'-'+extreme]=best;
@@ -533,7 +5324,18 @@ function upgradeState(input){
  n.plan={...defaults().plan,...n.plan};if(['企业 A · 定价方案','企业 A · 讨论方案'].includes(n.plan.company))n.plan.company='积分定价方案';n.task=fixedTask(n.task);n.tasks=n.tasks.map(r=>({...r,params:normalizeTask(r.params)}));n.observations=n.observations.map(o=>({...o,params:normalizeTask(o.params,false),usage:o.usage||''}));
  if(old){n.rules={version:R.VERSION,minima:R.buildMinima(),legacyMinima:clone(n.rules.minima||{})};n.schema='reelay.pricing.v9';}
  else{
-  if(n.rules.version!==R.VERSION)throw Error('规则版本与本文件不符，请先核对来源');
+  if(n.rules.version!==R.VERSION){
+   if(!R.PREVIOUS_VERSIONS.includes(n.rules.version))throw Error('规则版本与本文件不符，请先核对来源');
+   n=normalizeMinimumKeys(n);
+   const previous=n.rules.version,updated=R.buildMinima(),archived=clone(n.rules.legacyMinima||{});
+   for(const [k,v] of Object.entries(n.rules.minima)){
+    if(!positive(v.tokens,false,12)||!txt(v.note,500)||!v.note.trim())throw Error('门槛数据或来源无效');
+    const a=k.split('|'),nextKey=minimumKey({res:a[2],ratio:a[3],seconds:a[4]},R.VERSION);
+    if(v.kind==='manual')updated[nextKey]=v;
+    else if(v.kind!=='official'||cmp(v.tokens,updated[nextKey].tokens)!==0)archived[k]=v;
+   }
+   n.rules={...n.rules,version:R.VERSION,minima:updated,legacyMinima:archived,previousVersion:previous};
+  }
   n=normalizeMinimumKeys(n);const official=R.buildMinima();
   for(const [k,v] of Object.entries(n.rules.minima)){
    if(!official[k]||!positive(v.tokens,false,12)||!txt(v.note,500)||!v.note.trim())throw Error('门槛数据或来源无效');
@@ -554,7 +5356,7 @@ function idealPricing(p=state.plan){return E.plan({pay:p.pay,total:p.total,disco
 function pricing(over={}){const p={...state.plan,...over},ideal=idealPricing(p);let applied='';if(p.mode==='saved')applied=decimalString(ideal.M,p.digits,p.round);if(p.mode==='manual')applied=p.manualM;return E.plan({pay:p.pay,total:p.total,discount:p.discount,q:p.q,k:'10',targetMode:p.targetMode,margin:p.margin,appliedM:applied});}
 /* SINGLE THEORY PIPELINE: its inputs are parameters, rules, plan. No observations,
  * no reference lookup, no evidence selection, no recorded monetary field. */
-function theoryOne(t,rules,p){const m=t.video?rules.minima[minimumKey(t,rules.version)]:null,calc=E.estimate(t,m?.tokens||'');if(!calc.P)return{range:false,x:null,calc};const C=mul(calc.P,p.q),x=E.settle(calc.P,C,p);return{range:false,x,calc,rule:m||null,partial:!!calc.partial,source:'parameter-formula',scope:'theory'};}
+function theoryOne(t,rules,p){const m=t.video?rules.minima[minimumKey(t,rules.version)]:null,calc=R.estimate(t,m||null,rules.version);if(!calc.P)return{range:false,x:null,calc};const C=mul(calc.P,p.q),x=E.settle(calc.P,C,p);return{range:false,x,calc,rule:m||null,partial:!!calc.partial,source:'official-calculator-lookup',scope:'theory'};}
 function theory(t=state.task,rules=state.rules,p=pricing()){return theoryOne(t,rules,p);}
 function current(){return theory();}
 function label(t){return`${t.res==='4k'?'4K':t.res} · ${t.ratio==='auto'?'全部比例':t.ratio} · ${t.seconds==='auto'?'4–15秒':t.seconds+'秒'}`;}
@@ -592,7 +5394,7 @@ function renderPlan(){
 
  const targetPicks=$('discount-picks');targetPicks.dataset.mode=p.targetMode;targetPicks.setAttribute('aria-label',p.targetMode==='margin'?'销售毛利率快捷值（%）':'现金折扣快捷值（折）');
  targetPicks.innerHTML=(p.targetMode==='margin'?['0','5','8.125','10','20'].map(g=>`<button data-margin="${g}" aria-label="${g}%" aria-pressed="${cmp(g,state.plan.margin)===0}" class="${cmp(g,state.plan.margin)===0?'active':''}">${g}</button>`):['7.35','7.8','8','8.5','9','10'].map(d=>`<button data-discount="${d}" aria-label="${d}折" aria-pressed="${cmp(d,state.plan.discount)===0}" class="${cmp(d,state.plan.discount)===0?'active':''}">${d}</button>`)).join('');
- $('rule-status').textContent='规则核验：2026-10-19';
+ $('rule-status').textContent='规则核验：'+R.VERIFIED_AT;
  $('plan-principle').innerHTML=`<span>等效现金折扣 <b>${num(effectiveDiscount,4)}折</b></span><span>模型毛利率 <b class="${cmp(actualMargin,0)<0?'loss':''}">${num(actualMargin,4)}%</b></span><span class="outcome-caption" title="上述折扣与毛利率未计入每次扣分向上取整的影响">（取整前）</span>${cmp(effectiveDiscount,10)>0?'<span class="outcome-note">高于刊例</span>':''}`;
  $('migration-note').hidden=!migrationNotice;$('migration-note').textContent=migrationNotice;
 }
@@ -647,8 +5449,8 @@ function usageExplanation(v,t){
  const base=`(${esc(t.seconds)} + ${t.video?esc(t.vin):'0'}) × ${c.wh[0]} × ${c.wh[1]} × 24 ÷ 1024`;
  const decision=v.partial?'最低用量规则尚未补齐，本次仅为基础试算，无法确定完整费用。':!t.video?`无视频输入，不应用最低用量，采用基础估算 ${tokenText(c.tokens)} Token。`:cmp(c.tokens,rule.tokens)<0?`基础估算 ${tokenText(c.tokens)} Token 低于${manual?'人工设置的':'最低用量估算'} ${tokenText(rule.tokens)} Token，本次采用后者。`:cmp(c.tokens,rule.tokens)===0?`两项同为 ${tokenText(c.tokens)} Token，采用基础估算，无需补足用量。`:`基础估算 ${tokenText(c.tokens)} Token 已高于最低值 ${tokenText(rule.tokens)} Token，本次采用基础估算。`;
  const applied=hasMinimum?`max(${tokenText(c.tokens)}, ${tokenText(rule.tokens)}) = ${tokenText(c.billedTokens)}`:tokenText(c.billedTokens);
- const minimumMethod=manual?`<p>本任务的最低值来自人工覆盖：${tokenText(rule.tokens)} Token。来源：${esc(rule.note)}。此值不由官方表格公式计算；是否适用于实际结算，以约定规则和账单为准。</p>`:!t.video?'<p>无视频输入，本次不使用最低用量估算。</p>':!rule?'<p>本规格最低用量待补齐，暂不提供完整估价。</p>':`<p>本工具沿用 ${esc(source.verifiedAt)} 保存的 Seedance 2.0 表格公式字段。本工具从该字段中分离出最低下限，再与基础用量取较大值；合并后的计算与原字段公式等价。下列阈值式<strong>不是模型价格正文直接列出的公式</strong>。</p><div class="formula">最低 Token 估算 = (输出秒数 + ceil(输出秒数 × 2 ÷ 3)) × 宽 × 高 × 24 ÷ 1024<br>本规格 = ${tokenText(rule.tokens)} Token</div><p class="footnote">其中 ceil 表示向上取整。此处只对输出秒数 × 2 ÷ 3 取整，Token 结果保留精度。这一数学表达不构成输入素材的最低时长要求。</p><details class="record-notes"><summary>查看已保存的表格公式字段</summary><pre class="formula source-formula">${esc(source.sourceFormula)}</pre><p class="footnote">本地记录的来源：官方表格复制数据中的“最低token用量”公式字段。字段内含 MAX(ROUNDUP(输出秒数 × 2 / 3, 0), 输入秒数)，据此分离出与输出规格对应的下限；再与基础用量取较大值，不相加。</p></details><p class="footnote">2026-10-20 复核了官方文字说明；本次未重新取得飞书表内公式，表格数据仍沿用上述快照。<a href="${esc(tableUrl)}" target="_blank" rel="noopener">查看对应表格 ↗</a></p>`;
- return `<div class="usage-explanation" id="usage-explanation"><p class="usage-lead">最低 Token 用量也是估算值，最终计费用量以 API 返回为准。</p><h3>官方如何说明最低用量</h3><p>含视频输入的任务存在最低 Token 用量限制。基础估算低于对应最低值时，按最低值估价；最低值与输出分辨率、宽高比和输出时长有关。官方将对应表格标为“估算值”。</p><p>查询任务返回的 <code>usage.completion_tokens</code> 已体现最低用量限制，可用于计费对账，不再补一次门槛。<code>total_tokens</code> 与它相等，不重复相加。</p><div class="usage-source-links"><a href="${esc(R.sources.pricing.url)}" target="_blank" rel="noopener">官方模型价格 · 最低用量说明 ↗</a><a href="${esc(R.sources.usage.url)}" target="_blank" rel="noopener">官方 API · usage 字段 ↗</a></div><h3>当前配置如何估价</h3><p>${esc(label(t))} · ${esc(vinLabel(t))}</p><div class="usage-current">${decision}<br>${manual?'本次最低值为人工覆盖。<br>':''}刊例成本 P = ${tokenText(c.billedTokens)} × ${num(c.rate,6)} ÷ 1,000,000 = ¥${num(c.P,18)}。</div><p>刊例成本就是官方计算器中的“估算视频价格”。采购成本 C = P × 采购比例；客户扣分折合金额另按积分定价方案计算。</p><details class="usage-method" id="usage-method"><summary>本工具的估算依据与公式</summary>${minimumMethod}<div class="formula">基础估算 Token = ${base} = ${tokenText(c.tokens)}<br>估价采用 Token${v.partial?'（仅基础）':''} = ${applied}</div><p class="footnote">“采用”标记只表示本次估价选用的数值；两者相等时标记基础估算。显示精度不参与计算，Token 不提前取整。</p></details></div>`;
+ const minimumMethod=manual?`<p>本任务的最低值来自人工覆盖：${tokenText(rule.tokens)} Token。来源：${esc(rule.note)}。</p>`:!t.video?'<p>无视频输入，本次不使用最低用量估算。</p>':!rule?'<p>本规格最低用量待补齐，暂不提供完整估价。</p>':`<p>与官方 Seedance 2.0 计算器一致：按输出分辨率、画面比例和时长查最低用量，再与基础估算取较大值，两者不相加。</p><div class="formula">${esc(label(t))} → 最低 ${tokenText(rule.tokens)} Token</div><p class="footnote">表格显示 ${esc(rule.displayedTokens)} Token；本工具保留原始公式的小数精度，不提前取整。核验日期 ${esc(source.verifiedAt)}。</p><details class="record-notes"><summary>官方表格原式与核验方法</summary><pre class="formula source-formula">${esc(source.sourceFormula)}</pre><p>上面是当前官方表格“最低token用量”字段的原式，其中确有 ROUNDUP(输出时长 × 2 / 3, 0)。它不是模型价格正文直接列出的公式，也不是输入素材的最低时长要求。</p><p class="footnote">原式、四个视图的复制数据和官方计算器查表公式已保存。构建时执行原式，在官方输入时长选项内求最低值，并核对全部192条表格显示记录；通过后生成288个规格的精确值。运行时查表，不另写一套下限公式。</p></details><div class="usage-source-links"><a href="${esc(source.calculatorUrl)}" target="_blank" rel="noopener">官方计算器 ↗</a><a href="${esc(tableUrl)}" target="_blank" rel="noopener">对应最低用量表 ↗</a></div>`;
+ return `<div class="usage-explanation" id="usage-explanation"><p class="usage-lead">最低 Token 用量也是估算值，最终计费用量以 API 返回为准。</p><h3>官方如何说明最低用量</h3><p>含视频输入的任务存在最低 Token 用量限制。基础估算低于对应最低值时，按最低值估价；最低值与输出分辨率、宽高比和输出时长有关。官方表格的原文说明是：“估算值，实际以调用 API 后返回信息中的 usage 字段为准”。</p><p>查询任务返回的 <code>usage.completion_tokens</code> 已体现最低用量限制，可用于计费对账，不再补一次门槛。<code>total_tokens</code> 与它相等，不重复相加。</p><div class="usage-source-links"><a href="${esc(R.sources.pricing.url)}" target="_blank" rel="noopener">官方模型价格 · 最低用量说明 ↗</a><a href="${esc(R.sources.usage.url)}" target="_blank" rel="noopener">官方 API · usage 字段 ↗</a></div><h3>当前配置如何估价</h3><p>${esc(label(t))} · ${esc(vinLabel(t))}</p><div class="usage-current">${decision}<br>${manual?'本次最低值为人工覆盖。<br>':''}刊例成本 P = ${tokenText(c.billedTokens)} × ${num(c.rate,6)} ÷ 1,000,000 = ¥${num(c.P,18)}。</div><p>刊例成本就是官方计算器中的“估算视频价格”。采购成本 C = P × 采购比例；客户扣分折合金额另按积分定价方案计算。</p><details class="usage-method" id="usage-method"><summary>本工具的估算依据与公式</summary>${minimumMethod}<div class="formula">基础估算 Token = ${base} = ${tokenText(c.tokens)}<br>估价采用 Token${v.partial?'（仅基础）':''} = ${applied}</div><p class="footnote">“采用”标记只表示本次估价选用的数值；两者相等时标记基础估算。显示精度不参与计算，Token 不提前取整。生成任务中的输入秒数按本工具的整秒选项设置；原始实测时长不改写。</p></details></div>`;
 }
 function renderUsagePanel(v,t){
  const methodOpen=$('usage-method')?.open||false;
@@ -725,14 +5527,14 @@ function openDetails(mode='theory',recordId='',contextTask=null){
  const view=chosen==='actual'?actualBreakdown(selected,p):theoryBreakdown(t,p);
  const tabs=`<div class="detail-switch" role="tablist" aria-label="计算展开口径"><button role="tab" aria-selected="${chosen==='theory'}" data-detail-mode="theory" class="${chosen==='theory'?'active':''}">理论计算展开</button><button role="tab" aria-selected="${chosen==='actual'}" data-detail-mode="actual" class="${chosen==='actual'?'active':''}">实测金额复算展开</button></div>`;
  const content=tabs+detailPlan(p)+selector+view.html+detailBusinessMath(p)+`<div class="actions" style="margin-top:20px"><button class="btn" id="export-calculation">导出这份计算明细 ↓</button><button class="btn" id="close-only">关闭</button></div>`;
- detailContext.text=[`Reelay V9.2 · ${chosen==='actual'?'平台实测金额复算':'理论计算展开'}`,`企业：${state.plan.company}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`成本定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
+ detailContext.text=[`Reelay V9.3 · ${chosen==='actual'?'平台实测金额复算':'理论计算展开'}`,`企业：${state.plan.company}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`成本定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
  openDrawer('calculation','计算展开 · 两种独立口径',label(t)+' / '+vinLabel(t)+' · 不改变主表输入',content,true);
 }
 let ruleContext=null;
 function openRules(ruleTask=state.task){
  ruleContext=clone(ruleTask);const t=ruleContext,p=pricing(),k=minimumKey(t),m=t.video&&k?state.rules.minima[k]:null,official=t.video?R.officialMinimum(t):null;
  const fixed=t.video;
- openDrawer('rules','规则、来源与适用范围','Seedance 2.0 标准版 · 核验日期 2026-10-19',`<div class="statusbar">已内置4档分辨率 × 6种比例 × 12档时长，共288种输出规格。<br>沿用2026-10-19保存的表格估算公式并保留精度；实际以 API usage 与平台账单为准。</div><h3>最低用量的估算方法</h3><p>官方说明：含视频输入时适用最低用量，低于最低值时按最低值估价；表格给出的也是估算值。下式由本工具从2026-10-19保存的表格公式字段分离出下限，再与基础用量取较大值；合并计算与原字段公式等价，不是价格文档正文直接列出的公式。</p><div class="formula">输出秒数 = s；输入视频总秒数 = v<br>最低等效输入秒数 = ceil(2 × s ÷ 3)<br>L = (s + ceil(2 × s ÷ 3)) × 宽 × 高 × 24 ÷ 1024<br>T = max((s + v) × 宽 × 高 × 24 ÷ 1024, L)<br>P = T × 刊例费率 ÷ 1,000,000<br>C = P × ${num(p.q,6)}</div><p class="footnote">等效输入秒数用于估算最低用量，不是素材时长要求。无视频输入不应用这道门槛。准确用量以 API 返回的 completion_tokens 为准，返回值已含最低用量，无需再次补足。</p><h3>本规格</h3><p>${esc(label(t))} / ${esc(vinLabel(t))}</p>${fixed?`<div class="fact"><span>官方最低用量 L（估算值）</span><b>${esc(official.tokens)} Token</b></div><div class="fact"><span>当前采用</span><b>${esc(m?.tokens||'缺失')} Token · ${m?.kind==='manual'?'人工覆盖':'表格公式快照'}</b></div><details class="record-notes"><summary>为本规格设置人工门槛覆盖</summary><p>仅用于有明确依据的特殊采购规则。人工覆盖会在结果中单独标记。</p><label class="fieldlabel" for="rule-min">最低 Token</label><input class="input num" id="rule-min" inputmode="decimal" value="${esc(m?.tokens||'')}"><label class="fieldlabel" for="rule-note">规则来源与适用范围</label><textarea class="input" id="rule-note" maxlength="500">${esc(m?.kind==='manual'?m.note:'')}</textarea><div id="rule-error" class="inline-error"></div><div class="rule-tools"><button class="btn primary" id="save-rule">保存人工覆盖</button><button class="btn" id="remove-rule">恢复官方规则</button></div></details>`:'<div class="notice neutral">无视频输入不应用最低用量。</div>'}<h3>当前刊例费率 · 元/百万 Token</h3>${table(['输出规格','无视频输入','有视频输入'],RES.map(r=>'<tr>'+td(r)+td(E.RATES[r][0])+td(E.RATES[r][1])+'</tr>'))}<details class="record-notes"><summary>像素映射</summary>${table(['规格',...RATIOS],RES.map(r=>'<tr>'+td(r)+RATIOS.map(k=>td(E.DIMS[r][k].join(' × '))).join('')+'</tr>'))}</details><h3>来源与版本</h3><p><a href="https://console.volcengine.com/ark/region:cn-beijing/docs/model-pricing" target="_blank" rel="noopener">官方模型价格 ↗</a><br><a href="https://console.volcengine.com/ark/region:cn-beijing/docs/create-video-generation-task-api" target="_blank" rel="noopener">官方像素、帧率与参数 ↗</a><br><a href="https://bytedance.larkoffice.com/wiki/FXaYwxzJ5i5Zdik32ipcWzt7nxd?table=tblmNCuMjADrXtDf&amp;view=vew2CR2JYM" target="_blank" rel="noopener">官方 Seedance 2.0 最低用量表 ↗</a></p><p class="footnote">版本 ${esc(R.VERSION)}。仅标准版2.0，不套用2.5、fast或mini费率。已结束的促销不自动延用。规则是固定日期快照，不会联网自动更新。</p>${Object.keys(state.rules.legacyMinima||{}).length?`<details class="record-notes"><summary>旧方案人工门槛档案（未覆盖官方规则）</summary><pre class="formula">${esc(JSON.stringify(state.rules.legacyMinima,null,2))}</pre></details>`:''}<button class="btn" id="export-rules">导出规则与来源 JSON ↓</button>`,true);
+ openDrawer('rules','规则、来源与适用范围','Seedance 2.0 标准版 · 核验日期 '+R.VERIFIED_AT,`<div class="statusbar">已核验4档分辨率 × 6种比例 × 12档时长，共288种输出规格。<br>${esc(R.VERIFIED_AT)} 重新取得官方计算器查表公式和最低用量表原始复制数据；精确值经原式和192条显示记录交叉校验。</div><h3>最低用量的估算方法</h3><p>官方计算器按分辨率、比例、输出时长查表取得最低值 L。有视频输入时与基础用量取较大值；无视频输入时仅使用基础估算。</p><div class="formula">B = (输出秒数 + 输入秒数) × 宽 × 高 × 24 ÷ 1024<br>L = 对应输出规格的最低用量表值<br>有视频：T = max(B, L)；无视频：T = B<br>P = T × 刊例费率 ÷ 1,000,000<br>C = P × ${num(p.q,6)}</div><p class="footnote">官方将表值说明为“估算值，实际以调用 API 后返回信息中的 usage 字段为准”。completion_tokens 已含最低用量，无需再次补足。详细原式见“用量与计价说明”。</p><h3>本规格</h3><p>${esc(label(t))} / ${esc(vinLabel(t))}</p>${fixed?`<div class="fact"><span>官方最低用量 L（估算值）</span><b>${esc(official.tokens)} Token</b></div><div class="fact"><span>当前采用</span><b>${esc(m?.tokens||'缺失')} Token · ${m?.kind==='manual'?'人工覆盖':'已核验表值'}</b></div><details class="record-notes"><summary>为本规格设置人工门槛覆盖</summary><p>仅用于有明确依据的特殊采购规则。人工覆盖会在结果中单独标记。</p><label class="fieldlabel" for="rule-min">最低 Token</label><input class="input num" id="rule-min" inputmode="decimal" value="${esc(m?.tokens||'')}"><label class="fieldlabel" for="rule-note">规则来源与适用范围</label><textarea class="input" id="rule-note" maxlength="500">${esc(m?.kind==='manual'?m.note:'')}</textarea><div id="rule-error" class="inline-error"></div><div class="rule-tools"><button class="btn primary" id="save-rule">保存人工覆盖</button><button class="btn" id="remove-rule">恢复官方规则</button></div></details>`:'<div class="notice neutral">无视频输入不应用最低用量。</div>'}<h3>当前刊例费率 · 元/百万 Token</h3>${table(['输出规格','无视频输入','有视频输入'],RES.map(r=>'<tr>'+td(r)+td(E.RATES[r][0])+td(E.RATES[r][1])+'</tr>'))}<details class="record-notes"><summary>像素映射</summary>${table(['规格',...RATIOS],RES.map(r=>'<tr>'+td(r)+RATIOS.map(k=>td(E.DIMS[r][k].join(' × '))).join('')+'</tr>'))}</details><h3>来源与版本</h3><p><a href="https://console.volcengine.com/ark/region:cn-beijing/docs/model-pricing" target="_blank" rel="noopener">官方模型价格 ↗</a><br><a href="https://console.volcengine.com/ark/region:cn-beijing/docs/create-video-generation-task-api" target="_blank" rel="noopener">官方像素、帧率与参数 ↗</a><br><a href="https://bytedance.larkoffice.com/wiki/FXaYwxzJ5i5Zdik32ipcWzt7nxd?table=tblmNCuMjADrXtDf&amp;view=vew2CR2JYM" target="_blank" rel="noopener">官方 Seedance 2.0 最低用量表 ↗</a></p><p class="footnote">版本 ${esc(R.VERSION)}。仅标准版2.0，不套用2.5、fast或mini费率。已结束的促销不自动延用。规则是固定日期快照，不会联网自动更新。</p>${Object.keys(state.rules.legacyMinima||{}).length?`<details class="record-notes"><summary>旧方案人工门槛档案（未覆盖官方规则）</summary><pre class="formula">${esc(JSON.stringify(state.rules.legacyMinima,null,2))}</pre></details>`:''}<button class="btn" id="export-rules">导出规则与来源 JSON ↓</button>`,true);
 }
 function openPlan(){const p=pricing();openDrawer('plan','成本定价倍率','倍率把采购成本转换为积分；实际利润还取决于充值现金价值。',`<label class="fieldlabel" for="plan-mode">计算方式</label><select class="input" id="plan-mode"><option value="ideal" ${state.plan.mode==='ideal'?'selected':''}>自动计算</option><option value="saved" ${state.plan.mode==='saved'?'selected':''}>自动计算（限制小数位）</option><option value="manual" ${state.plan.mode==='manual'?'selected':''}>手动指定</option></select><div id="plan-precision" hidden><p class="footnote">将自动倍率按指定小数位处理后再计算积分，用于核对实际系统的精度限制。例如 1.538461… 保留4位后为1.5385，可能改变最终扣分。这里只做试算，不会修改后台。</p><div class="grid2"><div><label class="fieldlabel" for="plan-digits">倍率保留小数位数</label><select class="input" id="plan-digits">${Array.from({length:21},(_,n)=>n).map(n=>`<option value="${n}" ${n===state.plan.digits?'selected':''}>${n}位</option>`).join('')}</select></div><div><label class="fieldlabel" for="plan-round">保存方式</label><select class="input" id="plan-round"><option value="nearest" ${state.plan.round==='nearest'?'selected':''}>四舍五入</option><option value="truncate" ${state.plan.round==='truncate'?'selected':''}>截断</option></select></div></div></div><label class="fieldlabel" for="plan-manual">指定倍率（输入即切换为手动指定）</label><input class="input num" id="plan-manual" inputmode="decimal" value="${esc(state.plan.manualM)}"><label class="fieldlabel" for="plan-basis" style="margin-top:12px">本次充值核算口径</label><textarea class="input" id="plan-basis" maxlength="500">${esc(state.plan.basis)}</textarea><div class="readout"><div class="muted small">理想成本定价倍率</div><div class="big num">${num(p.M,18)}</div><div id="plan-preview" class="state-feedback"></div></div><div id="plan-error" class="inline-error"></div><div class="actions"><button class="btn primary" id="save-plan">应用设置</button></div><p class="footnote">改变理论与实测复算所用的当前倍率，不修改历史原记录。小数位数只能改变倍率保存精度，不能消除整积分取整本身的误差。</p>`);planPreview();}
 function planCandidate(){return{...state.plan,mode:$('plan-mode').value,digits:+$('plan-digits').value,round:$('plan-round').value,manualM:$('plan-manual').value.trim(),basis:$('plan-basis').value};}
@@ -746,8 +5548,8 @@ function addTask(){const v=current();if(!v.x||!globalValid)return;if(state.tasks
 function openNewRecharge(){openDrawer('recharge','添加充值对照','不改变实测数据，也不执行实际充值。',`<div class="grid2"><div><label class="fieldlabel" for="r-pay">实付金额</label><input class="input" id="r-pay" inputmode="decimal" value="100"></div><div><label class="fieldlabel" for="r-total">到账总积分</label><input class="input" id="r-total" inputmode="decimal" value="1500"></div></div><div class="inline-error" id="r-error"></div><button class="btn primary" id="save-recharge">加入对照</button>`);}
 function download(name,text,type='text/plain;charset=utf-8'){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 const filename=()=>state.plan.company.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,50)||'Reelay方案';
-function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.2 · 官方规则与利润定价','',state.plan.company,`规则：${R.VERSION}；核验日期2026-10-19；仅Seedance2.0标准版。`,`采购比例 ${num(p.q,6)}；积分换算常数10。`,`充值口径：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`成本定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`理论计算口径：${coverage(v)}`,...(x?[`理论刊例 P = ${decimal(x.P)}`,`理论采购 C = ${decimal(x.C)}`,`理论积分 = ${decimal(x.raw)}`,`核算扣分 = ${num(x.N,0)}`,`现金金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`销售毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`理论清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
-function exportJSON(){download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.0',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',state},null,2),'application/json');}
+function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.3 · 官方规则与利润定价','',state.plan.company,`规则：${R.VERSION}；核验日期${R.VERIFIED_AT}；仅Seedance2.0标准版。`,`采购比例 ${num(p.q,6)}；积分换算常数10。`,`充值口径：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`成本定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`理论计算口径：${coverage(v)}`,...(x?[`理论刊例 P = ${decimal(x.P)}`,`理论采购 C = ${decimal(x.C)}`,`理论积分 = ${decimal(x.raw)}`,`核算扣分 = ${num(x.N,0)}`,`现金金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`销售毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`理论清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
+function exportJSON(){download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.3.0',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',state},null,2),'application/json');}
 function csvCell(x){let s=String(x??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
 function exportCSV(actual=false){const rows=actual?actualRows:tableRows;if(!rows.length)return toast('没有可导出记录。');const titles=actual?{scope:'数据域',record:'记录',params:'规格',coverage:'理论计算口径',theoryP:'理论刊例P',recordedP:'平台记录P',deltaP:'实测P减理论P',theoryC:'理论采购C',recordedC:'平台记录C',deltaC:'实测C减理论C',recordedN:'平台实际扣分_空白为未知',recalcN:'当前复算扣分_非历史',recalcCash:'当前复算现金',recalcProfit:'当前复算模型毛利',pay:'当前充值实付',total:'当前到账积分',M:'当前倍率',targetMode:'当前目标模式',usage:'API_completion_tokens_原记录',note:'备注'}:{scope:'数据域',targetMode:'定价目标模式',targetMargin:'目标销售毛利率百分数_毛利模式',procurementRatio:'采购比例',profit:'每笔模型毛利',margin:'取整后测算销售毛利率百分数',scenario:'场景',coverage:'理论计算口径',ruleVersion:'规则版本',quantity:'数量_逐笔先取整',pay:'实付元',total:'到账积分',discount:'目标现金折扣',M:'成本定价倍率',P:'理论刊例P',C:'理论采购C',raw:'理论积分',N:'每笔核算扣分_非实际',target:'目标现金价',cash:'每笔取整折合金额',gap:'与目标差额'};const ks=Object.keys(titles),csv='\ufeff'+[ks.map(k=>csvCell(titles[k])).join(','),...rows.map(r=>ks.map(k=>csvCell(r[k])).join(','))].join('\r\n');download(filename()+(actual?'_实测对照':'_理论_'+state.tab)+'.csv',csv,'text/csv;charset=utf-8');}
 function openExport(){openDrawer('export','导出计算方案','理论与实测分区保存，导出的理论表也不会带入实测金额。',`<button class="choice" id="export-json"><div class="choice-title"><b>方案 JSON</b><span>↓</span></div><p>企业规则、任务参数、理论清单、独立实测记录。可重新导入V9。</p></button><button class="choice" id="export-summary"><div class="choice-title"><b>理论方案交接摘要</b><span>↓</span></div><p>包含当前公式范围与关键结果；不是供应商实际结算单。</p></button><button class="choice" id="export-theory"><div class="choice-title"><b>当前理论对照表 CSV</b><span>↓</span></div><p>全部行都是公式计算，没有截图金额覆盖。</p></button><button class="choice" id="export-actual"><div class="choice-title"><b>独立实测对照 CSV</b><span>↓</span></div><p>理论值、平台原值、差额分列。未知实扣积分保持空白。</p></button>`);}
@@ -792,7 +5594,7 @@ case'table-export':case'export-theory':if(globalValid)exportCSV(false);break;
 case'actual-export':case'export-actual':if(globalValid)exportCSV(true);break;
 case'import':$('file').click();break;
 case'reset':openReset();break;
-case'confirm-reset':state=defaults();closeDrawer();render();toast('已恢复V9.2默认方案。');break;
+case'confirm-reset':state=defaults();closeDrawer();render();toast('已恢复V9.3默认方案。');break;
 }
 });
 document.addEventListener('input',e=>{const el=e.target,id=el.id;if(id==='manual-m')fitPlanValue(id);if(['pay','total','discount','target-margin','purchase-discount'].includes(id)){if(id==='target-margin')state.plan.margin=el.value;else if(id==='purchase-discount'){state.plan.q=positive(el.value,false,4)?num(div(el.value,10),6):'';}else if(id==='pay'){const gift=$('total').value;state.plan.pay=el.value;if(state.plan.giftMode&&positive(el.value,false,2)&&positive(gift,true,4))state.plan.total=num(add(mul(el.value,10),gift),4);}else if(id==='total'){if(state.plan.giftMode){if(positive(el.value,true,4)&&positive(state.plan.pay,false,2))state.plan.total=num(add(mul(state.plan.pay,10),el.value),4);else state.plan.total='';}else state.plan.total=el.value;}else state.plan.discount=el.value;render();return;}

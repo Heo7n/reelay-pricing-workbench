@@ -1,0 +1,21 @@
+{
+  "version": "volc-seedance20-2026-10-20",
+  "model": "seedance-2.0",
+  "verifiedAt": "2026-10-20",
+  "sourceTable": "tblmNCuMjADrXtDf",
+  "sourceField": "fld0p1bMiB",
+  "sourceFormulaSha256": "f8d5a553af3196c22d8727d891644f99b13c28c67d662b1e922b90dcddfbefb9",
+  "sourceRows": 192,
+  "specificationCount": 288,
+  "formulaEvaluationCount": 4032,
+  "sourceFiles": {
+    "evidence/2026-10-20/minimum-480p.clipboard.json": "cdae33dc3ece0f14fa986aa82690ad26253f6dd532197f7899f3da9df03ed2d5",
+    "evidence/2026-10-20/minimum-720p.clipboard.json": "536d9383028e1c5fdc7028b17efadd73586c67a340ae56c5db78d2b8b15bcdf4",
+    "evidence/2026-10-20/minimum-1080p.clipboard.json": "6310a191bf38e45107bdb568bea4e1b4c8180c4b86b566839950d33a38ccafd4",
+    "evidence/2026-10-20/minimum-4k.clipboard.json": "60d51b98e1440e0ee3ab93d6ef29bbc0cc6b8c0f4a226fb2c6e78184c64edd75",
+    "evidence/2026-10-20/calculator-fields.json": "b98c01da2356f68f9f808338bf15222697ff0216607990aaf3785d5977ac41cb",
+    "evidence/2026-10-20/calculator-public.html": "602cc6bb1fa4fd72ac168902003504f1f584a0bb8fe6267b436781ca666c18bf"
+  },
+  "generatedFile": "generated-minima.js",
+  "generatedSha256": "23a3292abaa0ab45eeef318b957fd26bdba4161cddd449b4abd088979342c6ac"
+}

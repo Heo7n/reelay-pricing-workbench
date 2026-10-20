@@ -1,3 +1,5 @@
 * text=auto eol=lf
 *.png binary
 *.zip binary
+# Captured evidence retains its original bytes, including CRLF.
+evidence/** -text whitespace=cr-at-eol
