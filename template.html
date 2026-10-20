@@ -127,11 +127,11 @@
 @media(prefers-reduced-motion:reduce){.panel-bg.centered .drawer{animation:none}}
 @media(max-width:600px){.usage-token{padding:9px 10px}.usage-metrics dd{font-size:16px}}
 
-/* Plan fields share a baseline, control height and unit placement. */
+/* Pricing columns follow the panel's available width, independently of the left panel. */
+.pricing-panel{container-type:inline-size;container-name:pricing}
 .plan .plan-head{margin-bottom:20px;flex-wrap:wrap}.plan .plan-model{font-size:11px;color:var(--muted);font-weight:400}.plan .plan-head h2{font-size:15px}.plan .target-validation{font-size:10px;color:var(--amber);margin-top:6px}
-.plan .plan-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
-.plan .plan-grid>.plan-block{display:flex;flex-direction:column;align-items:stretch;min-width:0;grid-column:auto;padding:0;border:0}
-.plan .plan-grid>.plan-block+.plan-block{border-top:1px solid var(--line);padding-top:18px}
+.plan .plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.plan .plan-grid>.plan-block{display:flex;flex-direction:column;align-items:stretch;gap:0;min-width:0;grid-column:auto;padding:0;border:0}
 .plan .plan-block-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;min-height:25px;margin:0 0 12px;color:var(--sub)}
 .plan .plan-block-head,.plan .plan-block-head h3{font-size:12px;font-weight:600;line-height:1.6}
 .plan .fieldlabel{display:flex;align-items:center;gap:7px;min-height:21px;margin:0 0 6px;font-size:11px;color:var(--muted);line-height:1.6}
@@ -139,26 +139,25 @@
 .plan .inputbox input{padding:0 36px 0 10px}
 .plan #total-mode{height:21px;font-size:11px}
 .plan #target-mode,.plan #pricing-mode{min-width:0;max-width:100%;height:25px;border:1px solid var(--line);border-radius:6px;background:#fafbfe;padding:1px 5px;margin:0;font-size:11px;color:var(--sub);cursor:pointer}
+.plan #pricing-mode{align-self:flex-start;margin-bottom:9px}
 .plan .target-label{justify-content:space-between;gap:4px;flex-wrap:wrap}
 .plan #target-mode{height:21px;border:0;background:transparent;padding:0}
-.plan .recharge-values .grid2{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.plan .client-pricing-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
-.plan .client-pricing-body>*{min-width:0}
+.plan .recharge-values{display:grid;gap:16px;min-width:0}.plan .recharge-field{min-width:0}
+.plan .target-settings{margin-top:16px}
 .plan .target-settings>summary{cursor:pointer;font-size:11px;color:var(--sub)}
 .plan .target-settings>summary span{color:var(--muted);font-size:10px;margin-left:7px}
-.plan .client-pricing.is-manual .client-pricing-body{display:flex;flex-direction:column;gap:12px}
-.plan .client-pricing.is-manual .multiplier-block{order:0;width:100%}
-.plan .client-pricing.is-manual .target-settings{order:1;width:100%;border-top:1px solid var(--line);padding-top:10px}
-.plan .client-pricing.is-manual .target-block{max-width:260px;padding-top:10px}
+.plan .client-pricing.is-manual .target-settings{border-top:1px solid var(--line);padding-top:12px}
+.plan .client-pricing.is-manual .target-block{padding-top:10px}
 .plan .multiplier-label{justify-content:space-between;flex-wrap:wrap}
 .plan #plan-settings{font-size:11px}
 .plan .multiplier-value-row{display:flex;align-items:center;min-height:38px;min-width:0}
-.plan .coefficient{max-width:100%;font:600 23px/38px Inter,"Segoe UI",Arial,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:0;white-space:normal;overflow-wrap:anywhere;text-align:left}
+.plan .coefficient{max-width:100%;font:550 25px/38px Inter,"Segoe UI",Arial,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:0;white-space:normal;overflow-wrap:anywhere;text-align:left}
 .plan .coefficient small{font:400 11px var(--font);margin-left:7px;color:var(--muted)}
 .plan .manual-m-control{display:block;width:100%;max-width:100%;min-width:0}
-.plan .manual-m-control input{width:100%;max-width:100%;color:var(--accent);background:var(--tint);border:1px solid #c7d5f6}
+.plan .manual-m-control input{width:100%;max-width:100%;font-size:23px;color:var(--accent);background:var(--tint);border:1px solid #c7d5f6}
+.plan .multiplier-formula{margin-top:10px;font-size:10px;color:var(--muted);line-height:1.8;text-wrap:pretty}
 .plan .plan-support{margin:8px 0 0;font-size:11px;line-height:1.7;color:var(--muted)}
-.plan .recharge-equivalence,.plan .point-price,.plan .break-even{font-size:11px;white-space:nowrap;color:var(--muted)}
+.plan .recharge-equivalence,.plan .point-price,.plan .break-even{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
 .plan .recharge-equivalence b,.plan .point-price b,.plan .break-even b{font-weight:550;color:var(--sub)}
 .plan .target-support .picks{display:flex;flex-wrap:wrap;gap:4px;margin:0}
 .plan .target-support .picks button{min-width:0;height:24px;padding:0 6px;font-size:10px;white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -171,7 +170,8 @@
 .plan .plan-principle b{font-weight:600;font-variant-numeric:tabular-nums}
 .plan .outcome-caption{font-size:10px;color:var(--muted)}.plan .outcome-note{font-size:10px;color:var(--amber)}
 .plan #unit-check{font-size:11px;margin-left:auto}
-@media(max-width:540px){.plan .client-pricing-body{grid-template-columns:minmax(0,1fr);gap:16px}.plan .target-support .picks{gap:6px}.plan .target-support .picks button{font-size:11px;padding:0 9px}.plan #unit-check{margin-left:0}}
+@container pricing (max-width:719px){.plan .plan-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.plan .plan-grid>.foundation-block{grid-column:1/-1}.plan .recharge-values{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}}
+@container pricing (max-width:459px){.plan .plan-grid{grid-template-columns:minmax(0,1fr);gap:22px}.plan .plan-grid>.plan-block+.plan-block{border-top:1px solid var(--line);padding-top:18px}.plan .recharge-values{gap:14px}.plan .target-support .picks{gap:6px}.plan .target-support .picks button{font-size:11px;padding:0 9px}.plan #unit-check{margin-left:0}}
 
 /* Multiplier settings: one calculation path, optional precision, one derivation. */
 .multiplier-settings .multiplier-method{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12px}.multiplier-method .input{width:166px}
@@ -211,23 +211,29 @@
 .video-price-amount{display:flex;align-items:baseline;justify-content:flex-end;gap:6px;min-width:0;max-width:60%;flex-shrink:0;margin:0;text-align:right}.video-price-amount .cost-number{min-width:0;font-size:var(--usage-value-size);font-weight:600;line-height:1.5;letter-spacing:0;color:var(--ink)}.video-price-unit{color:var(--muted);font-size:11px;white-space:nowrap}
 .quick-config{border-top:1px solid var(--line);padding-top:12px;margin-top:18px}
 .quick-config .quick-examples{margin:12px 0 0}
-.pricing-panel .purchase-values{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
-.pricing-panel .purchase-values .cost-number{font-size:24px;line-height:38px;letter-spacing:0}
-.pricing-panel .purchase-values .cost-number small{font-size:13px}
 .procurement-status{font-size:11px;color:var(--muted);margin:8px 0 0;line-height:1.7}.procurement-status.is-simulation{color:var(--amber)}
 .platform-calculation-detail>summary{font-size:11px;color:var(--sub);cursor:pointer}
-.pricing-panel .customer-charge-section{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
-.pricing-panel .customer-charge-section>.result-section-title{margin-bottom:12px}
+.pricing-panel .customer-charge-section{margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
 .pricing-panel .calculation{padding:0}
-.platform-primary-metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:stretch}
-.platform-primary-metrics .points-box{padding:12px 13px}.platform-primary-metrics .points-value{font-size:29px;white-space:normal;overflow-wrap:anywhere}
-.platform-primary-metrics .cash-item{border:0;align-items:flex-start;display:flex;flex-direction:column;justify-content:center;gap:0;min-width:0;padding:4px 0;margin:0;background:none;grid-column:auto}
-.platform-primary-metrics .cash-item b{font-size:22px;white-space:normal;overflow-wrap:anywhere;line-height:1.6}
-.platform-primary-metrics .cash-item small{margin:0;font-size:10px}
-.platform-primary-metrics .cash-item b.loss,.plan .plan-principle b.loss{color:var(--red)}
+.platform-result-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.metric-pair{display:grid;grid-template-rows:1fr 1fr;gap:22px;margin:0;min-width:0}
+.metric-pair>div{min-width:0}.metric-pair dt{font-size:11px;color:var(--muted);margin-bottom:5px}
+.metric-pair dd{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 6px;min-height:36px;margin:0}
+.metric-pair dd b{font-size:20px;font-weight:550;line-height:1.7;color:var(--ink);overflow-wrap:anywhere;min-width:0}
+.metric-pair dd>span{font-size:10px;color:var(--muted)}
+.metric-pair .charged-points dd b{font-size:28px;line-height:1.25;color:var(--accent);font-weight:600}
+.platform-profit-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 22px;margin-top:20px;padding-top:14px;border-top:1px solid #edf0f4;font-size:11px;color:var(--muted)}
+.platform-profit-row b{font-weight:550;color:var(--sub);margin-left:5px}
+.platform-profit-row .loss,.plan .plan-principle b.loss{color:var(--red)}
 .pricing-panel .result-note{padding:0;background:none;color:var(--muted);font-size:10px;margin-top:12px}
-.platform-calculation-detail{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
-.platform-calculation-detail .equation{margin:12px 0;font-size:12px}.platform-calculation-detail .cash-row{margin-bottom:12px}
+.platform-calculation-detail{margin-top:16px}
+.charge-steps{list-style:none;margin:14px 0 0;padding:0 14px;border:1px solid var(--line);border-radius:8px;background:#fafbfc}
+.charge-steps>li{padding:12px 0}.charge-steps>li+li{border-top:1px solid var(--line)}
+.charge-steps h4{margin:0 0 5px;font-size:11px;font-weight:400;color:var(--muted)}
+.charge-steps p{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;line-height:1.9}
+.charge-steps b{font-weight:600;color:var(--ink)}.rounding-step{display:inline-block;margin-left:12px}
+.charge-comparison{display:flex;align-items:baseline;flex-wrap:wrap;gap:10px 26px;margin-top:14px}
+.charge-comparison>div{display:flex;align-items:baseline;gap:10px;font-size:11px;color:var(--muted)}.charge-comparison b{font-size:13px;font-weight:550;color:var(--sub)}
 .plan .platform-calculation-detail .plan-outcome{margin-top:12px;padding:12px 0 0;border-top:1px solid var(--line)}
 .pricing-detail-tools{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;margin-top:14px}.pricing-detail-tools .link{font-size:11px}.plan .pricing-detail-tools #unit-check{margin-left:0}
 .pricing-panel .result-foot{padding:14px 0 0;margin-top:18px;gap:14px}
@@ -239,15 +245,17 @@
 .comparison-content{padding:0 22px}.compare-actions{display:flex;justify-content:flex-end;padding-top:1px}
 .platform-comparison .tabs{margin-top:5px}.platform-comparison .tabs button{padding-top:10px}
 .bottom{margin-top:24px}.bottom .rule-status{display:inline;margin:0;font-size:10px;color:var(--muted)}
-@media(max-width:1160px){.pricing-workbench>.card{padding:20px}.platform-primary-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.platform-primary-metrics .points-box{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}.platform-primary-metrics .cash-item{padding:0 13px}.generation-panel .model-cost-section{--usage-value-size:19px}}
-@media(max-width:900px){.pricing-workbench{grid-template-columns:minmax(0,1fr);gap:18px}.generation-panel .model-select-field{max-width:none}.generation-panel .model-cost-section{--usage-value-size:21px}.platform-primary-metrics{grid-template-columns:1fr 1fr 1fr;gap:16px}.platform-primary-metrics .points-box{grid-column:auto;display:block}.platform-primary-metrics .cash-item{padding:4px 0}}
-@media(max-width:540px){.intro{padding:19px 0 15px}.intro h1{font-size:22px}.pricing-workbench>.card{padding:18px 17px}.generation-panel .ratios{gap:5px}.generation-panel .usage-token,.video-price{padding:10px}.generation-panel .model-cost-section{--usage-value-size:18px}.platform-primary-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.platform-primary-metrics .points-box{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}.platform-primary-metrics .cash-item b{font-size:20px}.pricing-panel .result-foot{padding-top:14px}.pricing-panel .purchase-values .cost-number{font-size:22px}.platform-comparison>summary{padding:15px 16px}.comparison-content{padding:0 16px}.bottom{margin-top:19px}}
-@media(max-width:360px){.generation-panel .usage-metrics,.platform-primary-metrics,.pricing-panel .purchase-values,.plan .recharge-values .grid2{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:1160px){.pricing-workbench>.card{padding:20px}.generation-panel .model-cost-section{--usage-value-size:19px}}
+@media(max-width:900px){.pricing-workbench{grid-template-columns:minmax(0,1fr);gap:18px}.generation-panel .model-select-field{max-width:none}.generation-panel .model-cost-section{--usage-value-size:21px}}
+@media(max-width:540px){.intro{padding:19px 0 15px}.intro h1{font-size:22px}.pricing-workbench>.card{padding:18px 17px}.generation-panel .ratios{gap:5px}.generation-panel .usage-token,.video-price{padding:10px}.generation-panel .model-cost-section{--usage-value-size:18px}.pricing-panel .result-foot{padding-top:14px}.platform-comparison>summary{padding:15px 16px}.comparison-content{padding:0 16px}.bottom{margin-top:19px}}
+@container pricing (max-width:639px){.platform-result-grid{gap:16px}.metric-pair dd b{font-size:17px}.metric-pair .charged-points dd b{font-size:26px}}
+@container pricing (max-width:459px){.platform-result-grid{grid-template-columns:minmax(0,1fr);gap:18px}.metric-pair{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto;gap:14px}.metric-pair+.metric-pair{padding-top:16px;border-top:1px solid #edf0f4}.platform-profit-row{gap:6px 16px}.rounding-step{display:block;margin-left:0}}
+@container pricing (max-width:279px){.plan .recharge-values,.metric-pair{grid-template-columns:minmax(0,1fr)}}
 @media print{.quick-config{display:none!important}.platform-comparison{border:0}.pricing-workbench{grid-template-columns:3.5fr 6.5fr;gap:18px}.pricing-workbench>.card{padding:10px}.pricing-workbench>.generation-panel{display:block!important}}
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.10</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.11</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
 <section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
@@ -279,25 +287,20 @@
 <button id="show-formula" hidden>公式明细</button>
 </article>
 <article class="card plan pricing-panel" aria-labelledby="plan-title">
-<div class="head plan-head"><h2 class="section-title" id="plan-title" tabindex="-1">积分定价方案</h2></div>
+<div class="head plan-head"><h2 class="section-title" id="plan-title" tabindex="-1">积分定价</h2></div>
 <div id="platformError" class="notice red" role="alert" hidden></div>
 <div class="plan-grid">
 <section class="plan-block foundation-block" aria-labelledby="recharge-title">
-<div class="plan-block-head"><h3 id="recharge-title">充值方案</h3></div>
-<div class="recharge-values"><div class="grid2">
-<div><label class="fieldlabel" for="pay">充值实付</label><div class="inputbox"><input class="input num" id="pay" inputmode="decimal" value="100"><span class="unit">元</span></div></div>
-<div><div class="fieldlabel total-mode-label"><select id="total-mode" aria-label="积分填写方式"><option value="total">到账总积分</option><option value="gift">附赠积分</option></select></div><div class="inputbox"><input class="input num" id="total" aria-label="到账总积分" inputmode="decimal" value="1538"><span class="unit">积分</span></div></div>
-</div></div>
-<div class="foundation-support plan-support"><span class="recharge-equivalence" id="recharge-value">1 元 <span id="recharge-sign">=</span> <b class="num" id="per-yuan">15.38</b> 积分</span></div>
+<div class="plan-block-head"><h3 id="recharge-title">充值口径</h3></div>
+<div class="recharge-values">
+<div class="recharge-field"><label class="fieldlabel" for="pay">实际支付</label><div class="inputbox"><input class="input num" id="pay" inputmode="decimal" value="100"><span class="unit">元</span></div><div class="plan-support"><span class="recharge-equivalence" id="recharge-value">1 元 <span id="recharge-sign">=</span> <b class="num" id="per-yuan">15.38</b> 积分</span></div></div>
+<div class="recharge-field"><div class="fieldlabel total-mode-label"><select id="total-mode" aria-label="积分填写方式"><option value="total">到账总积分</option><option value="gift">附赠积分</option></select></div><div class="inputbox"><input class="input num" id="total" aria-label="到账总积分" inputmode="decimal" value="1538"><span class="unit">积分</span></div><div class="plan-support"><span class="point-price" id="point-price" title="实际支付 ÷ 到账总积分">1 积分 <span id="point-price-sign">≈</span> <b class="num" id="per-point">0.06501951</b> 元</span></div></div>
+</div>
 </section>
-<section class="plan-block procurement-block" aria-labelledby="procurement-title">
-<div class="plan-block-head"><h3 id="procurement-title">模型采购</h3><span class="plan-model" id="pricing-model"></span></div>
-<div class="grid2 purchase-values"><div><label class="fieldlabel" for="purchase-discount">采购折扣</label><div class="inputbox"><input class="input num" id="purchase-discount" title="10折表示按刊例价采购；暂无供应商的模型可调整折扣试算" inputmode="decimal" value="7.35"><span class="unit">折</span></div></div><div><div class="fieldlabel">本次采购成本</div><div class="cost-number num" id="cost-c">—</div></div></div>
+<section class="plan-block procurement-block client-pricing" aria-labelledby="procurement-title">
+<div class="plan-block-head"><h3 id="procurement-title">采购与目标</h3><span class="plan-model" id="pricing-model"></span></div>
+<div class="purchase-field"><label class="fieldlabel" for="purchase-discount">采购折扣</label><div class="inputbox"><input class="input num" id="purchase-discount" title="10折表示按刊例价采购；暂无供应商的模型可调整折扣试算" inputmode="decimal" value="7.35"><span class="unit">折</span></div></div>
 <p class="procurement-status" id="procurement-status"></p>
-</section>
-<section class="plan-block client-pricing" aria-labelledby="client-pricing-title">
-<div class="plan-block-head"><h3 id="client-pricing-title">客户定价</h3><select class="pricing-mode" id="pricing-mode" aria-label="定价方式"><option value="ideal">按目标计算</option><option value="manual">指定倍率</option></select></div>
-<div class="client-pricing-body">
 <details class="target-settings" id="target-settings" open><summary id="target-summary" hidden>参考目标 <span>不参与定价</span></summary>
 <div class="target-block" id="pricing-target">
 <div class="fieldlabel target-label"><label for="target-mode" id="target-context">定价目标</label><select id="target-mode" aria-label="定价目标模式"><option value="discount">客户折扣</option><option value="margin">模型毛利率</option></select></div>
@@ -307,18 +310,25 @@
 <div class="plan-support target-support"><div class="picks" id="discount-picks" role="group" aria-label="客户折扣快捷值（折）"></div></div>
 </div>
 </details>
-<div class="multiplier-block">
-<div class="fieldlabel multiplier-label"><span title="取整前积分 = 采购成本 × 定价倍率 × 10">定价倍率</span><button class="link" id="plan-settings" aria-label="倍率与精度设置">设置 ⓘ</button></div>
+</section>
+<section class="plan-block multiplier-block" aria-labelledby="multiplier-title">
+<div class="plan-block-head"><h3 id="multiplier-title">定价倍率</h3><button class="link" id="plan-settings" aria-label="倍率与精度设置">设置 ⓘ</button></div>
+<select class="pricing-mode" id="pricing-mode" aria-label="定价方式"><option value="ideal">按目标计算</option><option value="manual">指定倍率</option></select>
 <div class="multiplier-value-row"><div class="coefficient num" id="multiplier"></div><div class="inputbox manual-m-control" id="manual-m-control" hidden><input class="input num" id="manual-m" aria-label="指定定价倍率" inputmode="decimal" value="1.538"><span class="unit">倍</span></div></div>
+<p class="multiplier-formula">取整前积分 = 采购成本 × 倍率 × 10</p>
 <div class="multiplier-support plan-support"><span id="m-state" class="badge blue" hidden></span></div>
-</div>
-</div>
 </section>
 </div>
-<section class="customer-charge-section" aria-labelledby="customer-charge-title"><h3 class="result-section-title" id="customer-charge-title">收费与毛利</h3><div class="calculation" id="calculation"></div></section>
-<details class="platform-calculation-detail" id="pricing-detail"><summary>计价明细</summary><div id="charge-breakdown"></div><div class="plan-outcome"><div class="plan-principle" id="plan-principle" aria-live="polite"></div><span class="point-price" id="point-price" title="充值实付 ÷ 到账总积分">每积分 <span id="point-price-sign">≈</span> <b class="num" id="per-point">0.06501951</b> 元</span><span class="break-even" title="取整前的模型毛利为零时所需倍率">保本倍率 <b class="num" id="break-even-m">1.538</b></span></div><div class="pricing-detail-tools"><button id="details" class="link">完整计算过程 ↗</button><button class="link" id="unit-check">1 元基准校验 ⓘ</button><button class="link" id="economics-how">毛利计算口径 ↗</button></div></details>
+<section class="customer-charge-section" aria-label="成本与收费"><div class="calculation" id="calculation">
+<div class="platform-result-grid">
+<dl class="metric-pair"><div><dt>刊例费用</dt><dd><b class="num" id="list-cost">—</b></dd></div><div><dt>采购成本</dt><dd><b class="num" id="cost-c">—</b></dd></div></dl>
+<dl class="metric-pair"><div><dt>取整前积分</dt><dd><b class="num" id="raw-points">—</b><span>积分</span></dd></div><div class="charged-points"><dt>预计扣分</dt><dd><b class="num" id="integer-points">—</b><span>积分</span></dd></div></dl>
+<dl class="metric-pair"><div><dt id="target-cash-label">目标金额</dt><dd><b class="num" id="target-cash">—</b></dd></div><div><dt>取整后金额</dt><dd><b class="num" id="actual-cash">—</b></dd></div></dl>
+</div>
+<div class="platform-profit-row"><span>模型毛利 <b class="num" id="model-profit">—</b></span><span>毛利率 <b class="num" id="model-margin">—</b></span><span class="loss" id="pricing-loss" hidden>当前方案亏损</span></div>
+</div></section>
+<details class="platform-calculation-detail" id="pricing-detail"><summary>计价明细</summary><div id="charge-breakdown"></div><div class="plan-outcome"><div class="plan-principle" id="plan-principle" aria-live="polite"></div><span class="break-even" title="取整前的模型毛利为零时所需倍率">保本倍率 <b class="num" id="break-even-m">1.538</b></span></div><div class="pricing-detail-tools"><button id="details" class="link">完整计算过程 ↗</button><button class="link" id="unit-check">1 元基准校验 ⓘ</button><button class="link" id="economics-how">毛利计算口径 ↗</button></div></details>
 <div class="result-foot"><div class="links"><button id="actual-calculation" class="link">实测复算 ↗</button></div><button class="btn primary sm" id="add-task">＋ 加入任务清单</button></div>
-
 </article>
 </section>
 <details class="card compare platform-comparison" id="platform-comparison"><summary><span>方案对比</span></summary><div class="comparison-content"><div class="compare-actions"><button class="link" id="table-export">导出当前表格 ↓</button></div><nav class="tabs" aria-label="平台方案对比"><button data-tab="discounts">折扣对比</button><button data-tab="matrix">规格对比</button><button data-tab="recharges">充值对比</button><button data-tab="tasks">任务清单 <b id="task-count">0</b></button></nav><div class="table-tools" id="table-tools"></div><div class="mobile-hint">左右滑动查看完整计算列 ↔</div><div class="table-scroll" id="table"></div><div class="table-end" id="table-end"></div></div></details>
