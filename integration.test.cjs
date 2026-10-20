@@ -708,7 +708,6 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   assert.equal(shown('token-rate'),'51');assert.equal(shown('token-minimum'),'不适用');
   assert.equal(doc.getElementById('token-minimum-metric').hidden,true);
   assert.equal(shown('token-estimate-label'),'估算 Token 用量');
-  assert.ok(doc.getElementById('usage-metrics').classList.contains('is-single'));
   assert.equal(shown('token-estimate'),'243,000');assert.equal(adopted('estimate'),'243,000');
   assert.match(explanation().textContent,/无视频输入，不应用最低用量/);
   let fractional;
@@ -719,8 +718,7 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   assert.ok(fractional,'there are official mappings with fractional token estimates');
   h.update(s=>{s.task=fractional;});
   assert.equal(doc.getElementById('token-minimum-metric').hidden,false);
-  assert.equal(shown('token-estimate-label'),'基础 Token 估算');
-  assert.equal(doc.getElementById('usage-metrics').classList.contains('is-single'),false);
+  assert.equal(shown('token-estimate-label'),'估算 Token 用量');
   equal(shown('token-estimate').replaceAll(',',''),h.api.current().calc.tokens);
   equal(adopted().replaceAll(',',''),h.api.current().calc.billedTokens);
   h.update(s=>{
@@ -870,7 +868,7 @@ test('architecture: one workbench groups generation and its estimate on the left
   assert.ok(plan.querySelector('.customer-charge-section').compareDocumentPosition(pricingDetail)&h.w.Node.DOCUMENT_POSITION_FOLLOWING);
   assert.ok(pricingDetail.contains(doc.getElementById('plan-principle')));
   assert.ok(pricingDetail.contains(doc.getElementById('raw-points')));
-  assert.equal(doc.querySelector('.quick-config').open,false);
+  assert.equal(doc.querySelector('.quick-config').closest('details'),null,'quick configurations are always available');
   assert.equal(doc.getElementById('platform-comparison').open,false);
   const estimate=h.api.quote().calc;
   h.click('#open-actual');assert.equal(actual.hidden,false);assert.equal(workbench.hidden,true);
@@ -938,7 +936,7 @@ test('architecture: model drafts and quote exports remain independent of an inva
   assert.match(summary,/Seedance 2\.5/);
   assert.match(summary,/30秒/);
   assert.match(summary,/单价：42 元 \/ 百万 Token/);
-  assert.match(summary,/基础 Token 估算：576,000/);
+  assert.match(summary,/估算 Token 用量：576,000/);
   assert.match(summary,/刊例费用：¥24\.192/);
   assert.doesNotMatch(summary,/采购|充值|积分|毛利|倍率|现金/,'the standalone model summary contains no platform amounts');
   const entries=Array.from({length:h.w.localStorage.length},(_,i)=>{
