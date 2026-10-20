@@ -76,7 +76,7 @@
 
 /* V9.3: task controls and explicit manual pricing. */
 .slider-label .slider-value{margin-left:auto}.composer>.head{margin-bottom:14px}
-.slider-value{font-size:18px;line-height:1.4;font-weight:600;color:var(--accent);white-space:nowrap}
+.slider-value{font-size:15px;line-height:1.4;font-weight:600;color:var(--accent);white-space:nowrap}
 .duration-slider{--range-progress:0%;appearance:none;-webkit-appearance:none;width:100%;height:28px;margin:0;background:transparent;cursor:pointer;accent-color:var(--accent)}
 .duration-slider::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:linear-gradient(to right,var(--accent) 0%,var(--accent) var(--range-progress),#e4e9f2 var(--range-progress),#e4e9f2 100%)}
 .duration-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:20px;height:20px;border-radius:50%;margin-top:-7px;background:white;border:3px solid var(--accent);box-shadow:0 1px 4px #26334726}
@@ -112,7 +112,7 @@
 .usage-summary{margin:0 0 13px}
 .usage-metrics{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin:0 0 10px}
 .usage-token{min-width:0;padding:10px 12px;border:1px solid transparent;border-radius:7px;background:#f7f8fa}.usage-metrics dt{display:flex;align-items:center;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--muted);margin-bottom:4px;line-height:1.6}.usage-metrics dd{margin:0;font:550 17px/1.5 Inter,"Segoe UI",Arial,sans-serif;color:var(--sub);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
-.usage-token.is-adopted{background:var(--tint);border-color:#dce5fb}.usage-token.is-adopted dd{color:var(--accent);font-weight:600}.usage-adopted{padding:0 5px;border-radius:4px;background:#e1e9fc;color:var(--accent);font-size:9px;line-height:1.8;white-space:nowrap}.usage-rule-kind{font-size:9px;color:var(--amber);white-space:nowrap}
+.usage-token.is-adopted{background:var(--tint);border-color:#dce5fb}.usage-adopted{padding:0 5px;border-radius:4px;background:#e1e9fc;color:var(--accent);font-size:9px;line-height:1.8;white-space:nowrap}.usage-rule-kind{font-size:9px;color:var(--amber);white-space:nowrap}
 .usage-help{font-size:11px}.usage-status{display:block;margin:0 0 10px;color:var(--amber);font-size:10px}.usage-status[hidden]{margin:0}
 .panel-bg.centered{align-items:center;justify-content:center;padding:24px}.panel-bg.centered .drawer{width:1100px;max-width:100%;height:auto;max-height:calc(100dvh - 48px);border-radius:14px;animation:usage-dialog-in .16s ease-out;overflow:hidden;box-shadow:0 18px 80px #18253b33}.panel-bg.centered .drawer-body{min-height:0;overflow-y:auto;overscroll-behavior:contain}.panel-bg.centered .drawer-header{flex-shrink:0}
 @keyframes usage-dialog-in{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
@@ -246,7 +246,7 @@
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.8</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.9</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
 <section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
