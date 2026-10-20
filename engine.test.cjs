@@ -118,6 +118,103 @@ test('saved multiplier precision can cross an exact integer point boundary', () 
   }
 });
 
+test('a specified multiplier settles charges without inventing an unavailable reference target', () => {
+  for (const targetMode of ['discount', 'margin']) {
+    const p = plan({q:'1', appliedM:'1.65', targetMode, targetAvailable:false, discount:'', margin:'not-a-target'});
+    assert.equal(p.targetAvailable, false);
+    for (const field of ['d', 'M', 'targetMarginRate', 'targetMarginPct']) {
+      assert.equal(p[field], null, `${field} must remain unavailable`);
+    }
+    equal(p.usedM, '1.65');
+    equal(p.S, '15.38');
+    equal(p.U, E.div('100', '1538'));
+    equal(p.breakEvenM, '1.538');
+
+    const x = E.settle('1', '1', p);
+    equal(x.raw, '16.5');
+    equal(x.N, '17');
+    equal(x.cash, E.div('1700', '1538'));
+    equal(x.roundGap, E.div('50', '1538'));
+    equal(x.profit, E.sub(E.div('1700', '1538'), '1'));
+    for (const field of ['target', 'idealPoints', 'gap', 'costGap', 'precisionGap', 'targetProfit', 'targetCashProfit']) {
+      assert.equal(x[field], null, `${field} needs an available reference target`);
+    }
+    const withReference = E.settle('1', '1', plan({q:'1', appliedM:'1.65', discount:'10'}));
+    for (const field of ['raw', 'N', 'cash', 'rawCash', 'roundGap', 'profit', 'margin', 'costMarkupPct', 'unroundedCashProfit', 'effective']) {
+      equal(x[field], withReference[field], `${field} does not depend on the reference target`);
+    }
+  }
+});
+
+test('an unavailable target requires a valid specified multiplier; normal target validation remains strict', () => {
+  for (const appliedM of ['', null, undefined]) {
+    assert.throws(() => plan({targetAvailable:false, appliedM}), /须指定有效倍率/);
+  }
+  for (const appliedM of ['0', '-1']) {
+    assert.throws(() => plan({targetAvailable:false, appliedM}), /倍率须大于零/);
+  }
+  assert.throws(() => plan({targetAvailable:false, appliedM:'invalid'}), /十进制数/);
+  assert.throws(() => plan({discount:'', appliedM:'1.65'}), /十进制数/);
+  assert.throws(() => plan({targetMode:'margin', margin:'100', appliedM:'1.65'}), /模型毛利率/);
+  for (const options of [{discount:'8'}, {targetMode:'margin', margin:'8.125'}, {discount:'8', appliedM:'1.65'}]) {
+    const implicit = plan(options), explicit = plan({...options, targetAvailable:true});
+    assert.equal(implicit.targetAvailable, true);
+    assert.deepEqual(implicit, explicit);
+    assert.deepEqual(theory('1.8816', implicit), theory('1.8816', explicit));
+  }
+});
+
+test('task totals retain per-request rounding and profit when no reference target is available', () => {
+  const p = plan({appliedM:'1.65', targetAvailable:false});
+  const rows = [{P:'0.1', C:'0.0735', qty:'3'}];
+  const total = E.sumTasks(rows, p);
+  assert.equal(total.count, 3);
+  equal(total.N, '6');
+  equal(total.C, '0.2205');
+  equal(total.cash, E.div('600', '1538'));
+  equal(total.cashProfit, E.sub(total.cash, '0.2205'));
+  equal(E.ceil(E.mul(E.settle('0.1', '0.0735', p).raw, '3')), '4');
+  assert.equal(total.target, null);
+  assert.equal(total.gap, null);
+  const withReference = E.sumTasks(rows, plan({appliedM:'1.65'}));
+  for (const field of ['N', 'C', 'cash', 'cashProfit', 'salesMarginPct', 'costMarkupPct']) {
+    equal(total[field], withReference[field]);
+  }
+  const empty = E.sumTasks([], p);
+  assert.equal(empty.target, null);
+  assert.equal(empty.gap, null);
+  equal(empty.cash, '0');
+});
+
+test('recorded costs recalculate without a reference target while missing facts stay missing', () => {
+  const p = plan({appliedM:'1.65', targetAvailable:false});
+  const original = {P:'10', C:'8', N:'99'};
+  const recorded = E.recalcRecord(original, p);
+  equal(recorded.raw, '132');
+  equal(recorded.N, '132');
+  equal(recorded.cash, E.div('13200', '1538'));
+  equal(recorded.cashProfit, E.sub(recorded.cash, '8'));
+  assert.equal(recorded.target, null);
+  assert.equal(recorded.x.target, null);
+  assert.equal(recorded.x.gap, null);
+  equal(recorded.x.roundGap, '0');
+  assert.equal(recorded.recordedN, '99');
+  assert.deepEqual(original, {P:'10', C:'8', N:'99'});
+  const costOnly = E.recalcRecord({P:'', C:'8', N:''}, p);
+  assert.equal(costOnly.P, null);
+  assert.equal(costOnly.target, null);
+  assert.equal(costOnly.x, null);
+  equal(costOnly.cash, recorded.cash);
+  const missingCost = E.recalcRecord({P:'10', C:'', N:'99'}, p);
+  for (const field of ['C', 'raw', 'N', 'cash', 'target', 'cashProfit']) assert.equal(missingCost[field], null);
+  assert.equal(missingCost.recordedN, '99');
+  const zeroCost = E.recalcRecord({P:'10', C:'0', N:''}, p);
+  equal(zeroCost.N, '0');
+  equal(zeroCost.cashProfit, '0');
+  assert.equal(zeroCost.target, null);
+  assert.equal(zeroCost.salesMarginPct, null);
+});
+
 test('quantities charge each rounded request instead of rounding the aggregate', () => {
   const p = plan({discount:'8'});
   const one = theory('1', p);

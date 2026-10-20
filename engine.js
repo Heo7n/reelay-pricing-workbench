@@ -21,30 +21,33 @@ const DIMS={
 '1080p':{'16:9':[1920,1080],'9:16':[1080,1920],'1:1':[1440,1440],'4:3':[1664,1248],'3:4':[1248,1664],'21:9':[2206,946]},
 '4k':{'16:9':[3840,2160],'9:16':[2160,3840],'1:1':[2880,2880],'4:3':[3326,2494],'3:4':[2494,3326],'21:9':[4398,1886]}};
 const RATES={'480p':['46','28'],'720p':['46','28'],'1080p':['51','31'],'4k':['26','16']};
-function plan({pay,total,discount='7.35',q='0.735',k='10',appliedM='',targetMode='discount',margin='0'}){
+function plan({pay,total,discount='7.35',q='0.735',k='10',appliedM='',targetMode='discount',margin='0',targetAvailable=true}){
  const A=dec(pay),T=dec(total),proc=dec(q),K=dec(k);
  if(cmp(A,0)<=0||cmp(T,0)<=0||cmp(proc,0)<=0||cmp(K,'10')!==0)throw Error('充值或采购规则无效；业务换算常数须为10');
  if(!['discount','margin'].includes(targetMode))throw Error('定价目标模式无效');
- let d,targetMarginRate;
- if(targetMode==='margin'){
+ if(typeof targetAvailable!=='boolean')throw Error('定价目标状态无效');
+ const hasAppliedM=appliedM!==''&&appliedM!=null;
+ if(!targetAvailable&&!hasAppliedM)throw Error('缺少定价目标时须指定有效倍率');
+ let d=null,targetMarginRate=null;
+ if(targetAvailable&&targetMode==='margin'){
   targetMarginRate=div(margin,'100');
-  if(cmp(targetMarginRate,0)<0||cmp(targetMarginRate,1)>=0)throw Error('目标销售毛利率须大于等于0且小于100%');
+  if(cmp(targetMarginRate,0)<0||cmp(targetMarginRate,1)>=0)throw Error('目标模型毛利率须大于等于0且小于100%');
   d=div(proc,sub('1',targetMarginRate));
- }else{
+ }else if(targetAvailable){
   d=div(discount,'10');
-  if(cmp(d,0)<=0||cmp(d,'10')>0)throw Error('现金折扣须大于0且不超过100折');
+  if(cmp(d,0)<=0||cmp(d,'10')>0)throw Error('客户折扣须大于0且不超过100折');
   targetMarginRate=div(sub(d,proc),d);
  }
- const S=div(T,A),U=div(A,T),M=div(mul(d,S),mul(proc,K)),usedM=appliedM!==''&&appliedM!=null?dec(appliedM):M;
+ const S=div(T,A),U=div(A,T),M=targetAvailable?div(mul(d,S),mul(proc,K)):null,usedM=hasAppliedM?dec(appliedM):M;
  if(cmp(usedM,0)<=0)throw Error('倍率须大于零');
- return {A,T,d,q:proc,K,S,U,M,usedM,targetMode,targetMarginRate,targetMarginPct:mul(targetMarginRate,'100'),breakEvenM:div(S,K),roundingUpBound:U};
+ return {A,T,d,q:proc,K,S,U,M,usedM,targetMode,targetAvailable,targetMarginRate,targetMarginPct:targetAvailable?mul(targetMarginRate,'100'):null,breakEvenM:div(S,K),roundingUpBound:U};
 }
 // A margin target follows the supplied procurement cost, including recorded C.
 // A discount target follows list price P; neither path invents a missing cost.
-function targetCash(P,C,p){return p.targetMode==='margin'?(C===null?null:div(C,sub('1',p.targetMarginRate))):(P===null?null:mul(P,p.d));}
+function targetCash(P,C,p){if(p.targetAvailable===false)return null;return p.targetMode==='margin'?(C===null?null:div(C,sub('1',p.targetMarginRate))):(P===null?null:mul(P,p.d));}
 function settle(P,C,p){P=dec(P);C=dec(C);if(cmp(P,0)<=0||cmp(C,0)<0)throw Error('刊例须大于零，采购不能为负');
  // Per request: 0 <= roundGap < roundingUpBound (the value of one point).
- const target=targetCash(P,C,p),idealPoints=mul(target,p.S),raw=mul(mul(C,p.usedM),p.K),N=ceil(raw),cash=mul(N,p.U),rawCash=mul(raw,p.U),gap=sub(cash,target),costGap=sub(mul(mul(mul(C,p.M),p.K),p.U),target),precisionGap=mul(mul(mul(C,sub(p.usedM,p.M)),p.K),p.U),roundGap=sub(cash,rawCash),profit=sub(cash,C),targetProfit=sub(target,C),margin=cmp(cash,0)?mul(div(profit,cash),100):null;
+ const target=targetCash(P,C,p),idealPoints=target===null?null:mul(target,p.S),raw=mul(mul(C,p.usedM),p.K),N=ceil(raw),cash=mul(N,p.U),rawCash=mul(raw,p.U),gap=target===null?null:sub(cash,target),costGap=target===null?null:sub(mul(mul(mul(C,p.M),p.K),p.U),target),precisionGap=target===null?null:mul(mul(mul(C,sub(p.usedM,p.M)),p.K),p.U),roundGap=sub(cash,rawCash),profit=sub(cash,C),targetProfit=target===null?null:sub(target,C),margin=cmp(cash,0)?mul(div(profit,cash),100):null;
  return {P,C,target,idealPoints,raw,N,cash,rawCash,gap,costGap,precisionGap,roundGap,profit,targetProfit,margin,cashProfit:profit,salesMarginPct:margin,costMarkupPct:cmp(C,0)?mul(div(profit,C),'100'):null,targetCashProfit:targetProfit,unroundedCashProfit:sub(rawCash,C),breakEvenM:p.breakEvenM||div(p.S,p.K),roundingUpBound:p.U,effective:mul(div(cash,P),10),actualQ:div(C,P),oldRaw:mul(mul(C,'1.65'),p.K),oldN:ceil(mul(mul(C,'1.65'),p.K)),p};
 }
 function normalizeSeconds(value){
@@ -71,7 +74,7 @@ function estimate(t,minimum=''){
  return {status:hasMinimum?'manual-minimum':'rule-estimate',partial:false,P,base,tokens,rate,wh,billedTokens,minimum:hasMinimum?floor:null,normalizedSeconds:seconds};
 }
 function fromUsage(t,usage){let tok=dec(usage);if(cmp(tok,0)<=0||tok.d!==1n)throw Error('计费用量须为正整数');if(!RATES[t.res])throw Error('不支持的分辨率');return div(mul(tok,RATES[t.res][normalizeVideo(t.video)?1:0]),'1000000');}
-function sumTasks(rows,p){let count=0,N=dec(0),cash=dec(0),C=dec(0),target=dec(0);for(let r of rows){let n=dec(r.qty??1);if(n.d!==1n||cmp(n,1)<0)throw Error('数量须为正整数');let x=settle(r.P,r.C,p);count+=Number(r.qty??1);N=add(N,mul(x.N,n));cash=add(cash,mul(x.cash,n));C=add(C,mul(x.C,n));target=add(target,mul(x.target,n));}const cashProfit=sub(cash,C);return{count,N,cash,C,target,gap:sub(cash,target),cashProfit,salesMarginPct:cmp(cash,0)?mul(div(cashProfit,cash),'100'):null,costMarkupPct:cmp(C,0)?mul(div(cashProfit,C),'100'):null};}
+function sumTasks(rows,p){let count=0,N=dec(0),cash=dec(0),C=dec(0),target=p.targetAvailable===false?null:dec(0);for(let r of rows){let n=dec(r.qty??1);if(n.d!==1n||cmp(n,1)<0)throw Error('数量须为正整数');let x=settle(r.P,r.C,p);count+=Number(r.qty??1);N=add(N,mul(x.N,n));cash=add(cash,mul(x.cash,n));C=add(C,mul(x.C,n));target=target===null||x.target===null?null:add(target,mul(x.target,n));}const cashProfit=sub(cash,C);return{count,N,cash,C,target,gap:target===null?null:sub(cash,target),cashProfit,salesMarginPct:cmp(cash,0)?mul(div(cashProfit,cash),'100'):null,costMarkupPct:cmp(C,0)?mul(div(cashProfit,C),'100'):null};}
 
 function recalcRecord(record,p){
  const P=record.P!==''&&record.P!=null?dec(record.P):null;

@@ -301,14 +301,14 @@ test('standard procurement can use either the exact cash target or a manually sp
   equal(E.mul(E.div(E.sub(x.rawCash,x.C),x.rawCash),100),E.div('1120','165'));
   equal(x.raw,E.mul(x.C,'16.5'));
   equal(x.N,E.ceil(x.raw));
-  assert.match(h.w.document.getElementById('target-context').textContent,/对照目标/);
+  assert.match(h.w.document.getElementById('target-context').textContent,/参考目标/);
   const principle=h.w.document.getElementById('plan-principle').textContent;
   assert.match(principle,/10\.7282/,'manual mode reports its actual unrounded list-price equivalent');
   assert.match(principle,/6\.787[89]/,'manual mode reports its actual unrounded margin rather than the 0% target');
   h.input('pricing-mode','ideal','change');
   equal(h.api.pricing().usedM,'1.538');
   equal(h.api.current().x.rawCash,h.api.current().x.target);
-  assert.doesNotMatch(h.w.document.getElementById('target-context').textContent,/对照目标/);
+  assert.doesNotMatch(h.w.document.getElementById('target-context').textContent,/参考目标/);
 });
 
 test('manual mode in the multiplier drawer previews its value before applying', t => {
@@ -757,7 +757,7 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   assert.equal(modal.hidden,false);assert.equal(modal.classList.contains('centered'),true);
   const dialog=doc.getElementById('drawer');
   assert.equal(dialog.getAttribute('role'),'dialog');assert.equal(dialog.getAttribute('aria-modal'),'true');
-  assert.equal(doc.getElementById(dialog.getAttribute('aria-labelledby')).textContent,'估价依据');
+  assert.equal(doc.getElementById(dialog.getAttribute('aria-labelledby')).textContent,'用量说明');
   assert.ok(doc.getElementById(dialog.getAttribute('aria-describedby')));
   assert.equal(doc.activeElement.id,'close-drawer');
   const body=doc.getElementById('drawer-body');
@@ -841,7 +841,11 @@ test('architecture: one workbench puts pricing first and keeps estimates and cha
     const el=doc.getElementById(id);assert.ok(work.contains(el),id+' is in the same parameter/result area');
     assert.equal(el.closest('[hidden]'),null,id+' needs no stage switch');
   }
-  assert.equal(work.querySelector('.result-stack').children.length,2,'model estimate and commercial result retain distinct headings');
+  const result=work.querySelector('.task-result');
+  assert.equal(work.querySelector('.result-stack').children.length,1,'one result belongs to this task');
+  assert.ok(result.querySelector('.model-cost-section').contains(doc.getElementById('cost-p')));
+  assert.ok(result.querySelector('.model-cost-section').contains(doc.getElementById('cost-c')));
+  assert.ok(result.querySelector('.customer-charge-section').contains(doc.getElementById('integer-points')));
   assert.equal(doc.querySelector('.quick-config').open,false);
   assert.equal(doc.getElementById('platform-comparison').open,false);
   const estimate=h.api.quote().calc;
@@ -909,8 +913,8 @@ test('architecture: model drafts and quote exports remain independent of an inva
   assert.match(summary,/Seedance 2\.5/);
   assert.match(summary,/30秒/);
   assert.match(summary,/单价：42 元 \/ 百万 Token/);
-  assert.match(summary,/基础估算：576,000 Token/);
-  assert.match(summary,/估算视频价格：¥24\.192/);
+  assert.match(summary,/基础 Token 估算：576,000/);
+  assert.match(summary,/刊例费用：¥24\.192/);
   assert.doesNotMatch(summary,/采购|充值|积分|毛利|倍率|现金/,'the standalone model summary contains no platform amounts');
   const entries=Array.from({length:h.w.localStorage.length},(_,i)=>{
     const key=h.w.localStorage.key(i);return[key,h.w.localStorage.getItem(key)];
@@ -1143,7 +1147,7 @@ test('models: platform calculation details and their source dialog use the selec
     assert.equal(section.textContent.includes('匹配范围：Seedance 2.0 · '+R.VERSION),false,'source scope must not fall back to the standard model');
     assert.ok(section.textContent.includes(h.api.quote().rule.note));
     h.click('#detail-open-rule');
-    assert.equal(doc.getElementById('drawer-title').textContent,'估价依据');
+    assert.equal(doc.getElementById('drawer-title').textContent,'用量说明');
     assert.equal(doc.getElementById('drawer-sub').textContent,spec.label+' · 规则版本 '+spec.version);
     const sourceLinks=[...doc.querySelectorAll('#drawer-body a')].map(el=>el.getAttribute('href'));
     assert.ok(sourceLinks.includes(spec.sources.minima.calculatorUrl));
@@ -1151,4 +1155,66 @@ test('models: platform calculation details and their source dialog use the selec
     assert.equal(doc.querySelector('#drawer-body .source-formula').textContent,spec.sources.minima.sourceFormula);
     h.click('#close-drawer');
   }
+});
+
+
+test('manual pricing reveals the active multiplier and keeps an optional comparison target editable', t => {
+  const h=boot(t),doc=h.w.document,targets=doc.getElementById('target-settings');
+  assert.equal(targets.open,true);
+  assert.equal(doc.getElementById('target-summary').hidden,true);
+  h.input('purchase-discount','10');h.input('discount','10');
+  const modelBefore=h.api.quote().calc.P;
+  h.input('pricing-mode','manual','change');h.input('manual-m','1.65');
+  assert.equal(targets.open,false,'reference target is secondary in manual mode');
+  assert.equal(doc.getElementById('target-summary').hidden,false);
+  assert.equal(doc.getElementById('manual-m-control').closest('details'),null);
+  assert.equal(targets.parentElement.firstElementChild.className,'multiplier-block','DOM reading order matches the active setting');
+  const manualRaw=h.api.current().x.raw;
+  h.click('#target-summary');assert.equal(targets.open,true);
+  h.input('discount','8');
+  assert.equal(targets.open,true,'editing a comparison target must not collapse the controls');
+  equal(h.api.current().x.raw,manualRaw,'comparison target cannot change manual charges');
+  equal(h.api.pricing().usedM,'1.65');
+  equal(h.api.quote().calc.P,modelBefore,'pricing UI never changes model costs');
+  h.input('seconds','10');assert.equal(targets.open,true,'task edits preserve the open comparison');
+  h.input('pricing-mode','ideal','change');
+  assert.equal(targets.open,true);assert.equal(targets.parentElement.firstElementChild,targets);
+  assert.equal(doc.getElementById('target-summary').hidden,true);
+  equal(h.api.current().x.rawCash,h.api.current().x.target,'auto mode restores the selected target');
+  h.input('pricing-mode','manual','change');assert.equal(targets.open,false);
+  equal(h.api.pricing().usedM,'1.65','switching modes retains the specified multiplier');
+});
+
+
+test('manual charges do not require a reference target, including after reload and export', async t => {
+  const h=boot(t),doc=h.w.document;
+  h.input('discount','');assert.equal(doc.getElementById('platformError').hidden,false);
+  h.input('pricing-mode','manual','change');h.input('manual-m','1.65');
+  assert.equal(doc.getElementById('manual-m-control').hidden,false,'mode controls remain usable after invalid auto target');
+  assert.equal(doc.getElementById('platformError').hidden,true);
+  const expected=h.api.current().x;
+  assert.equal(expected.target,null);assert.equal(expected.gap,null);
+  equal(expected.raw,E.mul(expected.C,'16.5'));
+  h.click('.platform-calculation-detail > summary');
+  assert.equal(doc.getElementById('target-cash').textContent,'—');assert.equal(doc.getElementById('cash-gap').textContent,'—');
+  h.click('#target-summary');h.input('discount','n/a');
+  assert.equal(doc.getElementById('platformError').hidden,true);
+  assert.equal(doc.querySelector('.platform-calculation-detail').open,true);
+  equal(h.api.current().x.N,expected.N);
+  h.click('#plan-settings');h.input('plan-manual','1.65');h.click('#save-plan');
+  h.click('#details');assert.match(doc.getElementById('drawer-body').textContent,/参考目标未设置或无效/);h.click('#close-drawer');
+  h.click('#open-actual');assert.ok(doc.querySelectorAll('#actual-table tbody tr').length);h.click('#back-theory');
+  h.click('[data-tab="recharges"]');assert.match(doc.getElementById('table').textContent,/固定当前倍率/);
+  h.input('recharge-mode','fixed','change');assert.ok(doc.querySelectorAll('#table tbody tr').length);
+  h.click('#export');h.click('#export-json');
+  const exported=JSON.parse(await h.downloads.at(-1).blob.text());
+  assert.equal(exported.state.plan.discount,'n/a');assert.equal(exported.state.plan.manualM,'1.65');
+  const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(exported.state)]]);
+  equal(restored.api.current().x.N,expected.N);assert.equal(restored.api.current().x.target,null);
+  h.click('#close-drawer');h.input('target-mode','margin','change');h.input('target-margin','100');
+  assert.equal(doc.getElementById('platformError').hidden,true);equal(h.api.current().x.N,expected.N);
+  h.input('pricing-mode','ideal','change');assert.equal(doc.getElementById('platformError').hidden,false);
+  assert.equal(doc.getElementById('manual-m-control').hidden,true);assert.equal(doc.getElementById('target-settings').open,true);
+  h.input('target-margin','20');assert.equal(doc.getElementById('platformError').hidden,true);
+  equal(h.api.current().x.rawCash,h.api.current().x.target,'only the selected valid target is required in auto mode');
 });
