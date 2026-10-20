@@ -43,7 +43,7 @@
     return {
       verifiedAt: VERIFIED_AT, timezone: 'Asia/Shanghai',
       pricing: {url: 'https://ark.volcengine.com/region:cn-beijing/docs/model-pricing.md', pageUrl: 'https://ark.volcengine.com/region:cn-beijing/docs/model-pricing', file: DIR + 'model-pricing.md', unit: '元/百万 completion_tokens', note: '标准刊例费率；不自动沿用已结束的促销。'},
-      dimensions: {url: 'https://ark.volcengine.com/region:cn-beijing/docs/create-video-generation-task-api.md', file: DIR + 'create-video-generation-task-api.md'},
+      dimensions: {url: 'https://ark.volcengine.com/region:cn-beijing/docs/create-video-generation-task-api.md', pageUrl: 'https://ark.volcengine.com/region:cn-beijing/docs/create-video-generation-task-api', file: DIR + 'create-video-generation-task-api.md'},
       usage: {url: 'https://ark.volcengine.com/region:cn-beijing/docs/get-video-generation-task-api.md', file: DIR + 'get-video-generation-task-api.md', note: 'completion_tokens 已含最低用量；不与 total_tokens 相加，不再次补最低门槛。'},
       minima: {
         url: views[resolutions[0]], views, tableId, fieldId: 'fld0p1bMiB', verifiedAt: is25 ? snapshot25?.verifiedAt || VERIFIED_AT : R.VERIFIED_AT,

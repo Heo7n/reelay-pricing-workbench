@@ -810,6 +810,46 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   assert.equal(help.disabled,true);vin.blur();h.good();assert.equal(help.disabled,false);
 });
 
+test('usage dimension table matches captured official mappings and marks all maximum pixel ties', t => {
+  const h=boot(t),doc=h.w.document;
+  h.click('#usage-help');
+  const table=doc.getElementById('usage-dimension-table');
+  assert.ok(table,'the explanation includes the aspect-ratio to pixel-resolution table');
+  // The oracle is parsed from the captured official document, independently of models.js.
+  const catalog=require('./model-catalog-check.cjs');
+  const evidence=catalog.readEvidence();
+  catalog.validateReceipts(evidence);
+  const official=catalog.deriveCatalog(evidence);
+  const ratios=['21:9','16:9','4:3','1:1','3:4','9:16'];
+  const bodies=[...table.querySelectorAll('tbody[data-model]')];
+  assert.deepEqual(bodies.map(body=>body.dataset.model).sort(),Object.keys(official).sort());
+  assert.equal(table.querySelectorAll('td[data-ratio]').length,54,'include only supported model/resolution specifications');
+  for(const body of bodies){
+    const model=body.dataset.model,source=official[model];
+    const rows=[...body.querySelectorAll('tr[data-resolution]')];
+    assert.deepEqual(rows.map(row=>row.dataset.resolution),source.resolutions,model+' resolution coverage');
+    for(const row of rows){
+      const res=row.dataset.resolution,dims=source.dims[res];
+      const maximum=Math.max(...Object.values(dims).map(([width,height])=>width*height));
+      const cells=[...row.querySelectorAll('td[data-ratio]')];
+      assert.deepEqual(cells.map(cell=>cell.dataset.ratio),ratios,model+'/'+res+' ratio order');
+      for(const cell of cells){
+        const ratio=cell.dataset.ratio,[width,height]=dims[ratio],pixels=width*height;
+        const label=model+'/'+res+'/'+ratio;
+        assert.equal(cell.querySelector('.dimension-size')?.textContent,width+' × '+height,label+' dimensions');
+        assert.equal(cell.querySelector('.dimension-pixels')?.textContent,pixels.toLocaleString('en-US')+' 像素',label+' exact total pixels');
+        assert.equal(cell.classList.contains('is-pixel-maximum'),pixels===maximum,label+' maximum highlight');
+        const markers=[...cell.querySelectorAll('.dimension-maximum')];
+        assert.deepEqual(markers.map(marker=>marker.textContent),pixels===maximum?['最多']:[],label+' accessible maximum label');
+      }
+    }
+  }
+  const winners=(model,res)=>[...table.querySelectorAll('tbody[data-model="'+model+'"] tr[data-resolution="'+res+'"] td.is-pixel-maximum')].map(cell=>cell.dataset.ratio);
+  assert.deepEqual(winners('seedance-2.0','480p'),['21:9','16:9','9:16'],'all three 2.0 480p ties are marked');
+  assert.deepEqual(winners('seedance-2.5','480p'),['21:9'],'2.5 uses its own smaller 16:9 and 9:16 dimensions');
+  assert.deepEqual(winners('seedance-2.0','4k'),['4:3','3:4'],'the small 4K pixel difference must not be rounded into a tie');
+});
+
 test('four quick configurations are true official token extrema over all supported specifications', t => {
   const h=boot(t), selectors=['none-min','none-max','video-min','video-max'];
   assert.deepEqual([...h.w.document.querySelectorAll('[data-example]')].map(button=>button.dataset.example),selectors);
