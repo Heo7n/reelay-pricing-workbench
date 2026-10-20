@@ -746,6 +746,86 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   input.blur();h.good();assert.equal(doc.getElementById('usage-summary').hidden,false);adopted('estimate');
 });
 
+test('usage calculation leads the explanation and substitutes each model specification without input video', t => {
+  const h=boot(t),doc=h.w.document;
+  const clean=el=>el.textContent.replace(/[,\s]/g,'');
+  const cases=[
+    {model:'seedance-2.0',label:'Seedance 2.0',res:'1080p',ratio:'4:3',seconds:'5',wh:[1664,1248],rate:'51',tokens:'243,360',fee:'12.411360',approximate:false},
+    {model:'seedance-2.5',label:'Seedance 2.5',res:'480p',ratio:'16:9',seconds:'4',wh:[854,480],rate:'70',tokens:'38,430',fee:'2.690100',approximate:false},
+    {model:'seedance-2.0-fast',label:'Seedance 2.0 Fast',res:'720p',ratio:'4:3',seconds:'5',wh:[1112,834],rate:'37',tokens:'108,680.625',fee:'4.021183',approximate:true}
+  ];
+  for(const entry of cases){
+    h.update(s=>{s.task={model:entry.model,res:entry.res,ratio:entry.ratio,seconds:entry.seconds,video:false,vin:'2'};});
+    if(doc.getElementById('modal').hidden)h.click('#usage-help');
+    const section=doc.getElementById('usage-calculation');
+    assert.equal(doc.querySelector('#usage-explanation>section'),section,'the current calculation appears before reference tables');
+    assert.equal(section.querySelector('h3').textContent,'本次计算');
+    const context=doc.getElementById('usage-calculation-context').textContent;
+    for(const expected of [entry.label,entry.res,entry.ratio])assert.ok(context.includes(expected),expected+' appears in task context');
+    const estimate=section.querySelector('[data-step="estimate"]');
+    for(const expected of [entry.wh[0],entry.wh[1],24,1024])assert.ok(clean(estimate).includes(String(expected)),expected+' appears in the estimate substitution');
+    assert.match(clean(estimate),new RegExp('\\(0\\+'+entry.seconds+'\\)'),'no-video estimates substitute zero input seconds');
+    assert.equal(doc.getElementById('usage-calc-estimate').textContent,entry.tokens);
+    assert.equal(doc.getElementById('usage-calc-billed').textContent,entry.tokens);
+    assert.match(section.querySelector('.usage-choice').textContent,/采用估算 Token 用量/);
+    const fee=section.querySelector('[data-step="fee"]');
+    assert.match(fee.textContent,/计费用量.*刊例单价/);
+    assert.match(clean(fee),/÷1000000/,'the per-million price is converted once');
+    assert.ok(clean(fee).includes(entry.rate),'the selected model rate appears in the substitution');
+    assert.equal(doc.getElementById('usage-calc-fee').textContent,entry.fee);
+    assert.equal(doc.getElementById('cost-p').textContent,entry.fee,'trace and main-panel fee agree');
+    assert.equal(fee.textContent.includes('≈'),entry.approximate,'only rounded fee substitutions use approximate equality');
+    assert.match(fee.textContent,/元\/个/);
+    equal(doc.getElementById('usage-calc-estimate').textContent.replaceAll(',',''),h.api.quote().calc.tokens);
+  }
+});
+
+test('usage calculation compares exact minima and follows threshold changes while the dialog is open', t => {
+  const h=boot(t),doc=h.w.document;
+  h.click('#usage-help');
+  const billed=()=>doc.querySelector('#usage-calculation [data-step="billed"]');
+  const chosen=()=>doc.querySelector('#usage-calculation .usage-choice').textContent;
+  assert.match(billed().textContent,/max/i);
+  assert.match(billed().textContent,/查表/,'official minima come from the current specification lookup');
+  assert.equal(doc.getElementById('usage-calc-estimate').textContent,'57,600');
+  assert.equal(doc.getElementById('usage-calc-billed').textContent,'67,200');
+  assert.match(chosen(),/采用最低 Token 用量/);
+  h.input('vin-slider','3');
+  assert.equal(doc.getElementById('usage-calc-estimate').textContent,'67,200');
+  assert.equal(doc.getElementById('usage-calc-billed').textContent,'67,200');
+  assert.match(chosen(),/采用估算 Token 用量/,'equality keeps the estimate instead of suggesting a floor increase');
+  h.input('vin-slider','4');
+  assert.equal(doc.getElementById('usage-calc-estimate').textContent,'76,800');
+  assert.equal(doc.getElementById('usage-calc-billed').textContent,'76,800');
+  assert.match(chosen(),/采用估算 Token 用量/);
+  h.update(s=>{s.rules.minima[h.api.minimumKey(s.task)]={tokens:'76800.000000000001',kind:'manual',note:'精确门槛测试'};});
+  assert.equal(doc.getElementById('usage-calc-billed').textContent,'76,800.000000000001','the calculation trace retains precision hidden in the summary');
+  assert.match(chosen(),/采用最低 Token 用量/,'selection uses exact values even when the rounded summary is equal');
+  assert.match(billed().textContent,/人工设置/);
+  assert.doesNotMatch(billed().textContent,/查表/,'a manual threshold is never presented as an official lookup');
+  assert.equal(doc.getElementById('usage-calc-fee').textContent,'2.150400');
+  assert.match(doc.querySelector('#usage-calculation [data-step="fee"]').textContent,/≈/,'a sub-display-precision difference still requires approximate equality');
+});
+
+test('usage calculation stays model-only when platform pricing changes or recharge becomes invalid', t => {
+  const h=boot(t),doc=h.w.document;
+  h.click('#usage-help');
+  const trace=()=>doc.getElementById('usage-calculation').textContent;
+  const original=trace();
+  h.input('pay','250');
+  h.input('total','4000');
+  h.input('purchase-discount','10');
+  h.input('discount','10');
+  assert.equal(trace(),original,'recharge, procurement and customer discounts do not change model usage or list fees');
+  h.input('target-mode','margin','change');
+  h.input('target-margin','20');
+  assert.equal(trace(),original,'the platform margin objective does not affect the model calculation');
+  h.input('pay','');
+  assert.equal(doc.getElementById('usage-help').disabled,false);
+  assert.equal(trace(),original,'an invalid platform input leaves the current model calculation readable');
+  assert.doesNotMatch(trace(),/采购|充值|积分|毛利|倍率/);
+});
+
 test('usage explanation opens as a centered, sourced dialog and restores focus when dismissed', t => {
   const h=boot(t),doc=h.w.document,help=doc.getElementById('usage-help'),modal=doc.getElementById('modal');
   assert.equal(doc.getElementById('cost-badge').textContent,'参数预估');
