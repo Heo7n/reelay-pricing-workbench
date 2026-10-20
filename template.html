@@ -135,7 +135,7 @@
 .plan #target-mode,.plan #pricing-mode{min-width:0;max-width:100%;height:25px;border:1px solid var(--line);border-radius:6px;background:#fafbfe;padding:1px 5px;margin:0;font-size:11px;color:var(--sub);cursor:pointer}
 .plan .target-label{justify-content:space-between;gap:4px;flex-wrap:wrap}
 .plan #target-mode{height:21px;border:0;background:transparent;padding:0}
-.plan .recharge-values .grid2{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.plan .recharge-values .grid2{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .plan .client-pricing-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
 .plan .client-pricing-body>*{min-width:0}
 .plan .target-settings>summary{cursor:pointer;font-size:11px;color:var(--sub)}
@@ -180,7 +180,7 @@
 
 /* Model estimate on the left; model-specific purchasing and points on the right. */
 .intro{padding:24px 0 18px}.intro h1{font-size:24px;letter-spacing:-.5px}
-.pricing-workbench{display:grid;grid-template-columns:minmax(370px,43fr) minmax(430px,57fr);gap:20px;align-items:start;margin-top:0}
+.pricing-workbench{display:grid;grid-template-columns:minmax(320px,3fr) minmax(0,7fr);gap:20px;align-items:start;margin-top:0}
 .pricing-workbench>.card{padding:22px 24px;min-width:0}
 .pricing-workbench .section-title{font-size:15px;font-weight:650;line-height:1.6}
 .pricing-workbench #globalError,.pricing-workbench #platformError{margin:0 0 16px}
@@ -192,6 +192,9 @@
 .generation-panel .field .label{font-size:12px;margin-bottom:8px}
 .generation-panel .segs button{padding:7px 8px}
 .generation-panel .ratios{gap:7px}.generation-panel .ratios button{height:54px}
+.output-preview{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:12px;min-height:54px;margin-top:10px;padding:8px 10px;border:1px solid #e8ecf1;border-radius:8px;background:#f7f8fa}
+.preview-stage{display:flex;align-items:center;justify-content:center;height:34px}.aspect-preview{flex:none;border:1px solid #91a4c3;border-radius:2px;background:#e9eef8}
+.preview-specs{display:flex;flex-direction:column;gap:1px;min-width:0}.preview-specs #pixels{font-size:12px;font-weight:550;color:var(--sub);overflow-wrap:anywhere}.preview-specs>span:last-child{font-size:10px;color:var(--muted)}
 .generation-panel .model-cost-section{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
 .estimate-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
 .result-section-title{font-size:12px;line-height:1.6;font-weight:600;color:var(--sub);margin:0}
@@ -211,8 +214,7 @@
 .pricing-panel .purchase-values .cost-number{font-size:24px;line-height:38px;letter-spacing:0}
 .pricing-panel .purchase-values .cost-number small{font-size:13px}
 .procurement-status{font-size:11px;color:var(--muted);margin:8px 0 0;line-height:1.7}.procurement-status.is-simulation{color:var(--amber)}
-.plan-advanced{margin-top:16px}
-.plan-advanced>summary,.platform-calculation-detail>summary{font-size:11px;color:var(--sub);cursor:pointer}
+.platform-calculation-detail>summary{font-size:11px;color:var(--sub);cursor:pointer}
 .pricing-panel .customer-charge-section{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
 .pricing-panel .customer-charge-section>.result-section-title{margin-bottom:12px}
 .pricing-panel .calculation{padding:0}
@@ -225,6 +227,8 @@
 .pricing-panel .result-note{padding:0;background:none;color:var(--muted);font-size:10px;margin-top:12px}
 .platform-calculation-detail{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
 .platform-calculation-detail .equation{margin:12px 0;font-size:12px}.platform-calculation-detail .cash-row{margin-bottom:12px}
+.plan .platform-calculation-detail .plan-outcome{margin-top:12px;padding:12px 0 0;border-top:1px solid var(--line)}
+.pricing-detail-tools{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;margin-top:14px}.pricing-detail-tools .link{font-size:11px}.plan .pricing-detail-tools #unit-check{margin-left:0}
 .pricing-panel .result-foot{padding:14px 0 0;margin-top:18px;gap:14px}
 .pricing-panel .result-foot .links{gap:16px}
 .platform-comparison{padding:0;margin:20px 0}
@@ -238,11 +242,11 @@
 @media(max-width:900px){.pricing-workbench{grid-template-columns:minmax(0,1fr);gap:18px}.generation-panel .model-select-field{max-width:none}.generation-panel .usage-metrics dd{font-size:21px}.platform-primary-metrics{grid-template-columns:1fr 1fr 1fr;gap:16px}.platform-primary-metrics .points-box{grid-column:auto;display:block}.platform-primary-metrics .cash-item{padding:4px 0}}
 @media(max-width:540px){.intro{padding:19px 0 15px}.intro h1{font-size:22px}.pricing-workbench>.card{padding:18px 17px}.generation-panel .ratios{gap:5px}.generation-panel .usage-token{padding:10px}.generation-panel .usage-metrics dd{font-size:18px}.video-price-amount .cost-number{font-size:24px}.platform-primary-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.platform-primary-metrics .points-box{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}.platform-primary-metrics .cash-item b{font-size:20px}.pricing-panel .result-foot{padding-top:14px}.pricing-panel .purchase-values .cost-number{font-size:22px}.platform-comparison>summary{padding:15px 16px}.comparison-content{padding:0 16px}.bottom{margin-top:19px}}
 @media(max-width:360px){.generation-panel .usage-metrics,.platform-primary-metrics,.pricing-panel .purchase-values,.plan .recharge-values .grid2{grid-template-columns:minmax(0,1fr)}}
-@media print{.quick-config{display:none!important}.platform-comparison{border:0}.pricing-workbench{grid-template-columns:1fr 1.2fr;gap:18px}.pricing-workbench>.card{padding:10px}}
+@media print{.quick-config{display:none!important}.platform-comparison{border:0}.pricing-workbench{grid-template-columns:3fr 7fr;gap:18px}.pricing-workbench>.card{padding:10px}}
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.0</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.1</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
 <section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
@@ -250,11 +254,10 @@
 <div class="head"><h2 class="section-title" id="generation-title" tabindex="-1">生成任务</h2></div>
 <div id="globalError" class="notice red" role="alert" hidden></div>
 <div class="model-select-field"><label class="fieldlabel" for="model">生成模型</label><select id="model"></select></div>
-<div class="preview-box model-preview" hidden aria-hidden="true"><div id="preview-frame" class="preview-frame"></div><div class="preview-meta" id="preview-meta"></div></div>
 <div class="fields-layout">
 <div class="field" data-field="video"><div class="label">视频输入</div><div class="segs" id="video-options"><button data-video="false">无视频输入</button><button data-video="true">有视频输入</button></div><div class="reference-controls" data-field="vin" id="video-detail"><label for="vin-slider" id="vin-label">输入视频总时长</label><input class="duration-slider reference-slider" type="range" id="vin-slider" aria-labelledby="vin-label" min="2" max="15" step="1" value="2"><div class="vin-value"><input class="num" type="number" id="vin" aria-label="输入视频总时长（整秒）" inputmode="numeric" min="2" max="15" step="1" value="2"><span>秒</span></div></div></div>
 <div class="field" data-field="resolution"><div class="label">输出分辨率</div><div class="segs" id="res-options"></div></div>
-<div class="field" data-field="ratio"><div class="label">画面比例</div><div class="ratios" id="ratio-options"></div><div class="pixel-line" hidden><span id="pixels"></span><span>24 fps</span></div></div>
+<div class="field" data-field="ratio"><div class="label">画面比例</div><div class="ratios" id="ratio-options"></div><div class="output-preview" role="group" aria-label="输出画面规格"><div class="preview-stage" aria-hidden="true"><div id="preview-frame" class="aspect-preview"></div></div><div class="preview-specs" id="preview-meta"><span class="num" id="pixels"></span><span>24 fps</span></div></div></div>
 <div class="field" data-field="seconds"><div class="label slider-label"><label for="seconds">输出时长</label><output class="slider-value num" id="seconds-value" for="seconds">4 秒</output></div><div id="seconds-fixed"><input class="duration-slider" type="range" id="seconds" aria-label="输出秒数" min="4" max="15" step="1" value="4"><div class="slider-scale"><span>4 秒</span><span id="seconds-max-label">15 秒</span></div></div></div>
 </div>
 
@@ -276,22 +279,24 @@
 <button id="show-formula" hidden>公式明细</button>
 </article>
 <article class="card plan pricing-panel" aria-labelledby="plan-title">
-<div class="head plan-head"><h2 class="section-title" id="plan-title" tabindex="-1">积分定价方案</h2><span class="plan-model" id="pricing-model"></span></div>
+<div class="head plan-head"><h2 class="section-title" id="plan-title" tabindex="-1">积分定价方案</h2></div>
 <div id="platformError" class="notice red" role="alert" hidden></div>
 <div class="plan-grid">
-<section class="plan-block procurement-block" aria-label="模型采购">
-<div class="grid2 purchase-values"><div><label class="fieldlabel" for="purchase-discount">采购折扣</label><div class="inputbox"><input class="input num" id="purchase-discount" title="10折表示按刊例价采购；暂无供应商的模型可调整折扣试算" inputmode="decimal" value="7.35"><span class="unit">折</span></div></div><div><div class="fieldlabel">采购成本</div><div class="cost-number num" id="cost-c">—</div></div></div>
-<p class="procurement-status" id="procurement-status"></p>
-</section>
-<section class="plan-block foundation-block" aria-label="充值方案">
+<section class="plan-block foundation-block" aria-labelledby="recharge-title">
+<div class="plan-block-head"><h3 id="recharge-title">充值方案</h3></div>
 <div class="recharge-values"><div class="grid2">
 <div><label class="fieldlabel" for="pay">充值实付</label><div class="inputbox"><input class="input num" id="pay" inputmode="decimal" value="100"><span class="unit">元</span></div></div>
 <div><div class="fieldlabel total-mode-label"><select id="total-mode" aria-label="积分填写方式"><option value="total">到账总积分</option><option value="gift">附赠积分</option></select></div><div class="inputbox"><input class="input num" id="total" aria-label="到账总积分" inputmode="decimal" value="1538"><span class="unit">积分</span></div></div>
 </div></div>
 <div class="foundation-support plan-support"><span class="recharge-equivalence" id="recharge-value">1 元 <span id="recharge-sign">=</span> <b class="num" id="per-yuan">15.38</b> 积分</span></div>
 </section>
+<section class="plan-block procurement-block" aria-labelledby="procurement-title">
+<div class="plan-block-head"><h3 id="procurement-title">模型采购</h3><span class="plan-model" id="pricing-model"></span></div>
+<div class="grid2 purchase-values"><div><label class="fieldlabel" for="purchase-discount">采购折扣</label><div class="inputbox"><input class="input num" id="purchase-discount" title="10折表示按刊例价采购；暂无供应商的模型可调整折扣试算" inputmode="decimal" value="7.35"><span class="unit">折</span></div></div><div><div class="fieldlabel">本次采购成本</div><div class="cost-number num" id="cost-c">—</div></div></div>
+<p class="procurement-status" id="procurement-status"></p>
+</section>
 <section class="plan-block client-pricing" aria-labelledby="client-pricing-title">
-<div class="plan-block-head"><h3 id="client-pricing-title">定价方式</h3><select class="pricing-mode" id="pricing-mode" aria-label="定价方式"><option value="ideal">按目标计算</option><option value="manual">指定倍率</option></select></div>
+<div class="plan-block-head"><h3 id="client-pricing-title">客户定价</h3><select class="pricing-mode" id="pricing-mode" aria-label="定价方式"><option value="ideal">按目标计算</option><option value="manual">指定倍率</option></select></div>
 <div class="client-pricing-body">
 <details class="target-settings" id="target-settings" open><summary id="target-summary" hidden>参考目标 <span>不参与定价</span></summary>
 <div class="target-block" id="pricing-target">
@@ -310,10 +315,9 @@
 </div>
 </section>
 </div>
-<details class="plan-advanced"><summary>方案校验</summary><div class="plan-outcome"><div class="plan-principle" id="plan-principle" aria-live="polite"></div><span class="point-price" id="point-price" title="充值实付 ÷ 到账总积分">每积分 <span id="point-price-sign">≈</span> <b class="num" id="per-point">0.06501951</b> 元</span><span class="break-even" title="取整前的模型毛利为零时所需倍率">保本倍率 <b class="num" id="break-even-m">1.538</b></span><button class="link" id="unit-check">1 元基准校验 ⓘ</button></div></details>
-
 <section class="customer-charge-section" aria-labelledby="customer-charge-title"><h3 class="result-section-title" id="customer-charge-title">收费与毛利</h3><div class="calculation" id="calculation"></div></section>
-<div class="result-foot"><div class="links"><button id="details" class="link">定价明细 ⓘ</button><button id="actual-calculation" class="link">实测复算 ↗</button></div><button class="btn primary sm" id="add-task">＋ 加入任务清单</button></div>
+<details class="platform-calculation-detail" id="pricing-detail"><summary>计价明细</summary><div id="charge-breakdown"></div><div class="plan-outcome"><div class="plan-principle" id="plan-principle" aria-live="polite"></div><span class="point-price" id="point-price" title="充值实付 ÷ 到账总积分">每积分 <span id="point-price-sign">≈</span> <b class="num" id="per-point">0.06501951</b> 元</span><span class="break-even" title="取整前的模型毛利为零时所需倍率">保本倍率 <b class="num" id="break-even-m">1.538</b></span></div><div class="pricing-detail-tools"><button id="details" class="link">完整计算过程 ↗</button><button class="link" id="unit-check">1 元基准校验 ⓘ</button><button class="link" id="economics-how">毛利计算口径 ↗</button></div></details>
+<div class="result-foot"><div class="links"><button id="actual-calculation" class="link">实测复算 ↗</button></div><button class="btn primary sm" id="add-task">＋ 加入任务清单</button></div>
 
 </article>
 </section>

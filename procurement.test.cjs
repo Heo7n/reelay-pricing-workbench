@@ -73,11 +73,12 @@ test('legacy global procurement migrates only to standard 2.0 regardless of the 
     const original=JSON.stringify(old),h=boot(t,old),state=h.api.getState();
     assert.deepEqual(plain(state.plan.procurementByModel),{'seedance-2.0':'0.61','seedance-2.5':'1','seedance-2.0-fast':'1'});
     equal(state.plan.q,model==='seedance-2.0'?'0.61':'1');
-    assert.match(h.w.document.getElementById('migration-note').textContent,/旧值保留给 2.0/);
+    assert.equal(h.w.document.getElementById('migration-note').hidden,true);
+    assert.equal(h.w.document.getElementById('migration-note').textContent,'');
     assert.equal(JSON.stringify(old),original);
     assert.deepEqual(plain(state.observations),plain(old.observations).map(o=>({...o,usage:o.usage||''})));
     const imported=h.api.migrate({format:'reelay.pricing.v9',state:old});
-    assert.match(imported.note,/旧值保留给 2.0/);
+    assert.equal(imported.note,'已导入方案。');
     equal(imported.value.plan.q,model==='seedance-2.0'?'0.61':'1');
     h.select('seedance-2.0');equal(h.api.getState().plan.q,'0.61');
   }
