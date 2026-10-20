@@ -1,0 +1,830 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Reelay · 理论试算与实测复算 V9</title><style>
+:root{--bg:#f5f6f8;--paper:#fff;--ink:#202631;--sub:#555f6d;--muted:#77808d;--line:#e3e7ed;--accent:#355cca;--tint:#f0f4ff;--dark:#263347;--amber:#946019;--amberbg:#fcf6eb;--red:#ae4149;--green:#246f60;--font:Inter,"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif}*{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--bg);font:14px/1.6 var(--font);-webkit-font-smoothing:antialiased}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}a{color:var(--accent)}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}button:disabled{opacity:.4;cursor:not-allowed}h1,h2,h3,p{margin:0}button{transition:background .12s,border-color .12s}input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}input[type=number]{-moz-appearance:textfield}input[type=checkbox]{accent-color:var(--accent)}[hidden]{display:none!important}.num{font-family:Inter,"Segoe UI",Arial,sans-serif;font-variant-numeric:tabular-nums}.wrap{max-width:1400px;margin:0 auto;padding:0 28px}.top{height:65px;background:white;border-bottom:1px solid var(--line)}.top .wrap{height:100%;display:flex;align-items:center;justify-content:space-between;gap:16px}.branding{display:flex;align-items:center;gap:20px}.logo{font:bold 29px/1 Arial;letter-spacing:-1.6px}.logo i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-left:3px}.brand-caption{font-size:12px;color:var(--sub);border-left:1px solid var(--line);padding-left:18px}.actions{display:flex;gap:8px;align-items:center}.btn{border:1px solid #dce1e9;background:white;border-radius:8px;padding:8px 13px;line-height:1.5;font-size:12px;font-weight:550;white-space:nowrap}.btn:hover{background:#f7f9fc;border-color:#b9c5db}.btn.dark{background:var(--dark);color:white;border-color:var(--dark)}.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}.btn.soft{background:var(--tint);border-color:#dce5fc;color:var(--accent)}.btn.sm{font-size:11px;padding:5px 9px}.btn.icon{padding:6px 10px;font-size:17px}.link{background:none;border:0;padding:0;color:var(--accent);font-size:12px;white-space:nowrap}.link:hover{text-decoration:underline}.muted{color:var(--muted)}.sub{color:var(--sub)}.small{font-size:12px}.tiny{font-size:11px}.badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:500;line-height:1.65;padding:2px 7px;border-radius:5px;background:#f0f2f5;color:#606b7c;white-space:nowrap}.badge.blue{background:var(--tint);color:var(--accent)}.badge.amber{background:var(--amberbg);color:var(--amber)}.badge.red{background:#fff0f1;color:var(--red)}.intro{display:flex;align-items:center;justify-content:space-between;padding:24px 0 19px;gap:15px}h1{font-size:25px;font-weight:670;letter-spacing:-.7px;line-height:1.35}.intro p{font-size:12px;color:var(--muted);margin-top:5px}.intro-meta{display:flex;align-items:center;gap:12px;color:var(--sub);font-size:12px}.scope{border:1px solid var(--line);background:#eef0f4;padding:5px 9px;border-radius:6px}.card{background:white;border:1px solid var(--line);border-radius:13px;min-width:0;box-shadow:0 2px 4px #20304002}.head{display:flex;align-items:center;justify-content:space-between;gap:12px}.head h2{font-size:14px;font-weight:650}.plan{padding:16px 22px 0}.plan-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.plan-grid{display:grid;grid-template-columns:1.16fr 1fr 1fr;gap:25px}.plan-block+.plan-block{border-left:1px solid var(--line);padding-left:25px}.label{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sub);margin-bottom:7px;font-weight:550}.fieldlabel{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.inputbox{position:relative;min-width:0}.inputbox input{padding-right:35px}.unit{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);pointer-events:none}.input{width:100%;height:37px;border:1px solid #dce2eb;border-radius:7px;padding:0 10px;background:white;font-size:13px;min-width:0}.input:focus{border-color:#b2c2ed}.input[aria-invalid=true]{border-color:var(--red);background:#fff7f7}.recharge-foot{display:flex;align-items:center;gap:12px;justify-content:space-between;margin-top:7px;font-size:11px;color:var(--sub)}.recharge-foot b{font-size:12px;font-weight:600}.discountbox{display:flex;align-items:center;gap:12px}.discountbox input{width:8ch;flex:none;font:600 29px/1.2 Inter,"Segoe UI",Arial,sans-serif;font-variant-numeric:tabular-nums;border:0;border-bottom:1px solid #dce2eb;background:white;padding:0 2px 4px}.discountbox span{font-size:12px;color:var(--sub)}.picks{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}.picks button{border:1px solid var(--line);background:white;border-radius:6px;padding:3px 7px;font-size:11px;color:var(--sub)}.picks button:hover{border-color:#aec0ee}.picks button.active{background:var(--tint);border-color:#c9d7f9;color:var(--accent)}.coefficient{font:600 28px/1.25 Inter,"Segoe UI",Arial,sans-serif;color:var(--accent);letter-spacing:-.6px;white-space:nowrap}.coefficient small{font:400 12px var(--font);color:var(--sub);margin-left:6px}.coef-foot{font-size:11px;color:var(--sub);margin-top:7px;display:flex;gap:12px;justify-content:space-between}.plan-foot{padding:9px 0;border-top:1px solid var(--line);margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10px;color:var(--muted)}.plan-foot span b{font-weight:500;color:var(--sub)}.plan-note{color:var(--amber);font-size:11px}.notice{background:var(--amberbg);color:var(--amber);padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.75}.notice.red{background:#fff0f0;color:var(--red)}.notice.neutral{background:#f2f5f9;color:var(--sub)}#globalError{margin:10px 0}.work{display:grid;grid-template-columns:minmax(320px,3fr) minmax(0,7fr);gap:18px;margin-top:18px;align-items:stretch}.composer{padding:19px 20px;display:flex;flex-direction:column}.composer h2{font-size:15px}.composer-desc{font-size:11px;color:var(--muted);margin:6px 0 18px}.field{margin-bottom:17px}.field .label{margin-bottom:8px}.segs{display:flex;gap:6px}.segs button{flex:1;border:1px solid var(--line);background:white;border-radius:7px;padding:6px 7px;font-size:12px;color:var(--sub);white-space:nowrap}.segs button.active{background:var(--tint);color:var(--accent);border-color:#c7d5f6;font-weight:600}.ratios{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.ratios button{height:57px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;border:1px solid var(--line);border-radius:7px;background:white;padding:0;color:var(--sub);font-size:10px}.ratios button.active{color:var(--accent);background:var(--tint);border-color:#c7d5f6}.frame{display:block;height:16px;border:1.2px solid currentColor;border-radius:2px;max-width:28px}.pixel-line{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:var(--muted);margin-top:6px}.duration{display:flex;gap:8px;align-items:center}.duration .inputbox{width:75px;flex-shrink:0}.duration .picks{margin:0}.duration .picks button{padding:6px 7px}.video-detail{margin-top:9px;display:flex;align-items:center;justify-content:space-between}.video-detail .inputbox{width:93px}.composer-bottom{margin-top:auto;padding-top:10px;border-top:1px solid var(--line)}.source-short{font-size:11px;color:var(--sub);line-height:1.75}.composer-bottom .btn{margin-top:9px;width:100%}.preview-box{height:76px;margin:0 0 17px;background:#f6f7fa;border-radius:9px;border:1px solid #e8ecf1;display:flex;align-items:center;justify-content:center;gap:14px}.preview-frame{height:43px;border:1px solid #a3b1c8;background:linear-gradient(150deg,#e5ebf6,#f8faff);border-radius:3px;display:flex;align-items:center;justify-content:center;max-width:150px;color:#75829a;font-size:10px}.preview-meta{font-size:11px;color:var(--sub)}.preview-meta b{font-weight:600;color:var(--ink);font-size:12px}.result{overflow:hidden;display:flex;flex-direction:column}.result-top{padding:17px 22px 14px;border-bottom:1px solid var(--line)}.result-top .head{margin-bottom:11px}.source-costs{display:grid;grid-template-columns:1fr 1fr;gap:15px}.cost-box{background:#f7f8fa;border-radius:8px;padding:9px 12px}.cost-label{font-size:11px;color:var(--sub);display:flex;justify-content:space-between;gap:8px;margin-bottom:3px}.cost-number{font:560 23px/1.4 Inter,"Segoe UI",Arial,sans-serif;letter-spacing:-.4px;overflow-wrap:anywhere}.cost-number small{font-size:13px;margin-right:3px;color:var(--muted)}.cost-origin{font-size:10px;color:var(--muted);margin-top:1px}.source-context{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-top:8px;font-size:11px;color:var(--muted)}.source-context span{max-width:88%}.calculation{padding:19px 22px 0;flex:1}.equation{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:var(--sub);font-size:12px;margin-bottom:13px}.equation b{font-weight:600;color:var(--ink);font-family:Inter,"Segoe UI",Arial,sans-serif}.equation .operator{color:#a3aab5}.equation .tagnum{background:var(--tint);color:var(--accent);padding:3px 7px;border-radius:5px}.points-pair{display:grid;grid-template-columns:1.24fr 1fr;gap:13px}.points-box{border:1px solid var(--line);border-radius:10px;padding:13px 15px;min-width:0}.points-box.emphasis{background:var(--tint);border-color:#dce5fb}.points-label{font-size:12px;color:var(--sub);display:flex;justify-content:space-between;gap:8px}.points-value{font:610 34px/1.45 Inter,"Segoe UI",Arial,sans-serif;letter-spacing:-.65px;white-space:nowrap}.points-value.long{font-size:26px}.points-value small{font:400 11px var(--font);letter-spacing:0;color:var(--muted);margin-left:5px}.points-box.emphasis .points-value{color:var(--accent)}.points-caption{font-size:10px;color:var(--muted)}.cash-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:15px}.cash-item span{font-size:11px;color:var(--muted);display:block}.cash-item b{font:560 18px/1.8 Inter,"Segoe UI",Arial,sans-serif;color:var(--ink);white-space:nowrap}.cash-item small{font-size:10px;color:var(--muted);display:block}.result-note{font-size:11px;color:var(--sub);background:#f7f8fa;border-radius:7px;padding:8px 10px;margin-top:13px}.result-foot{padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;border-top:1px solid var(--line)}.result-foot .links{display:flex;gap:15px}.placeholder{padding:26px 12px;text-align:center;color:var(--sub)}.placeholder .placeholder-mark{display:inline-block;margin-bottom:9px;font-size:25px;color:#a9b2c3}.placeholder h3{font-size:16px;margin-bottom:7px}.placeholder p{font-size:12px;line-height:1.8;max-width:510px;margin:auto}.placeholder .actions{justify-content:center;margin-top:18px}.foundation{background:var(--amberbg);padding:11px 13px;border-radius:8px;margin:12px 0;color:var(--amber);font-size:11px}.foundation b{font-size:15px}.compare{margin-top:18px;margin-bottom:18px;padding:17px 22px 0}.compare-top{display:flex;justify-content:space-between;align-items:center;gap:12px}.tabs{display:flex;gap:23px;border-bottom:1px solid var(--line);margin-top:11px}.tabs button{border:0;background:none;color:var(--muted);padding:9px 0 10px;font-size:12px;position:relative;white-space:nowrap}.tabs button.active{color:var(--ink);font-weight:650}.tabs button.active:after{content:"";height:2px;background:var(--accent);position:absolute;bottom:-1px;left:0;right:0}.tabs button b{font-size:10px;border-radius:10px;padding:1px 6px;background:#edf0f5;margin-left:4px;color:var(--sub)}.table-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;font-size:11px;color:var(--sub)}.table-tools select{border:1px solid var(--line);background:white;font-size:11px;padding:5px 8px;border-radius:6px}.table-scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}th{color:var(--muted);font-size:11px;text-align:right;font-weight:500;padding:10px 10px;border-bottom:1px solid var(--line);background:#f8f9fb}th:first-child,td:first-child{text-align:left;padding-left:12px}td{text-align:right;padding:11px 10px;border-bottom:1px solid #edf0f4;font-variant-numeric:tabular-nums}td.number{font-family:Inter,"Segoe UI",Arial,sans-serif}tr:last-child td{border-bottom:none}tbody tr:hover{background:#f9faff}tr.selected{background:var(--tint)!important}td b{font-weight:600}td .second{display:block;font-size:10px;color:var(--muted);margin-top:2px}td .rowbutton{border:0;background:transparent;font:inherit;color:var(--accent);padding:0;text-align:left}.table-end{padding:11px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:15px;color:var(--muted);font-size:10px}.table-end strong{color:var(--sub);font-weight:550}.matrixbutton{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;background:none;border:0;color:inherit;font:inherit;padding:1px}.matrixbutton .smallhint{font-size:9px;color:var(--muted)}.matrixbutton.wait{color:#a0a8b5}.qty{width:54px;height:29px;text-align:right;padding:3px 6px;border:1px solid var(--line);border-radius:5px;font-size:11px}.bottom{display:flex;align-items:center;justify-content:space-between;gap:15px;padding-bottom:25px;color:var(--muted);font-size:10px}.live-dot{display:inline-block;height:5px;width:5px;border-radius:50%;background:#75899a;margin-right:5px}.panel-bg{position:fixed;inset:0;background:#18253b44;backdrop-filter:blur(2px);z-index:30;display:flex;justify-content:flex-end}.drawer{width:570px;max-width:100%;height:100%;background:white;box-shadow:-10px 0 60px #15223518;display:flex;flex-direction:column;animation:slide .2s ease-out}.drawer.wide{width:760px}@keyframes slide{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}.drawer-header{padding:22px 24px 17px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:15px}.drawer-header h2{font-size:20px;font-weight:650;letter-spacing:-.4px}.drawer-header p{font-size:12px;color:var(--muted);margin-top:5px}.drawer-body{padding:22px 24px;overflow-y:auto;flex:1}.drawer-body h3{font-size:14px;margin:24px 0 10px}.drawer-body h3:first-child{margin-top:0}.drawer-body p{font-size:12px;color:var(--sub);line-height:1.9}.drawer-body .grid2{margin:13px 0}.drawer-body .input{height:40px}.drawer-body .actions{margin-top:15px}.drawer-body .notice{margin:14px 0}.drawer-body textarea{resize:vertical;min-height:85px;padding:10px}.drawer-footer{padding:12px 24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;background:#fcfcfd}.choice{width:100%;display:block;text-align:left;border:1px solid var(--line);background:white;border-radius:9px;padding:13px 14px;margin:10px 0}.choice:hover{border-color:#a8b9e8;background:#fafbff}.choice.active{border-color:var(--accent);background:var(--tint)}.choice-title{display:flex;justify-content:space-between;gap:8px;font-size:13px;align-items:center}.choice p{font-size:11px;margin-top:5px;color:var(--muted)}.choice-cost{display:flex;gap:20px;margin-top:9px;font-size:11px;color:var(--sub)}.choice-cost b{font-size:16px;color:var(--ink);font-weight:550}.formula{font-family:Inter,"Segoe UI",Arial,var(--font);font-size:13px;background:#f5f7fa;border:1px solid #e9edf3;padding:14px;border-radius:9px;color:var(--sub);line-height:2;overflow-wrap:anywhere}.fact{display:flex;justify-content:space-between;gap:15px;padding:10px 0;border-bottom:1px solid #edf0f4;font-size:12px}.fact span{color:var(--muted)}.fact b{font-weight:550;text-align:right}.fact.emph b{color:var(--accent)}.inline-check{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sub);margin:12px 0}.radio-group{display:flex;gap:13px;flex-wrap:wrap;font-size:11px;color:var(--sub);margin:12px 0}.radio-group label{display:flex;gap:4px;align-items:center}.stage{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:11px}.stage h4{font-size:12px;margin:0 0 6px;color:var(--sub)}.stage b{font-size:17px}.stage p{font-size:11px;margin-top:5px}.footnote{font-size:11px;color:var(--muted);line-height:1.85;margin-top:15px}.statusbar{padding:10px 12px;border:1px solid #dbe6fb;border-radius:8px;background:#f4f7ff;color:var(--accent);font-size:12px;line-height:1.8}.split{display:grid;grid-template-columns:1fr 1fr;gap:15px}.result-diagnostic{margin-top:15px}.match{border-left:3px solid var(--accent);padding:10px 13px;background:var(--tint);margin:9px 0}.match h4{margin:0;font-size:13px}.match p{font-size:11px;margin-top:3px}.empty{padding:30px 15px;text-align:center;font-size:12px;color:var(--muted)}.toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,15px);max-width:90vw;background:#263347;color:white;padding:11px 17px;border-radius:9px;font-size:12px;box-shadow:0 4px 30px #16223d20;opacity:0;pointer-events:none;z-index:80;transition:.18s}.toast.show{opacity:1;transform:translate(-50%,0)}.file-input{display:none}.bar-note{margin-top:10px;color:var(--sub);font-size:11px;line-height:1.7}body.modal-open{overflow:hidden}.print-only{display:none}
+.context-sticky{position:fixed;top:0;left:0;right:0;z-index:20;background:#ffffffed;backdrop-filter:blur(10px);border-bottom:1px solid var(--line);box-shadow:0 3px 15px #2332490b}.context-sticky .wrap{height:46px;display:flex;align-items:center;justify-content:space-between;gap:12px}.context-sticky .context-text{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--sub)}.context-sticky b{color:var(--ink);font-weight:600}.context-sticky .context-text em{font-style:normal;color:var(--accent)}.mobile-hint{display:none;font-size:10px;color:var(--muted);padding:4px 0 8px;text-align:right}@media(max-width:540px){.context-sticky .context-text{font-size:10px}.context-sticky .wrap{height:42px}.context-sticky .link{font-size:10px}.mobile-hint{display:block}}
+@media(min-width:1450px){.work{grid-template-columns:minmax(320px,3fr) minmax(0,7fr)}.wrap{padding:0 36px}.points-value{font-size:37px}.points-value.long{font-size:29px}.composer{padding:20px 23px}}
+@media(max-width:1100px){.wrap{padding:0 20px}.work{grid-template-columns:minmax(320px,3fr) minmax(0,7fr)}.plan-grid{gap:17px}.plan-block+.plan-block{padding-left:17px}.points-value{font-size:28px}.points-value.long{font-size:22px}.cash-item b{font-size:16px}.result-top,.calculation{padding-left:17px;padding-right:17px}.plan-foot .caption-tail{display:none}.brand-caption{display:none}.coefficient{font-size:24px}.ratios{gap:4px}.result-foot{padding-left:17px;padding-right:17px}.result-foot .links{gap:10px}}
+@media(max-width:850px){.work{grid-template-columns:1fr}.plan-grid{grid-template-columns:1fr 1fr}.plan-block:last-child{grid-column:1/-1;border-left:0;border-top:1px solid var(--line);padding:12px 0 0;display:grid;grid-template-columns:1fr 1fr;align-items:center}.plan-block:last-child .label{margin:0}.plan-block:last-child .coefficient{text-align:right}.plan-block:last-child .coef-foot{grid-column:1/-1}.composer{display:block}.composer-bottom{margin-top:10px}.preview-box{display:none}.fields-layout{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}.composer .field{margin-bottom:17px}.result-foot{margin-top:14px}.points-value{font-size:35px}.points-value.long{font-size:28px}.intro-meta{display:none}.plan-foot{align-items:flex-start}.bottom{align-items:flex-start}.table-tools{flex-wrap:wrap}}
+@media(max-width:540px){.wrap{padding:0 13px}.top{height:59px}.top .actions{gap:5px}.top .btn{padding:6px 9px;font-size:11px}.top .link{font-size:11px}.logo{font-size:26px}.intro{padding:19px 0 15px}h1{font-size:22px}.intro p{font-size:11px}.plan{padding:14px 15px 0}.plan-head{gap:7px}.plan-head .link{font-size:10px}.plan-grid{grid-template-columns:1fr;gap:15px}.plan-block+.plan-block{border-left:0;padding:0;border-top:1px solid var(--line);padding-top:13px}.plan-block:last-child{grid-column:auto;padding-top:13px}.plan-block:nth-child(2){display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px}.plan-block:nth-child(2) .label{margin:0;align-self:center}.plan-block:nth-child(2) .discountbox{justify-content:flex-start}.plan-block:nth-child(2) .picks{grid-column:1/-1;gap:7px}.picks button{padding:4px 10px}.plan-foot{flex-direction:column;gap:3px;font-size:10px}.plan-note{font-size:10px}.work{margin-top:13px;gap:13px}.composer{padding:17px}.fields-layout{display:block}.ratios{gap:6px}.composer-desc{margin-bottom:13px}.source-costs{gap:10px}.cost-number{font-size:20px}.source-context{align-items:flex-start}.points-pair{gap:8px;grid-template-columns:1.28fr 1fr}.points-box{padding:12px 11px}.points-value{font-size:30px}.points-value.long{font-size:22px}.points-label{font-size:11px}.points-caption{font-size:9px}.cash-row{gap:6px;grid-template-columns:1fr 1fr}.cash-item:last-child{grid-column:1/-1;display:flex;align-items:center;gap:7px;background:#f7f8fa;border-radius:6px;padding:4px 8px;margin-top:2px}.cash-item:last-child b{font-size:14px}.cash-item:last-child small{margin-left:auto;font-size:9px}.equation{gap:5px;font-size:11px}.result-foot{flex-wrap:wrap;padding:12px 17px}.result-foot .links{flex:1;justify-content:space-between;margin-bottom:4px}.result-foot .btn{width:100%;margin-top:6px}.compare{padding:15px 15px 0;margin-top:13px}.tabs{gap:20px;overflow:auto}.tabs button{font-size:11px}.compare-top h2{font-size:14px}.table-end{flex-direction:column;gap:4px}.drawer-header{padding:19px 18px 14px}.drawer-body{padding:19px 18px}.drawer-footer{padding:12px 18px}.drawer-header h2{font-size:19px}.bottom{flex-direction:column;gap:4px}.coefficient{font-size:23px}.placeholder{padding:24px 0}.placeholder .actions{flex-direction:column}.cash-item b{font-size:17px}}
+@media print{.top,.actions,.composer,.bottom,.link,.btn,.picks,.panel-bg,.toast,.intro-meta{display:none!important}.work{display:block}.result{break-inside:avoid}.wrap{max-width:none;padding:0}.plan,.result,.compare{box-shadow:none}.input{border:none}.print-only{display:block}.plan-grid{display:grid;grid-template-columns:1fr 1fr 1fr}body{background:white}}
+
+/* V7.2: actionable reference states rather than a blocking empty screen. */
+.reference-intro h3{font-size:17px;line-height:1.5;font-weight:650;color:var(--ink)}
+.reference-intro p{font-size:12px;color:var(--sub);line-height:1.8;margin:5px 0 16px}
+.reference-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.reference-card{padding:15px;border:1px solid var(--line);border-radius:10px;min-width:0;background:#fff}
+.reference-heading{display:flex;gap:8px;justify-content:space-between;align-items:start;font-size:12px;flex-wrap:wrap}
+.reference-price{display:flex;justify-content:space-between;align-items:baseline;margin:10px 0 3px;gap:8px}
+.reference-price span,.reference-proc,.reference-fact{font-size:11px;color:var(--sub)}
+.reference-price strong{font-size:22px;letter-spacing:-.4px;font-weight:620}
+.reference-proc{display:flex;gap:8px;justify-content:space-between;align-items:baseline}
+.reference-proc b{font-weight:500}
+.reference-points{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;padding:12px 0;margin:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.reference-points span{display:block;font-size:11px;color:var(--sub);margin-bottom:2px}
+.reference-points b{font-size:20px;letter-spacing:-.4px;font-weight:600;white-space:nowrap;display:block}
+.reference-points>div:last-child b{color:var(--accent);font-size:24px}
+.reference-points small{font-size:10px;font-weight:400;margin-left:3px;color:var(--muted)}
+.reference-fact{display:flex;justify-content:space-between;gap:8px;line-height:1.9}
+.reference-fact b{font-weight:500;color:var(--ink)}
+.reference-note{font-size:10px;line-height:1.7;color:var(--muted);margin:10px 0 12px;min-height:34px}
+.reference-card>.btn{width:100%;font-size:11px}
+.reference-follow{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:var(--muted);margin:12px 0}
+.reference-follow .link{font-size:10px}
+.foundation-disclosure{font-size:11px;color:var(--sub);border-top:1px solid var(--line);padding:12px 0;margin:8px 0}
+.foundation-disclosure summary{cursor:pointer;font-size:11px;color:var(--muted)}
+.foundation-disclosure p{margin:8px 0;font-size:11px;line-height:1.8}
+.foundation-disclosure .link{font-size:11px}
+.same-source-switch{border-top:1px solid var(--line);margin:10px 0 12px;padding-top:10px;display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:10px;color:var(--muted)}
+.same-source-switch .actions{flex-wrap:wrap;gap:6px}
+.reference-table-choice{padding:20px 0;font-size:12px}.reference-table-choice>b{font-size:13px}
+.reference-table-choice p{margin:5px 0 12px;color:var(--sub);font-size:12px}
+.reference-table-choice .actions{flex-wrap:wrap}
+.pending-compact{padding:12px 0 24px}.pending-compact h3{font-size:17px;margin:10px 0 7px}
+.pending-compact p{font-size:12px;line-height:1.9;color:var(--sub);margin-bottom:16px;max-width:550px}
+@media(min-width:851px) and (max-width:1080px){.reference-heading .badge{font-size:9px}.reference-points b{font-size:16px}.reference-price strong{font-size:18px}.reference-card{padding:11px}}
+@media(max-width:540px){.reference-grid{grid-template-columns:1fr}.reference-points b{font-size:23px}.reference-note{min-height:0}.reference-follow{flex-direction:column}.reference-follow .link{align-self:flex-start}.reference-intro h3{font-size:16px}.reference-price strong{font-size:23px}}
+
+
+/* V7.2 source resolution and debug comparison */
+.source-mode-actions{flex-wrap:wrap;gap:10px}
+.active-reference-debug{margin-top:12px;margin-bottom:10px}
+.reference-intro p b{font-weight:600}
+@media(max-width:540px){.result-top .head{align-items:flex-start}.result-top h2{line-height:1.9}.cost-number{font-size:19px}.source-mode-actions .btn{white-space:normal}.foundation-disclosure summary{line-height:1.7}}
+
+.workspace-nav{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px;padding:0 0 10px}.workspace-nav button{border:0;border-radius:8px;background:transparent;padding:9px 16px;color:var(--muted);font-size:13px}.workspace-nav button.active{background:var(--dark);color:#fff;font-weight:600}.workspace-nav .nav-note{margin-left:auto;align-self:center;color:var(--muted);font-size:11px}.intro{padding:22px 0 16px}.plan-grid{grid-template-columns:1.13fr 1fr 1fr}.work{grid-template-columns:minmax(320px,3fr) minmax(0,7fr)}.composer{padding:20px}.composer-desc{margin-bottom:13px}.field{margin-bottom:15px}.calculation{padding-top:18px}.points-value.long{font-size:29px}.cost-number{font-size:24px}.result-note{line-height:1.8}.basis-note{margin:13px 0 0;padding:9px 12px;background:var(--amberbg);border-left:2px solid #d8b16d;border-radius:5px;color:var(--amber);font-size:11px;line-height:1.75}.basis-note.neutral{background:#f5f7fa;border-color:#c2cfdf;color:var(--sub)}.sheet-intro{display:flex;justify-content:space-between;gap:16px;margin-bottom:15px;align-items:flex-start}.sheet-intro h2{font-size:20px;letter-spacing:-.4px}.sheet-intro p{font-size:12px;color:var(--muted);margin-top:5px}.reconcile-card{padding:22px}.record-link{color:var(--accent);font-size:11px;background:none;border:0;padding:0}.independence{padding:10px 13px;background:#eef3fc;border-radius:7px;color:#566c93;font-size:11px;margin-bottom:16px;line-height:1.8}.method-strip{display:flex;gap:14px;align-items:center;border-top:1px solid var(--line);padding-top:12px;margin-top:10px;font-size:11px;color:var(--muted)}.record-table{min-width:960px}.record-table th:first-child,.record-table td:first-child{white-space:normal;min-width:200px}.side-heading{font-size:12px;color:var(--sub);margin:12px 0}.observation-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.diff-value{color:var(--sub)}.basis-flag{font-size:10px;border:1px solid #d6e1f3;background:#f5f8fd;color:#607a9c;padding:2px 6px;border-radius:4px;white-space:nowrap}.formula strong{color:var(--ink)}.record-detail-table{font-size:12px}.record-detail-table td{white-space:normal}.record-detail-table th:first-child{width:30%}.record-detail-table th{white-space:normal}.workspace-foot{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:15px;font-size:11px;color:var(--muted)}.named-rule{padding:9px 12px;background:#f5f7fb;border-radius:6px;font-size:11px;color:var(--sub);line-height:1.9}.neutral-link{color:var(--sub)}.rates{width:100%;margin-top:12px}.rates td,.rates th{padding:7px 10px}.input-row{display:flex;gap:8px;align-items:center}.input-row>*{flex:1}.readout{padding:12px 14px;border:1px solid var(--line);border-radius:8px;margin-top:12px}.readout .big{font-size:24px;font-weight:600;color:var(--accent)}.threecols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.section-divider{height:1px;background:var(--line);margin:20px 0}.review-summary{font-size:12px;color:var(--sub);line-height:1.85}.danger-link{color:var(--red)}.comparison-only{border:1px dashed #cad3df;padding:14px;border-radius:8px;margin:15px 0;color:var(--sub);font-size:12px}.state-feedback{font-size:12px;line-height:1.8;margin-top:8px;color:var(--sub)}.inline-error{color:var(--red);font-size:12px;margin-top:8px}.borderless{border:0;background:transparent}.record-notes{margin-top:18px}.record-notes summary{cursor:pointer;font-size:12px;color:var(--sub)}.caption-stack{display:flex;flex-direction:column;gap:4px}.reference-other{padding:12px;background:#f7f8fa;border-radius:8px;font-size:12px;line-height:1.8}.original-amount{font-variant-numeric:tabular-nums;font-family:Inter,"Segoe UI",Arial,sans-serif}.unit-sandbox{margin-top:12px}.rule-state{font-size:11px;margin-top:8px;color:var(--muted)}.mobile-hint{padding-top:8px}.rate-scope-note{font-size:11px;color:var(--muted);line-height:1.8;margin-top:8px}.action-wrap{display:flex;gap:8px;flex-wrap:wrap}.only-theory{color:var(--accent);font-size:10px;background:#f0f4ff;padding:3px 7px;border-radius:5px}.result-foot .links{gap:13px}.original-value{font-size:10px;color:var(--muted);margin-top:2px}.readout .fact:last-child{border:0}.table-end{line-height:1.8}.source-context span{max-width:100%}.table-tools{flex-wrap:wrap;line-height:1.8}.coefficient{font-size:27px}.record-inputs select{width:100%;height:37px;border:1px solid #dce2eb;border-radius:7px;background:#fff;padding:0 8px}.rule-tools{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+@media(min-width:1400px){.wrap{max-width:1460px}.work{grid-template-columns:minmax(320px,3fr) minmax(0,7fr)}}
+@media(max-width:1060px){.points-value.long{font-size:23px}.cash-item b{font-size:16px}.plan-grid{gap:18px}.plan-block+.plan-block{padding-left:18px}.coefficient{font-size:24px}.work{grid-template-columns:minmax(320px,3fr) minmax(0,7fr)}.points-pair{grid-template-columns:1fr 1fr}.equation{gap:6px}}
+@media(max-width:800px){.work{grid-template-columns:1fr}.workspace-nav .nav-note{display:none}.sheet-intro{flex-direction:column}.intro-meta{font-size:10px}.record-table{min-width:850px}.reconcile-card{padding:17px}.theory-grid{grid-template-columns:1fr}.points-value.long{font-size:28px}.plan-grid{grid-template-columns:1fr}.plan-block+.plan-block{padding-left:0;border-left:0;border-top:1px solid var(--line);padding-top:14px}.plan-grid{gap:13px}.coefficient{font-size:29px}.plan-foot{flex-wrap:wrap}.composer-bottom{margin-top:0}.fields-layout{display:block}.field{margin-bottom:16px}.source-costs{gap:10px}.cost-number{font-size:23px}.workspace-foot{flex-wrap:wrap}.result-foot{flex-wrap:wrap}.intro h1{font-size:23px}.intro-meta .scope{display:none}}
+@media(max-width:480px){.wrap{padding:0 14px}.top .wrap{gap:6px}.logo{font-size:24px}.brand-caption{display:none}.top .btn{padding:7px 10px}.top .actions{gap:5px}.top .link{font-size:10px}h1{font-size:22px}.intro{align-items:flex-start}.intro-meta{padding-top:5px;font-size:9px}.intro p{font-size:11px}.workspace-nav button{font-size:12px;padding:8px 12px}.result-top{padding:16px}.calculation{padding:15px 16px 0}.result-foot{padding:12px 16px}.cost-number{font-size:21px}.cost-label{font-size:10px}.cost-box{padding:9px}.points-box{padding:11px}.points-value.long{font-size:23px}.points-value{font-size:30px}.cash-row{grid-template-columns:1fr 1fr}.cash-item:last-child{grid-column:1/-1;border-top:1px solid var(--line);padding-top:8px;display:flex;align-items:center;gap:10px}.cash-item:last-child small{margin-left:auto}.threecols{grid-template-columns:1fr}.drawer-header{padding:18px}.drawer-body{padding:18px}.actions{flex-wrap:wrap}.tabs{gap:18px}.table-end{flex-wrap:wrap}.inputbox .unit{right:9px}.bottom{flex-wrap:wrap}.sheet-intro h2{font-size:18px}}
+
+/* V9: two explicit read-only calculation paths. */
+.detail-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;background:#f0f2f6;padding:5px;border-radius:9px;margin:0 0 16px}
+.detail-switch button{border:0;border-radius:6px;padding:11px 6px;background:transparent;font-size:13px;color:var(--sub);font-weight:600}
+.detail-switch button.active{background:white;color:var(--accent);box-shadow:0 1px 4px #1c355918}
+.detail-context{font-size:12px;color:var(--sub);padding:11px 13px;border:1px solid var(--line);border-radius:8px;margin-bottom:13px;line-height:1.9}
+.detail-context strong{font-weight:600;color:var(--ink)}
+.detail-section{margin-top:22px}.detail-section h3{display:flex;gap:9px;align-items:center;margin:0 0 10px;font-size:14px}.detail-index{font-size:10px;font-weight:600;color:var(--accent);background:var(--tint);border-radius:5px;padding:3px 6px}
+.detail-section .formula{font-size:13px;overflow-wrap:anywhere;line-height:1.9;margin:8px 0}.detail-section .fact{font-size:12px}
+.detail-readonly{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.detail-readonly>div{border:1px solid var(--line);border-radius:9px;padding:12px 13px;min-width:0}.detail-readonly small{display:block;font-size:11px;color:var(--sub);margin-bottom:4px}.detail-readonly b{font:600 19px/1.5 Inter,'Segoe UI',Arial,sans-serif;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.detail-conclusion{background:var(--tint);border:1px solid #dce5fb;padding:14px;border-radius:9px;margin-top:14px}.detail-conclusion .detail-readonly{margin:0}.detail-conclusion .detail-readonly>div{background:white}
+.detail-scope{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:14px;padding-top:13px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+.detail-scope button{flex-shrink:0}.detail-selector{margin:12px 0 16px}.detail-selector select{width:100%;max-width:100%}
+.detail-history{margin:12px 0;padding:11px 12px;background:#f5f6f8;border-radius:8px;font-size:11px;line-height:1.85;color:var(--sub)}
+.detail-warning{border-left:3px solid #c58f3c}.detail-help{line-height:1.85;color:var(--sub);font-size:12px}
+@media(max-width:520px){.detail-switch button{font-size:12px;padding:10px 3px}.detail-readonly{gap:7px}.detail-readonly b{font-size:17px}.detail-readonly>div{padding:10px}.detail-scope{align-items:flex-start}.detail-context{font-size:11px}.detail-section .formula{font-size:12px}.detail-section .fact{align-items:flex-start;gap:10px}.detail-section .fact b{overflow-wrap:anywhere;max-width:65%;text-align:right}}
+
+.rule-status{font-size:11px;color:#246f60;margin:12px 0 8px}.plan-principle{border-top:1px solid var(--line);padding:10px 0;font-size:11px;color:var(--sub)}.purchase-control{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.purchase-control input{width:67px;border:1px solid var(--line);border-radius:5px;padding:3px 5px;font:inherit}.purchase-control label{color:var(--sub)}#target-mode{border:0;background:transparent;font:inherit;font-weight:600;padding:0;max-width:100%;color:var(--ink)}.economics-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:12px;padding:14px 0 2px;border-top:1px solid var(--line);margin-top:14px}.economics-grid span{display:block;font-size:11px;color:var(--sub)}.economics-grid b{font:600 20px/1.8 var(--font);color:var(--green)}.economics-grid b.loss,.loss{color:var(--red)}.quick-examples{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 13px}.principle-steps{display:grid;gap:12px;margin-bottom:20px}.principle-steps section{border:1px solid var(--line);border-radius:9px;padding:14px}.principle-steps b{display:block;color:var(--accent);margin-bottom:5px}#migration-note{margin-top:10px}.result-note .link{margin-left:5px}pre.formula{white-space:pre-wrap;font-size:11px}.plan-foot{flex-wrap:wrap}.badge.green{background:#eaf6ef;color:#246f60}@media(max-width:540px){.economics-grid{gap:7px}.economics-grid b{font-size:16px}.economics-grid span{font-size:10px}.purchase-control .muted{font-size:9px}.plan-principle{font-size:10px}}
+
+/* V9.2: task controls and explicit manual pricing. */
+.slider-label .slider-value{margin-left:auto}.composer>.head{margin-bottom:14px}
+.slider-value{font-size:18px;line-height:1.4;font-weight:600;color:var(--accent);white-space:nowrap}
+.duration-slider{--range-progress:0%;appearance:none;-webkit-appearance:none;width:100%;height:28px;margin:0;background:transparent;cursor:pointer;accent-color:var(--accent)}
+.duration-slider::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:linear-gradient(to right,var(--accent) 0%,var(--accent) var(--range-progress),#e4e9f2 var(--range-progress),#e4e9f2 100%)}
+.duration-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:20px;height:20px;border-radius:50%;margin-top:-7px;background:white;border:3px solid var(--accent);box-shadow:0 1px 4px #26334726}
+.duration-slider::-moz-range-track{height:6px;background:#e4e9f2;border-radius:99px}.duration-slider::-moz-range-progress{height:6px;background:var(--accent);border-radius:99px}
+.duration-slider::-moz-range-thumb{box-sizing:border-box;width:20px;height:20px;border-radius:50%;background:white;border:3px solid var(--accent);box-shadow:0 1px 4px #26334726}
+.duration-slider:disabled{opacity:.4;cursor:not-allowed}.slider-scale{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+.quick-label{font-size:10px;line-height:1.6;color:var(--muted);margin:0 0 8px}.quick-examples{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.quick-examples .btn{white-space:normal;text-align:left;padding:9px 8px;line-height:1.5}.quick-examples .btn span{display:block;font-size:10px;font-weight:600}.quick-examples small{display:block;font-size:9px;color:var(--muted);margin-top:4px;font-weight:400}
+.quick-examples .btn.active{color:var(--accent);background:var(--tint);border-color:#c7d5f6}
+.head h2.section-title{font-size:15px;font-weight:650;line-height:1.6}
+.plan-block.multiplier-block{display:block}.plan-block.multiplier-block .label{margin-bottom:9px;flex-wrap:wrap;gap:7px 10px}.multiplier-label>span:first-child{white-space:nowrap}.plan-block.multiplier-block .coefficient{text-align:left;overflow-wrap:anywhere;white-space:normal}
+.pricing-mode{border:1px solid var(--line);border-radius:6px;background:#fafbfe;font-size:11px;color:var(--sub);padding:3px 7px;max-width:100%;margin:0;flex:none}
+.manual-m-control{display:flex;align-items:center;gap:7px}.manual-m-control input{width:calc(100% - 25px);min-width:0;height:39px;border:1px solid #c7d5f6;border-radius:7px;background:var(--tint);color:var(--accent);padding:0 9px;font-size:27px;font-weight:600}.manual-m-control span{font-size:12px;color:var(--sub)}
+.total-mode-label{display:flex;align-items:center}#total-mode{height:1.6em;max-width:100%;min-width:0;border:0;padding:0;background:transparent;font:inherit;color:inherit;cursor:pointer}
+.pricing-context{font-size:10px;color:var(--muted);margin-top:8px;line-height:1.7}
+@media(max-width:900px){.fields-layout{display:block}}
+@media print{.pricing-mode{display:none}.manual-m-control input{border:0;background:transparent}}
+
+.reference-controls{margin-top:10px;display:grid;grid-template-columns:max-content minmax(0,1fr) 46px;align-items:center;gap:8px}
+.reference-controls>label{font-size:11px;color:var(--sub);white-space:nowrap}
+.reference-slider{--vin-accent:#879bc3;min-width:0;height:26px}
+.reference-slider::-webkit-slider-runnable-track{height:4px;background:linear-gradient(to right,var(--vin-accent) 0%,var(--vin-accent) var(--range-progress),#e4e9f2 var(--range-progress),#e4e9f2 100%)}
+.reference-slider::-webkit-slider-thumb{width:12px;height:12px;margin-top:-4px;border:2px solid var(--vin-accent);box-shadow:0 1px 3px #26334718}
+.reference-slider::-moz-range-track{height:4px}.reference-slider::-moz-range-progress{height:4px;background:var(--vin-accent)}
+.reference-slider::-moz-range-thumb{width:12px;height:12px;border:2px solid var(--vin-accent);box-shadow:0 1px 3px #26334718}
+.reference-slider:hover,.reference-slider:focus-visible{--vin-accent:var(--accent)}
+.vin-value{height:26px;display:flex;align-items:center;justify-content:center;gap:3px;border:1px solid #e4e8ef;border-radius:5px;background:#f8f9fb;color:var(--sub)}
+.vin-value input{appearance:textfield;-moz-appearance:textfield;width:22px;min-width:0;height:22px;padding:0;border:0;background:transparent;text-align:center;font-size:12px;color:var(--sub)}
+.vin-value input::-webkit-inner-spin-button,.vin-value input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.vin-value>span{font-size:10px;color:var(--muted)}.vin-value:focus-within{border-color:#b8c8e5}.vin-value input:focus-visible{outline-offset:0}
+.basis-note b{display:block;margin-bottom:3px}.basis-note small{display:block;margin-top:4px;font-size:10px;font-variant-numeric:tabular-nums}
+/* Compact usage inputs explain the existing list-price estimate. */
+.usage-summary{margin:0 0 13px}.usage-rate-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:7px;padding:7px 0 10px;color:var(--muted);font-size:11px}.usage-rate-line b{font-weight:550;color:var(--sub)}.usage-rate-line small{font-size:10px}
+.usage-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 10px}
+.usage-token{min-width:0;padding:10px 12px;border:1px solid transparent;border-radius:7px;background:#f7f8fa}.usage-metrics dt{display:flex;align-items:center;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--muted);margin-bottom:4px;line-height:1.6}.usage-metrics dd{margin:0;font:550 17px/1.5 Inter,"Segoe UI",Arial,sans-serif;color:var(--sub);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.usage-token.is-adopted{background:var(--tint);border-color:#dce5fb}.usage-token.is-adopted dd{color:var(--accent);font-weight:600}.usage-adopted{padding:0 5px;border-radius:4px;background:#e1e9fc;color:var(--accent);font-size:9px;line-height:1.8;white-space:nowrap}.usage-rule-kind{font-size:9px;color:var(--amber);white-space:nowrap}
+.usage-help{margin-left:auto;font-size:11px}.usage-status{display:block;margin:0 0 10px;color:var(--amber);font-size:10px}.usage-status[hidden]{margin:0}
+.panel-bg.centered{align-items:center;justify-content:center;padding:24px}.panel-bg.centered .drawer{width:700px;max-width:100%;height:auto;max-height:calc(100dvh - 48px);border-radius:14px;animation:usage-dialog-in .16s ease-out;overflow:hidden;box-shadow:0 18px 80px #18253b33}.panel-bg.centered .drawer-body{min-height:0;overflow-y:auto;overscroll-behavior:contain}.panel-bg.centered .drawer-header{flex-shrink:0}
+@keyframes usage-dialog-in{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
+.usage-explanation{font-size:12px;line-height:1.85;color:var(--sub);overflow-wrap:anywhere}.usage-explanation .usage-lead{padding:11px 13px;border-radius:8px;background:var(--tint);color:var(--accent);font-size:13px}.usage-explanation h3{font-size:14px;margin:20px 0 7px}.usage-explanation p+p{margin-top:8px}.usage-source-links{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:11px;margin-top:9px}.usage-explanation code{font-size:11px}.usage-current{background:#f7f8fa;border-radius:8px;padding:11px 13px;margin-top:8px;font-variant-numeric:tabular-nums}.usage-method{border-top:1px solid var(--line);padding-top:12px;margin-top:18px}.usage-method>summary{cursor:pointer;font-size:12px;color:var(--sub)}.usage-method .formula{margin:10px 0;font-size:12px}.usage-method .source-formula{font-size:10px;white-space:pre-wrap;overflow-wrap:anywhere}.usage-method .footnote{margin-top:8px;font-size:11px}
+@media(max-width:600px){.panel-bg.centered{padding:12px}.panel-bg.centered .drawer{max-height:calc(100dvh - 24px);border-radius:11px}}
+@media(prefers-reduced-motion:reduce){.panel-bg.centered .drawer{animation:none}}
+@media(max-width:600px){.usage-token{padding:9px 10px}.usage-metrics dd{font-size:16px}}
+
+/* Pricing card: conditions, pricing objective, applied multiplier. */
+.plan .plan-head{margin-bottom:13px}
+.plan .plan-grid{grid-template-columns:minmax(0,1.13fr) repeat(2,minmax(0,1fr));gap:22px}
+.plan .plan-grid>.plan-block{display:flex;flex-direction:column;align-items:stretch;gap:0;min-width:0;grid-column:auto;padding-top:0;border-top:0}
+.plan .plan-grid>.plan-block+.plan-block{border-left:1px solid var(--line);padding-left:22px}
+.plan .plan-block>.plan-block-head{min-height:23px;margin:0 0 6px;gap:8px;align-items:center;align-self:stretch;flex-wrap:wrap;color:var(--sub);font-size:12px;font-weight:550;line-height:1.6}
+.plan .plan-block-head>label,.plan .multiplier-label>span{white-space:nowrap}
+.plan #target-mode,.plan #pricing-mode{height:23px;max-width:100%;margin:0;padding:1px 7px;border:1px solid var(--line);border-radius:6px;background:#fafbfe;font-size:11px;font-weight:550;line-height:1.6;color:var(--sub);cursor:pointer}
+.plan .plan-main-value{display:flex;align-items:center;min-width:0}
+.plan .recharge-values .grid2{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.plan .recharge-values .input{height:37px}
+.plan .discountbox{display:grid;grid-template-columns:minmax(0,1fr) 16px;align-items:baseline;gap:8px;width:136px;max-width:100%;min-width:0;height:38px;padding:0;border:0;border-radius:0;background:transparent;flex:0 1 136px}
+.plan .discountbox input{width:100%;max-width:none;min-width:0;height:38px;padding:0 2px 3px;border:0;border-bottom:1px solid #dce2eb;border-radius:0;background:transparent;text-align:right;font-size:29px;line-height:34px;font-variant-numeric:tabular-nums}
+.plan .discountbox input:hover{border-bottom-color:#aebbd1}
+.plan .discountbox input:focus{border-bottom-color:var(--accent);box-shadow:0 1px 0 var(--accent)}
+.plan .discountbox input:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.plan .discountbox>span{text-align:left;font-size:12px;line-height:1;color:var(--muted)}
+.plan .multiplier-value-row{display:flex;align-items:baseline;min-width:0;width:100%}
+.plan .multiplier-value-row .coefficient{font-size:29px;line-height:38px;max-width:100%;margin:0}
+.plan .manual-m-control{align-items:baseline;max-width:100%;min-width:0;gap:5px}
+.plan .manual-m-control input{width:calc(var(--value-width,4.5ch) + 8px);max-width:calc(100% - 24px);height:38px;padding:0 2px 3px;border:0;border-bottom:1px solid #c7d5f6;border-radius:0;background:transparent;font-size:29px;line-height:34px;font-variant-numeric:tabular-nums}
+.plan .plan-support{margin:7px 0 0;color:var(--muted);font-size:11px;line-height:1.7}
+.plan .foundation-support{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px 12px}
+.plan .purchase-control{gap:6px;align-items:center;flex-wrap:nowrap;font-size:11px}
+.plan .purchase-control label{font-weight:400;color:var(--muted);white-space:nowrap}
+.plan .purchase-control input{width:62px;height:25px;border-radius:5px;padding:0 6px;font-size:12px;font-variant-numeric:tabular-nums}
+.plan .recharge-equivalence,.plan .point-price{white-space:nowrap;font-size:11px}
+.plan .recharge-equivalence b,.plan .point-price b{color:var(--sub);font-weight:550}
+.plan .target-support .picks{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));max-width:280px;margin-top:0;gap:5px}
+.plan .target-support .picks[data-mode="margin"]{grid-template-columns:repeat(5,minmax(0,1fr))}
+.plan .target-support .picks button{min-width:0;height:25px;padding:0 3px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.plan .pricing-context{font-size:10px;margin-top:5px;color:var(--muted);line-height:1.7}
+.plan .target-block.is-comparison .discountbox input{color:var(--sub)}
+.plan .target-block.is-comparison .picks button.active{background:#f5f6f8;border-color:#dde2ea;color:var(--sub)}
+.plan .multiplier-support{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
+.plan .multiplier-support b{font-weight:550;color:var(--sub)}
+.plan #m-state{font-size:9px}
+.plan .plan-outcome{display:flex;align-items:center;flex-wrap:wrap;gap:7px 20px;border-top:1px solid var(--line);margin-top:12px;padding:10px 0}
+.plan .plan-outcome>.purchase-control{padding-right:20px;border-right:1px solid var(--line)}
+.plan .break-even{font-size:11px;color:var(--muted);white-space:nowrap}
+.plan .break-even b{font-weight:550;color:var(--sub)}
+.plan .plan-principle{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;border:0;padding:0;margin:0;min-width:0;font-size:11px;line-height:1.8}
+.plan .outcome-caption{font-size:10px;color:var(--muted);white-space:nowrap}
+.plan .plan-principle b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.plan .plan-principle b.loss{color:var(--red)}
+.plan .plan-principle .outcome-note{color:var(--amber);font-size:10px}
+.plan #unit-check{margin-left:auto;font-size:10px;color:var(--muted)}
+@media(max-width:1060px){.plan .plan-grid{gap:18px}.plan .plan-grid>.plan-block+.plan-block{padding-left:18px}}
+@media(max-width:800px){.plan .plan-grid{grid-template-columns:minmax(0,1fr);gap:12px}.plan .plan-grid>.plan-block+.plan-block{border-left:0;border-top:1px solid var(--line);padding:11px 0 0}.plan .plan-outcome{gap:8px 14px}.plan .plan-outcome>.purchase-control{padding-right:0;border-right:0}}
+@media print{.plan .plan-grid{grid-template-columns:minmax(0,1.13fr) repeat(2,minmax(0,1fr));gap:18px}.plan .plan-grid>.plan-block+.plan-block{border-top:0;border-left:1px solid var(--line);padding:0 0 0 18px}}
+
+</style></head><body>
+<header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">企业定价 / 计算工作台</div></div><div class="actions"><button class="link" id="open-rules">计算规则</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出方案 ↗</button></div></div></header>
+<main class="wrap"><div class="rule-status" id="rule-status"></div><section class="intro"><div><h1>看清每次生成的成本与利润。</h1><p>任务成本、积分定价与毛利测算。</p></div><div class="intro-meta"><span class="scope">Seedance 2.0 · 标准版</span><span>V9.2</span></div></section>
+<nav class="workspace-nav" aria-label="工作区"><button data-workspace="theory" class="active">理论试算</button><button data-workspace="actual">实测对照</button></nav>
+<section id="theory-workspace">
+<section class="card plan" aria-label="积分定价方案">
+<div class="head plan-head"><h2 class="section-title">积分定价方案</h2><button class="link" id="plan-settings">倍率设置 ↗</button></div>
+<div class="plan-grid">
+<div class="plan-block foundation-block">
+<div class="label plan-block-head">充值口径</div>
+<div class="plan-main-value recharge-values"><div class="grid2">
+<div><label class="fieldlabel" for="pay">实际支付</label><div class="inputbox"><input class="input num" id="pay" inputmode="decimal" value="100"><span class="unit">元</span></div></div>
+<div><div class="fieldlabel total-mode-label"><select id="total-mode" aria-label="积分填写方式"><option value="total">到账总积分</option><option value="gift">附赠积分</option></select></div><div class="inputbox"><input class="input num" id="total" aria-label="到账总积分" inputmode="decimal" value="1538"><span class="unit">积分</span></div></div>
+</div></div>
+<div class="foundation-support plan-support">
+
+<span class="recharge-equivalence" id="recharge-value">1 元 <span id="recharge-sign">=</span> <b class="num" id="per-yuan">15.38</b> 积分</span>
+<span class="point-price" id="point-price" title="实际支付 ÷ 到账总积分">积分单价 <span id="point-price-sign">≈</span> <b class="num" id="per-point">0.06501951</b> 元</span>
+</div>
+</div>
+<div class="plan-block target-block" id="pricing-target">
+<div class="label plan-block-head"><label for="target-mode" id="target-context">定价目标</label><select id="target-mode" aria-label="定价目标模式"><option value="discount">现金折扣</option><option value="margin">销售毛利率</option></select></div>
+<div class="plan-main-value">
+<div id="discount-control" class="discountbox"><input id="discount" aria-label="目标现金折扣" inputmode="decimal" value="7.35"><span>折</span></div>
+<div id="margin-control" class="discountbox" hidden><input id="target-margin" aria-label="目标销售毛利率" inputmode="decimal" value="8.125"><span>%</span></div>
+</div>
+<div class="plan-support target-support"><div class="picks" id="discount-picks" role="group" aria-label="现金折扣快捷值（折）"></div><p class="pricing-context" id="manual-pricing-note" hidden>收费按右侧指定倍率计算</p></div>
+</div>
+<div class="plan-block multiplier-block">
+<div class="label plan-block-head multiplier-label"><span>成本定价倍率</span><select class="pricing-mode" id="pricing-mode" aria-label="倍率计算方式"><option value="ideal">自动计算</option><option value="manual">手动指定</option></select></div>
+<div class="plan-main-value"><div class="multiplier-value-row">
+<div class="coefficient num" id="multiplier"></div><div class="manual-m-control" id="manual-m-control" hidden><input id="manual-m" class="num" aria-label="指定成本定价倍率" inputmode="decimal" value="1.538"><span>倍</span></div>
+</div></div>
+<div class="multiplier-support plan-support"><span title="得到原始积分，实际扣分再向上取整">采购成本 × 倍率 × 10</span><span id="m-state" class="badge blue" hidden></span></div>
+</div>
+</div>
+<div class="plan-outcome"><div class="purchase-control"><label for="purchase-discount">采购折扣</label><input id="purchase-discount" aria-label="采购折扣" inputmode="decimal" value="7.35"><span>折</span></div><div class="plan-principle" id="plan-principle" aria-live="polite"></div><span class="break-even" title="取整前的模型采购毛利为零时所需倍率">保本倍率 <b class="num" id="break-even-m">1.538</b></span><button class="link" id="unit-check">1元基准校验 ↗</button></div>
+</section>
+<div class="notice neutral" id="migration-note" hidden></div><div id="globalError" class="notice red" role="alert" hidden></div>
+<section class="work" aria-label="理论任务参数与计算"><aside class="card composer"><div class="head"><h2 class="section-title">生成任务</h2></div>
+<div class="preview-box"><div id="preview-frame" class="preview-frame">21:9</div><div class="preview-meta" id="preview-meta"></div></div><div class="fields-layout">
+<div class="field" data-field="video"><div class="label">视频输入</div><div class="segs" id="video-options"><button data-video="false">无视频输入</button><button data-video="true">有视频输入</button></div><div class="reference-controls" data-field="vin" id="video-detail"><label for="vin-slider" id="vin-label">输入视频总时长</label><input class="duration-slider reference-slider" type="range" id="vin-slider" aria-labelledby="vin-label" min="2" max="15" step="1" value="2"><div class="vin-value"><input class="num" type="number" id="vin" aria-label="输入视频总时长（整秒）" inputmode="numeric" min="2" max="15" step="1" value="2"><span>秒</span></div></div></div>
+<div class="field" data-field="resolution"><div class="label">输出分辨率</div><div class="segs" id="res-options"></div></div>
+<div class="field" data-field="ratio"><div class="label">画面比例</div><div class="ratios" id="ratio-options"></div><div class="pixel-line"><span id="pixels"></span><span>24 fps 估算</span></div></div>
+<div class="field" data-field="seconds"><div class="label slider-label"><label for="seconds">输出时长</label><output class="slider-value num" id="seconds-value" for="seconds">4 秒</output></div><div id="seconds-fixed"><input class="duration-slider" type="range" id="seconds" aria-label="输出秒数" min="4" max="15" step="1" value="4"><div class="slider-scale"><span>4 秒</span><span>15 秒</span></div></div></div>
+
+</div><div class="quick-label" title="按全部规格的官方 Token 用量选取最低和最高配置">快捷配置</div><div class="quick-examples"><button class="btn sm" data-example="none-min"><span>无视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="none-max"><span>无视频输入 · 最高用量</span><small></small></button><button class="btn sm" data-example="video-min"><span>有视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="video-max"><span>有视频输入 · 最高用量</span><small></small></button></div>
+
+<div class="composer-bottom"><button class="btn" id="task-rule">本规格计算规则 ↗</button></div></aside>
+<article class="card result" aria-label="理论计算结果"><div class="result-top"><div class="head"><h2 class="section-title">理论费用 <span id="cost-badge" class="badge blue">参数公式</span></h2><button class="link" id="show-formula">公式明细 ↗</button></div><div class="usage-summary" id="usage-summary"><div class="usage-rate-line"><span>刊例单价</span><b class="num" id="token-rate">—</b><small>元 / 百万 Token</small><button class="link usage-help" id="usage-help" aria-haspopup="dialog">用量与计价说明 ⓘ</button></div><dl class="usage-metrics" aria-label="基础估算与最低 Token 用量"><div class="usage-token" id="token-estimate-metric"><dt title="按生成参数计算，尚未应用最低用量"><span>基础估算 Token</span><span class="usage-adopted" id="token-estimate-adopted" title="按此用量估算刊例成本" hidden>采用</span></dt><dd id="token-estimate">—</dd></div><div class="usage-token" id="token-minimum-metric"><dt><span id="token-minimum-label">最低 Token 估算</span><span class="usage-rule-kind" id="token-minimum-kind" hidden></span><span class="usage-adopted" id="token-minimum-adopted" title="按此用量估算刊例成本" hidden>采用</span></dt><dd id="token-minimum">—</dd></div></dl><div id="coverage-note" class="usage-status" hidden></div></div><div class="source-costs"><div class="cost-box"><div class="cost-label"><span>理论刊例成本 P</span></div><div class="cost-number num" id="cost-p"></div></div><div class="cost-box"><div class="cost-label"><span>理论采购成本 C</span><span class="tiny">P × 采购比例</span></div><div class="cost-number num" id="cost-c"></div></div></div></div>
+<div class="calculation" id="calculation"></div><div class="result-foot"><div class="links"><button id="details" class="link">展开计算</button><button id="actual-calculation" class="link">实测金额复算 ↗</button></div><button class="btn primary" id="add-task">＋ 加入理论清单</button></div></article></section>
+<section class="card compare"><div class="compare-top head"><h2>理论方案对比</h2><button class="link" id="table-export">导出当前对照 ↓</button></div><nav class="tabs" aria-label="理论对比视图"><button data-tab="discounts">折扣对照</button><button data-tab="tasks">任务清单 <b id="task-count">0</b></button><button data-tab="matrix">参数矩阵</button><button data-tab="recharges">充值对照</button></nav><div class="table-tools" id="table-tools"></div><div class="mobile-hint">左右滑动查看完整计算列 ↔</div><div class="table-scroll" id="table"></div><div class="table-end" id="table-end"></div></section>
+</section>
+<section id="actual-workspace" hidden><div class="card reconcile-card"><div class="sheet-intro"><div><h2>实测金额与当前定价</h2><p>保留原始金额，按当前方案复算积分。</p></div><div class="action-wrap"><button class="btn" id="actual-export">导出实测对照</button><button class="btn primary" id="add-observation">＋ 录入实测</button></div></div><div class="independence">复算扣分不代表历史实扣；未记录项留空。</div><div class="table-scroll" id="actual-table"></div><div class="method-strip"><span>差额 = 平台实测 − 理论值</span></div><details class="record-notes"><summary>其他参考 · 官方预估转述</summary><div class="reference-other" id="other-references"></div></details></div><div class="workspace-foot"><span>差额原因需结合实际账单核对。</span><button class="link" id="back-theory">返回理论试算 →</button></div></section>
+<footer class="bottom"><span id="storage-status"><i class="live-dot"></i>本地草稿</span><span>Seedance 2.0 标准版 · 官方规则快照 2026-10-19 <button class="link" style="font-size:10px;margin-left:12px" id="reset">重置</button></span></footer>
+</main><div class="panel-bg" id="modal" hidden><section class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-describedby="drawer-sub"><div class="drawer-header"><div><h2 id="drawer-title"></h2><p id="drawer-sub"></p></div><button class="btn icon" id="close-drawer" aria-label="关闭面板">×</button></div><div class="drawer-body" id="drawer-body"></div><div class="drawer-footer" id="drawer-footer" hidden></div></section></div><div class="toast" id="toast" role="status"></div><input type="file" id="file" class="file-input" accept=".json,application/json">
+<script>
+/* Reelay V9 · Exact decimal/rational accounting engine.
+ * Monetary inputs are decimal strings. No Number arithmetic is used for settlement.
+ * Rates/dimensions verified against official Seedance 2.0 documentation on 2026-10-19.
+ * Versioned minimum-usage formula and provenance are supplied by data.js.
+ * Profit is the recharge-equivalent charge less model procurement cost only.
+ */
+(function(root){
+'use strict';
+function gcd(a,b){a=a<0n?-a:a;b=b<0n?-b:b;while(b){[a,b]=[b,a%b];}return a||1n;}
+function Q(n,d=1n){n=BigInt(n);d=BigInt(d);if(!d)throw Error('除数不能为零');if(d<0n){n=-n;d=-d;}let g=gcd(n,d);return {n:n/g,d:d/g};}
+function dec(v){if(v&&typeof v.n==='bigint')return v;let s=String(v).trim();if(s.length>80||!/^[-+]?\d+(\.\d+)?$/.test(s))throw Error('请输入普通十进制数');let neg=s[0]==='-';s=s.replace(/^[-+]/,'');let[a,b='']=s.split('.');return Q(BigInt(a+b)*(neg?-1n:1n),10n**BigInt(b.length));}
+const add=(a,b)=>{a=dec(a);b=dec(b);return Q(a.n*b.d+b.n*a.d,a.d*b.d)},sub=(a,b)=>{a=dec(a);b=dec(b);return Q(a.n*b.d-b.n*a.d,a.d*b.d)},mul=(a,b)=>{a=dec(a);b=dec(b);return Q(a.n*b.n,a.d*b.d)},div=(a,b)=>{a=dec(a);b=dec(b);return Q(a.n*b.d,a.d*b.n)},cmp=(a,b)=>{a=dec(a);b=dec(b);return a.n*b.d>b.n*a.d?1:a.n*b.d<b.n*a.d?-1:0},abs=a=>{a=dec(a);return Q(a.n<0n?-a.n:a.n,a.d)};
+function ceil(a){a=dec(a);return Q(a.n>=0n?(a.n+a.d-1n)/a.d:a.n/a.d);}
+function fixed(a,d=6,mode='nearest'){a=dec(a);if(!Number.isInteger(d)||d<0||d>30)throw Error('显示精度无效');let n=a.n<0n?-a.n:a.n,k=10n**BigInt(d),v=n*k/a.d;if(mode==='nearest'&&((n*k%a.d)*2n>=a.d))v++;let s=v.toString().padStart(d+1,'0');return(a.n<0n&&v?'−':'')+(d?s.slice(0,-d)+'.'+s.slice(-d):s);}
+function decimalString(a,d=12,mode='nearest'){return fixed(a,d,mode).replace('−','-');}
+const trim=(a,d=8)=>fixed(a,d).replace(/(\.\d*?[1-9])0+$|\.0+$/,'$1');
+const DIMS={
+'480p':{'16:9':[864,496],'9:16':[496,864],'1:1':[640,640],'4:3':[752,560],'3:4':[560,752],'21:9':[992,432]},
+'720p':{'16:9':[1280,720],'9:16':[720,1280],'1:1':[960,960],'4:3':[1112,834],'3:4':[834,1112],'21:9':[1470,630]},
+'1080p':{'16:9':[1920,1080],'9:16':[1080,1920],'1:1':[1440,1440],'4:3':[1664,1248],'3:4':[1248,1664],'21:9':[2206,946]},
+'4k':{'16:9':[3840,2160],'9:16':[2160,3840],'1:1':[2880,2880],'4:3':[3326,2494],'3:4':[2494,3326],'21:9':[4398,1886]}};
+const RATES={'480p':['46','28'],'720p':['46','28'],'1080p':['51','31'],'4k':['26','16']};
+function plan({pay,total,discount='7.35',q='0.735',k='10',appliedM='',targetMode='discount',margin='0'}){
+ const A=dec(pay),T=dec(total),proc=dec(q),K=dec(k);
+ if(cmp(A,0)<=0||cmp(T,0)<=0||cmp(proc,0)<=0||cmp(K,'10')!==0)throw Error('充值或采购规则无效；业务换算常数须为10');
+ if(!['discount','margin'].includes(targetMode))throw Error('定价目标模式无效');
+ let d,targetMarginRate;
+ if(targetMode==='margin'){
+  targetMarginRate=div(margin,'100');
+  if(cmp(targetMarginRate,0)<0||cmp(targetMarginRate,1)>=0)throw Error('目标销售毛利率须大于等于0且小于100%');
+  d=div(proc,sub('1',targetMarginRate));
+ }else{
+  d=div(discount,'10');
+  if(cmp(d,0)<=0||cmp(d,'10')>0)throw Error('现金折扣须大于0且不超过100折');
+  targetMarginRate=div(sub(d,proc),d);
+ }
+ const S=div(T,A),U=div(A,T),M=div(mul(d,S),mul(proc,K)),usedM=appliedM!==''&&appliedM!=null?dec(appliedM):M;
+ if(cmp(usedM,0)<=0)throw Error('倍率须大于零');
+ return {A,T,d,q:proc,K,S,U,M,usedM,targetMode,targetMarginRate,targetMarginPct:mul(targetMarginRate,'100'),breakEvenM:div(S,K),roundingUpBound:U};
+}
+// A margin target follows the supplied procurement cost, including recorded C.
+// A discount target follows list price P; neither path invents a missing cost.
+function targetCash(P,C,p){return p.targetMode==='margin'?(C===null?null:div(C,sub('1',p.targetMarginRate))):(P===null?null:mul(P,p.d));}
+function settle(P,C,p){P=dec(P);C=dec(C);if(cmp(P,0)<=0||cmp(C,0)<0)throw Error('刊例须大于零，采购不能为负');
+ // Per request: 0 <= roundGap < roundingUpBound (the value of one point).
+ const target=targetCash(P,C,p),idealPoints=mul(target,p.S),raw=mul(mul(C,p.usedM),p.K),N=ceil(raw),cash=mul(N,p.U),rawCash=mul(raw,p.U),gap=sub(cash,target),costGap=sub(mul(mul(mul(C,p.M),p.K),p.U),target),precisionGap=mul(mul(mul(C,sub(p.usedM,p.M)),p.K),p.U),roundGap=sub(cash,rawCash),profit=sub(cash,C),targetProfit=sub(target,C),margin=cmp(cash,0)?mul(div(profit,cash),100):null;
+ return {P,C,target,idealPoints,raw,N,cash,rawCash,gap,costGap,precisionGap,roundGap,profit,targetProfit,margin,cashProfit:profit,salesMarginPct:margin,costMarkupPct:cmp(C,0)?mul(div(profit,C),'100'):null,targetCashProfit:targetProfit,unroundedCashProfit:sub(rawCash,C),breakEvenM:p.breakEvenM||div(p.S,p.K),roundingUpBound:p.U,effective:mul(div(cash,P),10),actualQ:div(C,P),oldRaw:mul(mul(C,'1.65'),p.K),oldN:ceil(mul(mul(C,'1.65'),p.K)),p};
+}
+function normalizeSeconds(value){
+ const sec=dec(value);
+ if(cmp(sec,4)<0||cmp(sec,15)>0||sec.d!==1n)throw Error('输出时长须为4～15秒整数');
+ return sec.n.toString();
+}
+function normalizeVideo(value){
+ if(value===true||typeof value==='string'&&value.trim().toLowerCase()==='true')return true;
+ if(value===false||value==null||typeof value==='string'&&value.trim().toLowerCase()==='false')return false;
+ throw Error('视频输入标识须为true或false');
+}
+function estimate(t,minimum=''){
+ const seconds=String(t.seconds).trim()==='auto'?'auto':normalizeSeconds(t.seconds),video=normalizeVideo(t.video);
+ if(t.ratio==='auto'||seconds==='auto')return {status:'unresolved',P:null,base:null,reason:'自动规格尚未确定'};
+ const wh=DIMS[t.res]?.[t.ratio];if(!wh)throw Error('不支持的比例或分辨率');
+ const sec=dec(seconds),vin=dec(video?t.vin:'0');
+ if(video&&(cmp(vin,2)<0||cmp(vin,15)>0))throw Error('参考视频总时长须为2～15秒');
+ const tokens=div(mul(mul(add(sec,vin),String(wh[0]*wh[1])),'24'),'1024'),rate=dec(RATES[t.res][video?1:0]),base=div(mul(tokens,rate),'1000000');
+ const hasMinimum=video&&minimum!==''&&minimum!==null&&minimum!==undefined;
+ if(video&&!hasMinimum)return {status:'base-theory',P:base,base,tokens,rate,wh,billedTokens:tokens,partial:true,normalizedSeconds:seconds,minimum:null};
+ const floor=hasMinimum?dec(minimum):dec('0');if(cmp(floor,0)<0)throw Error('最低用量不能为负');
+ const billedTokens=cmp(tokens,floor)<0?floor:tokens,P=div(mul(billedTokens,rate),'1000000');
+ return {status:hasMinimum?'manual-minimum':'rule-estimate',partial:false,P,base,tokens,rate,wh,billedTokens,minimum:hasMinimum?floor:null,normalizedSeconds:seconds};
+}
+function fromUsage(t,usage){let tok=dec(usage);if(cmp(tok,0)<=0||tok.d!==1n)throw Error('计费用量须为正整数');if(!RATES[t.res])throw Error('不支持的分辨率');return div(mul(tok,RATES[t.res][normalizeVideo(t.video)?1:0]),'1000000');}
+function sumTasks(rows,p){let count=0,N=dec(0),cash=dec(0),C=dec(0),target=dec(0);for(let r of rows){let n=dec(r.qty??1);if(n.d!==1n||cmp(n,1)<0)throw Error('数量须为正整数');let x=settle(r.P,r.C,p);count+=Number(r.qty??1);N=add(N,mul(x.N,n));cash=add(cash,mul(x.cash,n));C=add(C,mul(x.C,n));target=add(target,mul(x.target,n));}const cashProfit=sub(cash,C);return{count,N,cash,C,target,gap:sub(cash,target),cashProfit,salesMarginPct:cmp(cash,0)?mul(div(cashProfit,cash),'100'):null,costMarkupPct:cmp(C,0)?mul(div(cashProfit,C),'100'):null};}
+
+function recalcRecord(record,p){
+ const P=record.P!==''&&record.P!=null?dec(record.P):null;
+ const C=record.C!==''&&record.C!=null?dec(record.C):null;
+ if(P&&cmp(P,0)<=0)throw Error('实测刊例金额须大于零');
+ if(C&&cmp(C,0)<0)throw Error('实测采购金额不能为负');
+ const raw=C===null?null:mul(mul(C,p.usedM),p.K),N=raw===null?null:ceil(raw),cash=N===null?null:mul(N,p.U);
+ const target=targetCash(P,C,p);
+ const x=P!==null&&C!==null?settle(P,C,p):null;
+ const cashProfit=C===null?null:sub(cash,C);
+ return {P,C,raw,N,cash,target,x,cashProfit,salesMarginPct:cash!==null&&cmp(cash,0)?mul(div(cashProfit,cash),'100'):null,costMarkupPct:C!==null&&cmp(C,0)?mul(div(cashProfit,C),'100'):null,recordedN:record.N??'',scope:'recorded-cost-recalculation'};
+}
+root.ReelayMath={Q,dec,add,sub,mul,div,cmp,abs,ceil,fixed,decimalString,trim,DIMS,RATES,plan,settle,estimate,fromUsage,sumTasks,recalcRecord,normalizeSeconds,normalizeVideo};
+if(typeof module!=='undefined')module.exports=root.ReelayMath;
+})(typeof window!=='undefined'?window:globalThis);
+
+</script>
+<script>/* Reelay V9 · Versioned official Seedance 2.0 estimation rules.
+ * Formula provenance: the official Lark table's normal copy output
+ * (text/bitable, header.property.formula), not a fit to displayed numbers.
+ * These are exact evaluations of an estimation formula, not API billing usage.
+ */
+(function (root, factory) {
+  'use strict';
+  if (typeof module === 'object' && module.exports) {
+    module.exports = factory(require('./engine.js'));
+  } else {
+    root.ReelayRules = factory(root.ReelayMath);
+  }
+})(typeof window !== 'undefined' ? window : globalThis, function (MathEngine) {
+  'use strict';
+  if (!MathEngine) throw new Error('ReelayRules requires ReelayMath');
+
+  const VERSION = 'volc-seedance20-2026-10-19';
+  const MODEL = 'seedance-2.0';
+  const VERIFIED_AT = '2026-10-19';
+  const TABLE_ID = 'tblmNCuMjADrXtDf';
+  const BASE_URL = 'https://bytedance.larkoffice.com/wiki/FXaYwxzJ5i5Zdik32ipcWzt7nxd';
+  const RESOLUTIONS = Object.freeze(['480p', '720p', '1080p', '4k']);
+  const RATIOS = Object.freeze(['16:9', '4:3', '1:1', '3:4', '9:16', '21:9']);
+  const VIEWS = Object.freeze({
+    '480p': 'vew2CR2JYM',
+    '720p': 'vewVBehIlq',
+    '1080p': 'vewQ2CK6dj',
+    '4k': 'vewrMAE6IZ'
+  });
+  const SOURCE_FORMULA = 'IF(VALUE([时长-输入视频（秒）])>0,(MAX(ROUNDUP(VALUE([时长-输出视频（秒）])*2/3,0),VALUE([时长-输入视频（秒）]))+VALUE([时长-输出视频（秒）]))*VALUE([长边（像素）])*VALUE([短边（像素）])*VALUE([帧率])/1024,VALUE([时长-输出视频（秒）])*VALUE([长边（像素）])*VALUE([短边（像素）])*VALUE([帧率])/1024)';
+  const SOURCE_DESCRIPTION = '估算值，实际以调用 API 后返回信息中的 usage 字段为准。';
+  const NOTE = '依据官方 Seedance 2.0 表格公式计算的最低用量估算值；保留公式的小数精度，表格显示可能按数字格式取整。实际计费用量以 API usage.completion_tokens 为准。';
+
+  function viewUrl(resolution) {
+    return BASE_URL + '?table=' + TABLE_ID + '&view=' + VIEWS[resolution];
+  }
+
+  const sources = Object.freeze({
+    version: VERSION,
+    model: MODEL,
+    verifiedAt: VERIFIED_AT,
+    timezone: 'Asia/Shanghai',
+    pricing: Object.freeze({
+      url: 'https://console.volcengine.com/ark/region:cn-beijing/docs/model-pricing',
+      publicUrl: 'https://docs.volcengine.com/docs/ark/model-pricing?lang=zh',
+      updatedAt: '2026-10-17',
+      verifiedAt: VERIFIED_AT,
+      note: '采用当前标准刊例费率；不自动应用已过期的限时优惠。'
+    }),
+    dimensions: Object.freeze({
+      url: 'https://console.volcengine.com/ark/region:cn-beijing/docs/create-video-generation-task-api',
+      verifiedAt: VERIFIED_AT,
+      note: 'Seedance 2.0 标准版支持 480p、720p、1080p、4k，输出帧率为 24 fps。'
+    }),
+    usage: Object.freeze({
+      url: 'https://console.volcengine.com/ark/region:cn-beijing/docs/get-video-generation-task-api',
+      verifiedAt: VERIFIED_AT,
+      note: 'usage.completion_tokens 已包含最低用量限制；total_tokens 与其相等，不重复加总或再次套用门槛。'
+    }),
+    minima: Object.freeze({
+      url: viewUrl('480p'),
+      tableId: TABLE_ID,
+      views: Object.freeze(Object.fromEntries(RESOLUTIONS.map(res => [res, viewUrl(res)]))),
+      verifiedAt: VERIFIED_AT,
+      provenance: '官方飞书表格正常选择并复制所得 text/bitable，读取“最低token用量”字段的 header.property.formula 与字段说明。',
+      sourceFormula: SOURCE_FORMULA,
+      sourceDescription: SOURCE_DESCRIPTION,
+      formulaNote: '下列阈值式由本工具从2026-10-19保存的表格公式字段分离出下限；与基础用量取较大值后的整体计算才与原字段公式等价，不是官方价格正文直接列出的公式。',
+      documentationReview: Object.freeze({verifiedAt: '2026-10-20', scope: '仅复核官方模型价格正文与任务查询API的最低用量说明；本次未重新取得飞书表内公式。', tableFormulaRechecked: false}),
+      minimumFormula: '(输出秒数 + ceil(输出秒数 × 2 / 3)) × 宽 × 高 × 24 / 1024',
+      combinedFormula: '(输出秒数 + max(输入视频总秒数, ceil(输出秒数 × 2 / 3))) × 宽 × 高 × 24 / 1024',
+      scope: '含视频输入的 Seedance 2.0 标准版；4 个分辨率 × 6 个固定宽高比 × 4–15 秒整数输出时长，共 288 个规格。',
+      precision: '仅对公式中的 2 × 输出秒数 / 3 向上取整；token 结果保留精确有限十进制，不按表格的显示格式预先取整。',
+      billingNotice: SOURCE_DESCRIPTION
+    })
+  });
+
+  // All quantities here have denominators dividing 1024. Long division preserves
+  // the exact terminating decimal without Number conversion or display rounding.
+  function exactDecimal(value) {
+    const q = MathEngine.dec(value);
+    const negative = q.n < 0n;
+    let numerator = negative ? -q.n : q.n;
+    let remainder = numerator % q.d;
+    let result = (numerator / q.d).toString();
+    if (remainder) {
+      result += '.';
+      let digits = 0;
+      while (remainder) {
+        if (++digits > 16) throw new Error('最低用量应为有限十进制');
+        remainder *= 10n;
+        result += (remainder / q.d).toString();
+        remainder %= q.d;
+      }
+    }
+    return (negative ? '-' : '') + result;
+  }
+
+  function key(task, version = VERSION) {
+    const res = String(task.res).trim().toLowerCase();
+    const ratio = String(task.ratio).trim();
+    if (String(task.seconds).trim() === 'auto' || ratio === 'auto' || ratio === 'adaptive') return null;
+    const seconds = MathEngine.normalizeSeconds(task.seconds);
+    if (!RESOLUTIONS.includes(res) || !RATIOS.includes(ratio)) {
+      throw new Error('不支持的比例或分辨率');
+    }
+    return [MODEL, String(version), res, ratio, seconds].join('|');
+  }
+
+  function buildMinima() {
+    const minima = {};
+    for (const res of RESOLUTIONS) {
+      for (const ratio of RATIOS) {
+        const wh = MathEngine.DIMS[res][ratio];
+        const area = MathEngine.mul(String(wh[0]), String(wh[1]));
+        for (let seconds = 4; seconds <= 15; seconds++) {
+          const output = MathEngine.dec(String(seconds));
+          const referenceFloor = MathEngine.ceil(MathEngine.div(MathEngine.mul(output, '2'), '3'));
+          const tokens = MathEngine.div(
+            MathEngine.mul(MathEngine.mul(MathEngine.add(output, referenceFloor), area), '24'),
+            '1024'
+          );
+          minima[key({ res, ratio, seconds })] = {
+            tokens: exactDecimal(tokens),
+            note: NOTE,
+            kind: 'official',
+            sourceUrl: viewUrl(res),
+            verifiedAt: VERIFIED_AT
+          };
+        }
+      }
+    }
+    return minima;
+  }
+
+  const MINIMA = buildMinima();
+  for (const entry of Object.values(MINIMA)) Object.freeze(entry);
+  Object.freeze(MINIMA);
+
+  // The lookup is by output specification alone. The caller applies the returned
+  // minimum only when video input is present; input duration is never a key part.
+  function officialMinimum(task) {
+    const lookup = key(task);
+    return lookup ? MINIMA[lookup] || null : null;
+  }
+
+  return Object.freeze({
+    VERSION, MODEL, VERIFIED_AT, RESOLUTIONS, RATIOS, VIEWS,
+    sources, buildMinima, key, officialMinimum, MINIMA
+  });
+});
+</script><script>(()=>{'use strict';
+const E=window.ReelayMath,R=window.ReelayRules,{$}={$:id=>document.getElementById(id)};
+const {Q,dec,add,sub,mul,div,cmp,ceil,fixed,trim,decimalString}=E;
+const clone=x=>JSON.parse(JSON.stringify(x)),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=(x,d=8)=>trim(x,d),cash=(x,d=6)=>'¥'+fixed(x,d),decimal=(x,d=20)=>decimalString(x,d),pack=x=>({n:x.n.toString(),d:x.d.toString()}),unpack=x=>Q(x.n,x.d),uid=()=>Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
+const RES=Object.keys(E.DIMS),RATIOS=['21:9','16:9','4:3','1:1','3:4','9:16'],DISCOUNTS=['7.35','7.5','7.8','8','8.2','8.5','8.8','9','10'];
+const task=(res='1080p',ratio='21:9',seconds='15',video=true,vin='15')=>({res,ratio,seconds,video,vin});
+const OBS=[
+{id:'s1',title:'平台实测 · 原表第1行',params:task('480p','1:1','4',false,'2'),P:'1.784800',C:'1.311828',N:'',date:'',note:'用户确认为平台实际数据。只保留原表成本列；历史实际扣分与适用定价口径尚未单独确认。'},
+{id:'s2',title:'平台实测 · 原表第2行',params:task('1080p','21:9','15',false,'2'),P:'37.520955',C:'27.577902',N:'',date:'',note:'原表平台实测成本。理论工作台不读取此金额。'},
+{id:'s3',title:'平台实测 · 原表第3行',params:task('480p','1:1','4',true,'2'),P:'1.892800',C:'1.391208',N:'',date:'',note:'平台实测值1.892800元。与转述的官方预估约1.88元是不同来源，分别保留。'},
+{id:'s4',title:'平台实测 · 原表第4行',params:task(),P:'45.550532',C:'33.479641',N:'',date:'',note:'视频输入15秒，输出1080p、21:9、15秒。平台实际成本只用于对照，不替代公式输出。'}];
+const REFS=[{id:'reference-188',title:'转述的官方预估约值',params:task('480p','1:1','4',true,'2'),P:'1.88',C:'',note:'用户转述约1.88元，不是精确官方结果，也不是平台实测记录。不进入任何理论计算或实测汇总。'}];
+// Presets compare official billed Token usage across every supported output spec.
+// Fractional pixel mappings matter: 4K 4:3 has slightly more pixels than 21:9.
+const QUICK_TASKS={};
+for(const video of [false,true])for(const extreme of ['min','max']){
+ let best=null,bestTokens=null;
+ for(const res of RES)for(const ratio of RATIOS)for(let s=4;s<=15;s++){
+  const t=task(res,ratio,String(s),video,extreme==='min'?'2':'15');
+  const tokens=E.estimate(t,video?R.officialMinimum(t).tokens:'').billedTokens;
+  if(best===null||(extreme==='min'?cmp(tokens,bestTokens)<0:cmp(tokens,bestTokens)>0)){best=t;bestTokens=tokens;}
+ }
+ QUICK_TASKS[(video?'video':'none')+'-'+extreme]=best;
+}
+function defaults(){return{schema:'reelay.pricing.v9',plan:{company:'积分定价方案',pay:'100',total:'1538',discount:'7.35',q:'0.735',targetMode:'discount',margin:'8.125',giftMode:false,mode:'ideal',digits:12,round:'nearest',manualM:'1.538',basis:'本次充值含全部赠分；历史余额的现金价值须另行确认'},task:task('480p','1:1','4',true,'2'),rules:{version:R.VERSION,minima:R.buildMinima(),legacyMinima:{}},workspace:'theory',tab:'discounts',tasks:[],observations:clone(OBS),references:clone(REFS),recharges:[{pay:'100',total:'1500'},{pay:'100',total:'1538'},{pay:'100',total:'1600'}],rechargeMode:'reprice',frozenM:null,matrixAxis:'specs',matrixMetric:'N'};}
+const KEY='reelay_pricing_v9_official' ;let state=defaults(),globalValid=true,tableRows=[],actualRows=[],drawerName='',lastFocus=null;
+function positive(x,zero=false,maxdigits=20){let s=String(x);return s.length<48&&/^\d+(\.\d+)?$/.test(s)&&(!s.includes('.')||s.split('.')[1].length<=maxdigits)&&(zero?+s>=0:+s>0)&&+s<1e12;}
+function validTask(t,allowAuto=true){try{return !!(t&&RES.includes(t.res)&&[...RATIOS,...(allowAuto?['auto']:[])].includes(t.ratio)&&(allowAuto&&t.seconds==='auto'||E.normalizeSeconds(t.seconds))&&typeof t.video==='boolean'&&(!t.video||positive(t.vin,false,4)&&+t.vin>=2&&+t.vin<=15));}catch(_){return false;}}
+function txt(s,n){return typeof s==='string'&&s.length<=n;}
+function validObservation(o){return !!(o&&txt(o.id,100)&&txt(o.title,100)&&validTask(o.params,false)&&txt(o.note,1000)&&txt(o.date,100)&&(o.P===''||positive(o.P))&&(o.C===''||positive(o.C,true))&&(o.P!==''||o.C!=='')&&(o.N===''||/^\d+$/.test(o.N)&&+o.N<1e12)&&(!o.usage||/^\d+$/.test(o.usage)&&+o.usage>0&&+o.usage<1e12));}
+function validReference(r){return !!(r&&txt(r.id,100)&&txt(r.title,100)&&(r.params===null||validTask(r.params))&&txt(r.note,1000)&&(r.P===''||positive(r.P))&&(r.C===''||positive(r.C,true)));}
+function validPlan(p){return !!(p&&txt(p.company,60)&&positive(p.pay,false,2)&&positive(p.total,false,4)&&positive(p.discount,false,4)&&+p.discount<=100&&positive(p.q,false,6)&&+p.q<=10&&['discount','margin'].includes(p.targetMode)&&positive(p.margin,true,4)&&+p.margin<100&&typeof p.giftMode==='boolean'&&['ideal','saved','manual'].includes(p.mode)&&Number.isInteger(p.digits)&&p.digits>=0&&p.digits<=20&&['nearest','truncate'].includes(p.round)&&positive(p.manualM,false,20)&&txt(p.basis,500));}
+function key(t){return[t.res,t.ratio,t.seconds==='auto'?'auto':E.normalizeSeconds(t.seconds),t.video?'video':'none',t.video?num(dec(t.vin),4):'0'].join('|');}
+
+function minimumKey(t,version=state.rules.version){return R.key(t,version);}
+function wholeInputSeconds(value){
+ if(!positive(value,false,4)||cmp(value,2)<0||cmp(value,15)>0)throw Error('输入视频总时长须为2～15秒。');
+ return num(ceil(value),0);
+}
+function normalizeTask(t,roundInput=true){const n=clone(t);if(n.seconds!=='auto')n.seconds=E.normalizeSeconds(n.seconds);n.vin=n.video?(roundInput?wholeInputSeconds(n.vin):num(dec(n.vin),4)):'2';return n;}
+// Legacy range drafts become editable fixed tasks; explicit choices stay intact.
+function fixedTask(t){return normalizeTask({...t,ratio:t.ratio==='auto'?'16:9':t.ratio,seconds:t.seconds==='auto'?'15':t.seconds});}
+function fixedTaskNotice(t){const changed=[];if(t?.ratio==='auto')changed.push('比例 16:9');if(t?.seconds==='auto')changed.push('输出 15 秒');return changed.length?'旧范围参数已设为'+changed.join('、')+'，可直接调整。':'';}
+function normalizeMinimumKeys(input){
+ const n=clone(input),out={};
+ for(const [oldKey,r] of Object.entries(n.rules.minima||{})){
+  const a=oldKey.split('|');let k;
+  if(a.length===5&&a[0]==='seedance-2.0'&&a[1]===n.rules.version&&RES.includes(a[2])&&RATIOS.includes(a[3]))k=minimumKey({res:a[2],ratio:a[3],seconds:a[4]},n.rules.version);
+  else if(a.length===5&&RES.includes(a[0])&&RATIOS.includes(a[1])&&a[3]==='video')k=minimumKey({res:a[0],ratio:a[1],seconds:a[2]},n.rules.version);
+  else throw Error('最低用量规则键无效，请核对模型、规则版本与输出规格。');
+  if(!k||out[k]&&cmp(out[k].tokens,r.tokens)!==0)throw Error('同一输出规格存在冲突门槛，请先核对来源。');
+  out[k]=clone(r);
+ }
+ n.rules.minima=out;return n;
+}
+function upgradeState(input){
+ let n=clone(input);const old=n.schema==='reelay.pricing.v8';
+ if(!old&&n.schema!=='reelay.pricing.v9')throw Error('不支持的方案版本');
+ if(!n.plan||!n.rules||!Array.isArray(n.tasks)||!Array.isArray(n.observations))throw Error('方案字段不完整');
+ n.plan={...defaults().plan,...n.plan};if(['企业 A · 定价方案','企业 A · 讨论方案'].includes(n.plan.company))n.plan.company='积分定价方案';n.task=fixedTask(n.task);n.tasks=n.tasks.map(r=>({...r,params:normalizeTask(r.params)}));n.observations=n.observations.map(o=>({...o,params:normalizeTask(o.params,false),usage:o.usage||''}));
+ if(old){n.rules={version:R.VERSION,minima:R.buildMinima(),legacyMinima:clone(n.rules.minima||{})};n.schema='reelay.pricing.v9';}
+ else{
+  if(n.rules.version!==R.VERSION)throw Error('规则版本与本文件不符，请先核对来源');
+  n=normalizeMinimumKeys(n);const official=R.buildMinima();
+  for(const [k,v] of Object.entries(n.rules.minima)){
+   if(!official[k]||!positive(v.tokens,false,12)||!txt(v.note,500)||!v.note.trim())throw Error('门槛数据或来源无效');
+   official[k]=v.kind==='official'&&cmp(v.tokens,official[k].tokens)===0?official[k]:{tokens:v.tokens,note:v.note,kind:'manual'};
+  }
+  n.rules.minima=official;
+ }
+ if(!validState(n))throw Error('方案参数无效');return n;
+}
+function validState(s){if(!(s&&s.schema==='reelay.pricing.v9'&&validPlan(s.plan)&&validTask(s.task,false)&&s.rules&&s.rules.version===R.VERSION&&s.rules.minima&&typeof s.rules.minima==='object'&&!Array.isArray(s.rules.minima)&&['theory','actual'].includes(s.workspace)&&['discounts','tasks','matrix','recharges'].includes(s.tab)&&Array.isArray(s.tasks)&&s.tasks.length<=100&&Array.isArray(s.observations)&&s.observations.length<=200&&Array.isArray(s.references)&&s.references.length<=200&&Array.isArray(s.recharges)&&s.recharges.length<=50&&['reprice','fixed'].includes(s.rechargeMode)&&['specs','ratios'].includes(s.matrixAxis)&&['N','raw','P','C','cash'].includes(s.matrixMetric)))return false;
+if(!s.tasks.every(t=>t&&txt(t.id,100)&&txt(t.title,100)&&validTask(t.params,false)&&/^\d+$/.test(String(t.qty))&&+t.qty>=1&&+t.qty<=100000)||!s.observations.every(validObservation)||!s.references.every(validReference)||!s.recharges.every(r=>positive(r.pay,false,2)&&positive(r.total,false,4)))return false;
+if(Object.keys(s.rules.minima).length>500)return false;for(const [k,r] of Object.entries(s.rules.minima)){if(!txt(k,120)||!r||!positive(r.tokens,false,12)||!txt(r.note,500)||!r.note.trim())return false;}
+return s.frozenM===null||s.frozenM&&/^\d{1,80}$/.test(s.frozenM.n)&&/^\d{1,80}$/.test(s.frozenM.d)&&BigInt(s.frozenM.d)>0n;}
+let migrationNotice='',taskMigrationNotice='';
+try{const raw=localStorage.getItem(KEY)||localStorage.getItem('reelay_pricing_v81_dual_breakdown')||localStorage.getItem('reelay_pricing_v8_theory_isolated');if(raw){const saved=JSON.parse(raw);state=upgradeState(saved);taskMigrationNotice=fixedTaskNotice(saved.task);if(saved.schema!=='reelay.pricing.v9')migrationNotice='已升级至官方规则；旧人工门槛保留在导入档案，未覆盖官方估算。';}}catch(err){migrationNotice='旧草稿未导入：'+err.message+'。原草稿仍保留。';}
+
+function idealPricing(p=state.plan){return E.plan({pay:p.pay,total:p.total,discount:p.discount,q:p.q,k:'10',targetMode:p.targetMode,margin:p.margin});}
+function pricing(over={}){const p={...state.plan,...over},ideal=idealPricing(p);let applied='';if(p.mode==='saved')applied=decimalString(ideal.M,p.digits,p.round);if(p.mode==='manual')applied=p.manualM;return E.plan({pay:p.pay,total:p.total,discount:p.discount,q:p.q,k:'10',targetMode:p.targetMode,margin:p.margin,appliedM:applied});}
+/* SINGLE THEORY PIPELINE: its inputs are parameters, rules, plan. No observations,
+ * no reference lookup, no evidence selection, no recorded monetary field. */
+function theoryOne(t,rules,p){const m=t.video?rules.minima[minimumKey(t,rules.version)]:null,calc=E.estimate(t,m?.tokens||'');if(!calc.P)return{range:false,x:null,calc};const C=mul(calc.P,p.q),x=E.settle(calc.P,C,p);return{range:false,x,calc,rule:m||null,partial:!!calc.partial,source:'parameter-formula',scope:'theory'};}
+function theory(t=state.task,rules=state.rules,p=pricing()){return theoryOne(t,rules,p);}
+function current(){return theory();}
+function label(t){return`${t.res==='4k'?'4K':t.res} · ${t.ratio==='auto'?'全部比例':t.ratio} · ${t.seconds==='auto'?'4–15秒':t.seconds+'秒'}`;}
+function vinLabel(t){return t.video?'视频输入 '+t.vin+'秒':'无视频输入';}
+function coverage(v){return v.partial?'规则缺项 · 仅基础演算':v.rule?.kind==='manual'?'人工门槛 · 待核验':'参数预估';}
+function setInput(id,value){const el=$(id);if(el&&document.activeElement!==el)el.value=value;}
+function toast(s){$('toast').textContent=s;$('toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.remove('show'),3800);}
+function persist(){if(!globalValid)return;try{localStorage.setItem(KEY,JSON.stringify(state));$('storage-status').innerHTML='<i class="live-dot"></i>本地草稿已保存';}catch(_){$('storage-status').textContent='浏览器未保存草稿，请导出方案留存。';}}
+function openDrawer(name,title,subtitle,html,wide=false){lastFocus=document.activeElement;drawerName=name;$('drawer-title').textContent=title;$('drawer-sub').textContent=subtitle;$('drawer-body').innerHTML=html;$('drawer-footer').hidden=true;$('drawer').classList.toggle('wide',wide);$('modal').classList.toggle('centered',name==='usage');$('modal').hidden=false;document.body.classList.add('modal-open');$('close-drawer').focus();}
+function closeDrawer(){if($('modal').hidden)return;$('modal').hidden=true;document.body.classList.remove('modal-open');drawerName='';if(lastFocus?.isConnected)lastFocus.focus();}
+function table(headers,rows,cls=''){return'<table class="'+cls+'"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>';}
+const td=(s,cls='number')=>'<td class="'+cls+'">'+s+'</td>',minus=(a,b)=>{const d=sub(a,b);return(cmp(d,0)>0?'+':'')+num(d,10);};
+function fitPlanValue(id){const el=$(id),units=[...el.value].reduce((n,c)=>n+(c==='.'?0.5:1),0);el.style.setProperty('--value-width',Math.min(32,Math.max(1.5,units))+'ch');}
+function renderPlan(){
+ const p=pricing(),gift=sub(p.T,mul(p.A,10)),manual=state.plan.mode==='manual';
+ const effectiveDiscount=mul(div(mul(mul(p.q,p.usedM),p.K),p.S),10);
+ const actualMargin=mul(sub(1,div(p.S,mul(p.usedM,p.K))),100);
+ setInput('pay',state.plan.pay);
+ setInput('total',state.plan.giftMode?num(gift,4):state.plan.total);
+ setInput('discount',state.plan.discount);setInput('target-margin',state.plan.margin);
+ setInput('purchase-discount',num(mul(p.q,10),6));setInput('target-mode',state.plan.targetMode);
+ setInput('pricing-mode',manual?'manual':'ideal');setInput('manual-m',state.plan.manualM);
+ fitPlanValue('manual-m');
+ $('discount-control').hidden=p.targetMode==='margin';$('margin-control').hidden=p.targetMode!=='margin';
+ $('manual-m-control').hidden=!manual;$('multiplier').hidden=manual;
+ $('target-context').textContent=manual?'对照目标':'定价目标';$('manual-pricing-note').hidden=!manual;$('pricing-target').classList.toggle('is-comparison',manual);
+ $('target-mode').setAttribute('aria-label',manual?'对照目标模式':'定价目标模式');
+ setInput('total-mode',state.plan.giftMode?'gift':'total');
+ $('total').setAttribute('aria-label',state.plan.giftMode?'附赠积分':'到账总积分');
+ const perYuan=num(p.S,8);$('per-yuan').textContent=perYuan;$('recharge-sign').textContent=cmp(p.S,perYuan)===0?'=':'≈';
+ const perPoint=fixed(p.U,8);$('per-point').textContent=perPoint;$('point-price-sign').textContent=cmp(p.U,perPoint)===0?'=':'≈';
+ $('point-price').title='实际支付 ÷ 到账总积分；每积分约 '+num(p.U,20)+' 元';$('break-even-m').textContent=num(p.breakEvenM,8);
+ $('multiplier').innerHTML=num(p.usedM,12)+'<small>倍</small>';
+ $('m-state').hidden=state.plan.mode!=='saved';$('m-state').textContent=state.plan.mode==='saved'?state.plan.digits+'位 · '+(state.plan.round==='truncate'?'截断':'四舍五入'):'';
+
+ const targetPicks=$('discount-picks');targetPicks.dataset.mode=p.targetMode;targetPicks.setAttribute('aria-label',p.targetMode==='margin'?'销售毛利率快捷值（%）':'现金折扣快捷值（折）');
+ targetPicks.innerHTML=(p.targetMode==='margin'?['0','5','8.125','10','20'].map(g=>`<button data-margin="${g}" aria-label="${g}%" aria-pressed="${cmp(g,state.plan.margin)===0}" class="${cmp(g,state.plan.margin)===0?'active':''}">${g}</button>`):['7.35','7.8','8','8.5','9','10'].map(d=>`<button data-discount="${d}" aria-label="${d}折" aria-pressed="${cmp(d,state.plan.discount)===0}" class="${cmp(d,state.plan.discount)===0?'active':''}">${d}</button>`)).join('');
+ $('rule-status').textContent='规则核验：2026-10-19';
+ $('plan-principle').innerHTML=`<span>等效现金折扣 <b>${num(effectiveDiscount,4)}折</b></span><span>模型毛利率 <b class="${cmp(actualMargin,0)<0?'loss':''}">${num(actualMargin,4)}%</b></span><span class="outcome-caption" title="上述折扣与毛利率未计入每次扣分向上取整的影响">（取整前）</span>${cmp(effectiveDiscount,10)>0?'<span class="outcome-note">高于刊例</span>':''}`;
+ $('migration-note').hidden=!migrationNotice;$('migration-note').textContent=migrationNotice;
+}
+
+function renderSlider(id,value){
+ const el=$(id),display=$(id+'-value');
+ setInput(id,value);
+ const label=num(dec(value),4)+' 秒';
+ if(display)display.textContent=label;el.setAttribute('aria-valuetext',label);
+ el.style.setProperty('--range-progress',((Number(value)-Number(el.min))/(Number(el.max)-Number(el.min))*100)+'%');
+}
+function renderComposer(){
+ const t=state.task;
+ $('res-options').innerHTML=RES.map(r=>`<button data-res="${r}" class="${r===t.res?'active':''}" aria-pressed="${r===t.res}">${r==='4k'?'4K':r}</button>`).join('');
+ $('ratio-options').innerHTML=RATIOS.map(r=>{const[a,b]=r.split(':').map(Number),h=a/b<1?19:13;return`<button data-ratio="${r}" class="${r===t.ratio?'active':''}" aria-pressed="${r===t.ratio}"><i class="frame" style="width:${h*a/b}px;height:${h}px"></i>${r}</button>`;}).join('');
+ renderSlider('seconds',t.seconds);setInput('vin',t.vin);
+ renderSlider('vin-slider',t.vin);$('vin-slider').disabled=!t.video;
+ $('video-detail').hidden=!t.video;$('vin').disabled=!t.video;
+ document.querySelectorAll('[data-video]').forEach(b=>{b.classList.toggle('active',(b.dataset.video==='true')===t.video);b.setAttribute('aria-pressed',String((b.dataset.video==='true')===t.video));});
+ document.querySelectorAll('[data-example]').forEach(b=>{const preset=QUICK_TASKS[b.dataset.example],active=key(t)===key(preset);b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));b.querySelector('small').textContent=label(preset)+(preset.video?' · 输入'+preset.vin+'秒':'');});
+ $('pixels').textContent=E.DIMS[t.res][t.ratio].join(' × ')+' 像素';
+ const r=t.ratio.split(':').map(Number);
+ $('preview-frame').style.width=(43*r[0]/r[1])+'px';$('preview-frame').textContent=t.ratio;
+ $('preview-meta').innerHTML='<b>'+esc(t.res==='4k'?'4K':t.res)+' · '+esc(t.seconds+'秒')+'</b><br>'+esc(vinLabel(t));
+}
+
+function tokenText(value,digits=12){return num(value,digits).split('.').map((part,i)=>i?part:part.replace(/\B(?=(\d{3})+(?!\d))/g,',')).join('.');}
+function renderUsage(v,t){
+ const c=v.calc,rule=v.rule,manual=rule?.kind==='manual',hasMinimum=t.video&&!!rule;
+ $('usage-summary').hidden=false;$('usage-help').disabled=false;
+ const show=(id,value)=>{const el=$(id),rounded=num(value,8);el.textContent=(cmp(rounded,value)!==0?'≈ ':'')+tokenText(value,8);el.title=tokenText(value)+' Token';};
+ $('token-rate').textContent=num(c.rate,6);
+ show('token-estimate',c.tokens);
+ $('token-minimum').removeAttribute('title');
+ if(hasMinimum)show('token-minimum',rule.tokens);else $('token-minimum').textContent=t.video?'待补齐':'不适用';
+ $('token-minimum-label').textContent=manual?'最低 Token 用量':'最低 Token 估算';
+ $('token-minimum-kind').hidden=!manual;$('token-minimum-kind').textContent=manual?'人工':'';
+ const useMinimum=!v.partial&&hasMinimum&&cmp(c.tokens,rule.tokens)<0;
+ const useBase=!v.partial&&!useMinimum;
+ for(const [name,adopted] of [['estimate',useBase],['minimum',useMinimum]]){
+  $('token-'+name+'-metric').classList.toggle('is-adopted',adopted);
+  $('token-'+name+'-adopted').hidden=!adopted;
+ }
+ const note=$('coverage-note');note.hidden=true;note.textContent='';
+ if(v.partial){note.hidden=false;note.textContent='最低用量待补齐 · 仅基础估算';}
+ else if(hasMinimum&&cmp(c.tokens,rule.tokens)<0){note.hidden=false;note.textContent='预计触发最低用量'+(manual?' · 人工门槛':'');}
+ if(drawerName==='usage'&&!$('modal').hidden)renderUsagePanel(v,t);
+}
+function usageExplanation(v,t){
+ const c=v.calc,rule=v.rule,manual=rule?.kind==='manual',hasMinimum=t.video&&!!rule;
+ const source=R.sources.minima,tableUrl=source.views[t.res]||source.url;
+ const base=`(${esc(t.seconds)} + ${t.video?esc(t.vin):'0'}) × ${c.wh[0]} × ${c.wh[1]} × 24 ÷ 1024`;
+ const decision=v.partial?'最低用量规则尚未补齐，本次仅为基础试算，无法确定完整费用。':!t.video?`无视频输入，不应用最低用量，采用基础估算 ${tokenText(c.tokens)} Token。`:cmp(c.tokens,rule.tokens)<0?`基础估算 ${tokenText(c.tokens)} Token 低于${manual?'人工设置的':'最低用量估算'} ${tokenText(rule.tokens)} Token，本次采用后者。`:cmp(c.tokens,rule.tokens)===0?`两项同为 ${tokenText(c.tokens)} Token，采用基础估算，无需补足用量。`:`基础估算 ${tokenText(c.tokens)} Token 已高于最低值 ${tokenText(rule.tokens)} Token，本次采用基础估算。`;
+ const applied=hasMinimum?`max(${tokenText(c.tokens)}, ${tokenText(rule.tokens)}) = ${tokenText(c.billedTokens)}`:tokenText(c.billedTokens);
+ const minimumMethod=manual?`<p>本任务的最低值来自人工覆盖：${tokenText(rule.tokens)} Token。来源：${esc(rule.note)}。此值不由官方表格公式计算；是否适用于实际结算，以约定规则和账单为准。</p>`:!t.video?'<p>无视频输入，本次不使用最低用量估算。</p>':!rule?'<p>本规格最低用量待补齐，暂不提供完整估价。</p>':`<p>本工具沿用 ${esc(source.verifiedAt)} 保存的 Seedance 2.0 表格公式字段。本工具从该字段中分离出最低下限，再与基础用量取较大值；合并后的计算与原字段公式等价。下列阈值式<strong>不是模型价格正文直接列出的公式</strong>。</p><div class="formula">最低 Token 估算 = (输出秒数 + ceil(输出秒数 × 2 ÷ 3)) × 宽 × 高 × 24 ÷ 1024<br>本规格 = ${tokenText(rule.tokens)} Token</div><p class="footnote">其中 ceil 表示向上取整。此处只对输出秒数 × 2 ÷ 3 取整，Token 结果保留精度。这一数学表达不构成输入素材的最低时长要求。</p><details class="record-notes"><summary>查看已保存的表格公式字段</summary><pre class="formula source-formula">${esc(source.sourceFormula)}</pre><p class="footnote">本地记录的来源：官方表格复制数据中的“最低token用量”公式字段。字段内含 MAX(ROUNDUP(输出秒数 × 2 / 3, 0), 输入秒数)，据此分离出与输出规格对应的下限；再与基础用量取较大值，不相加。</p></details><p class="footnote">2026-10-20 复核了官方文字说明；本次未重新取得飞书表内公式，表格数据仍沿用上述快照。<a href="${esc(tableUrl)}" target="_blank" rel="noopener">查看对应表格 ↗</a></p>`;
+ return `<div class="usage-explanation" id="usage-explanation"><p class="usage-lead">最低 Token 用量也是估算值，最终计费用量以 API 返回为准。</p><h3>官方如何说明最低用量</h3><p>含视频输入的任务存在最低 Token 用量限制。基础估算低于对应最低值时，按最低值估价；最低值与输出分辨率、宽高比和输出时长有关。官方将对应表格标为“估算值”。</p><p>查询任务返回的 <code>usage.completion_tokens</code> 已体现最低用量限制，可用于计费对账，不再补一次门槛。<code>total_tokens</code> 与它相等，不重复相加。</p><div class="usage-source-links"><a href="${esc(R.sources.pricing.url)}" target="_blank" rel="noopener">官方模型价格 · 最低用量说明 ↗</a><a href="${esc(R.sources.usage.url)}" target="_blank" rel="noopener">官方 API · usage 字段 ↗</a></div><h3>当前配置如何估价</h3><p>${esc(label(t))} · ${esc(vinLabel(t))}</p><div class="usage-current">${decision}<br>${manual?'本次最低值为人工覆盖。<br>':''}刊例成本 P = ${tokenText(c.billedTokens)} × ${num(c.rate,6)} ÷ 1,000,000 = ¥${num(c.P,18)}。</div><p>刊例成本就是官方计算器中的“估算视频价格”。采购成本 C = P × 采购比例；客户扣分折合金额另按积分定价方案计算。</p><details class="usage-method" id="usage-method"><summary>本工具的估算依据与公式</summary>${minimumMethod}<div class="formula">基础估算 Token = ${base} = ${tokenText(c.tokens)}<br>估价采用 Token${v.partial?'（仅基础）':''} = ${applied}</div><p class="footnote">“采用”标记只表示本次估价选用的数值；两者相等时标记基础估算。显示精度不参与计算，Token 不提前取整。</p></details></div>`;
+}
+function renderUsagePanel(v,t){
+ const methodOpen=$('usage-method')?.open||false;
+ $('drawer-body').innerHTML=usageExplanation(v,t);
+ if(methodOpen)$('usage-method').open=true;
+}
+function openUsage(){if(!globalValid)return;openDrawer('usage','用量与计价说明','Seedance 2.0 标准版 · 估算口径与来源',usageExplanation(current(),state.task));}
+function renderResult(){const v=current(),p=pricing(),x=v.x;$('cost-badge').textContent=coverage(v);$('cost-badge').className='badge '+(v.partial?'amber':'blue');renderUsage(v,state.task);
+$('add-task').disabled=!x;$('details').disabled=!x;
+$('cost-p').innerHTML='<small>¥</small>'+fixed(x.P,6);$('cost-c').innerHTML='<small>¥</small>'+fixed(x.C,6);
+$('calculation').innerHTML=`<div class="equation"><span>理论采购</span><b class="num">${num(x.C,10)}</b><span class="operator">×</span><b class="tagnum num" title="${esc(decimal(p.usedM))}">${num(p.usedM,12)}</b><span class="operator">×</span><b>10</b><span class="operator">=</span><span>理论积分</span></div><div class="points-pair"><div class="points-box"><div class="points-label">理论积分<span class="tiny muted">不取整</span></div><div class="points-value long num" id="raw-points" title="${esc(decimal(x.raw))}">${num(x.raw,8)}<small>分</small></div></div><div class="points-box emphasis"><div class="points-label">核算扣分<span class="tiny muted" title="每次扣分向上取整">逐次向上取整</span></div><div class="points-value num" id="integer-points">${num(x.N,0)}<small>分</small></div></div></div><div class="cash-row"><div class="cash-item"><span>${state.plan.mode==='manual'?'对照目标现金价':'目标现金价'}</span><b class="num" id="target-cash">${cash(x.target)}</b><small>${targetLabel(p)}</small></div><div class="cash-item"><span>取整后折合金额</span><b class="num" id="actual-cash">${cash(x.cash)}</b><small>理论刊例的 ${fixed(x.effective,4)}折</small></div><div class="cash-item"><span>与目标差额</span><b class="num" id="cash-gap">${cmp(x.gap,0)>=0?'+':''}${cash(x.gap)}</b><small>${state.plan.mode==='manual'?'指定倍率差异':'倍率精度'}＋积分取整</small></div></div><div class="economics-grid"><div><span>模型采购毛利</span><b class="${cmp(x.profit,0)<0?'loss':''}">${cash(x.profit)}</b></div><div><span>销售毛利率</span><b>${x.margin===null?'—':num(x.margin,4)+'%'}</b></div><div><span>成本加成率</span><b>${cmp(x.C,0)>0?num(mul(div(x.profit,x.C),100),4)+'%':'—'}</b></div></div><div class="result-note">${cmp(x.profit,0)<0?'<b class="loss">当前方案亏损。</b> ':cmp(x.rawCash,x.C)===0?'取整前保本。 ':''}毛利仅扣模型采购成本，未计其他费用。<button class="link" id="economics-how">计算口径 ↗</button></div>`;}
+function exportRow(title,v,x,qty=1){return{scope:'理论计算',targetMode:x.p.targetMode,targetMargin:x.p.targetMode==='margin'?decimal(x.p.targetMarginPct):'',procurementRatio:decimal(x.p.q),profit:decimal(x.profit),margin:x.margin===null?'':decimal(x.margin),scenario:title,coverage:coverage(v),ruleVersion:state.rules.version,quantity:qty,pay:state.plan.pay,total:state.plan.total,discount:num(mul(x.p.d,10),4),M:decimal(x.p.usedM),P:decimal(x.P),C:decimal(x.C),raw:decimal(x.raw),N:num(x.N,0),target:decimal(x.target),cash:decimal(x.cash),gap:decimal(x.gap)};}
+function renderTable(){const p=pricing(),v=current(),x=v.x;tableRows=[];$('task-count').textContent=state.tasks.length;document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===state.tab));let tools='',html='',end='';
+if(state.tab==='discounts'){tools=`<span>同一任务、同一充值口径，比较各档现金折扣。</span><span>${esc(label(state.task))}</span>`;if(!x)html='<div class="empty">先确定比例与时长，再查看逐档结果。参数矩阵仍可直接选择规格。</div>';else{html=table(['现金折扣','成本定价倍率','理论采购成本','理论积分','核算扣分','取整折合金额','与目标差额'],DISCOUNTS.map(d=>{const pp=idealPricing({...state.plan,discount:d,targetMode:'discount'}),vv=theory(state.task,state.rules,pp),xx=vv.x;tableRows.push(exportRow(d+'折',vv,xx));return`<tr class="${cmp(d,state.plan.discount)===0&&state.plan.targetMode==='discount'?'selected':''}">${td(`<button class="rowbutton" data-discount="${d}">${d}折</button>`)}${td(num(pp.M,10))}${td(num(xx.C,8))}${td(num(xx.raw,8))}${td('<b>'+num(xx.N,0)+'</b>')}${td(cash(xx.cash))}${td((cmp(xx.gap,0)>=0?'+':'')+num(xx.gap,6))}</tr>`;}));}end=state.plan.mode!=='ideal'?'各档独立反算倍率，不沿用指定倍率。':'';}
+if(state.tab==='tasks'){tools='<span>统一按当前规则重算；每笔先向上取整，再按数量汇总。</span><button class="link" id="clear-tasks">清空理论清单</button>';let sumN=dec(0),sumCash=dec(0),sumC=dec(0),count=0,partial=false;html=state.tasks.length?table(['任务规格','计算口径','数量','理论采购 / 次','理论积分 / 次','核算扣分 / 次','折合金额 / 次',''],state.tasks.map(r=>{const vv=theory(r.params,state.rules,p),xx=vv.x,n=dec(r.qty);sumN=add(sumN,mul(xx.N,n));sumCash=add(sumCash,mul(xx.cash,n));sumC=add(sumC,mul(xx.C,n));count+=+r.qty;partial=partial||vv.partial;tableRows.push(exportRow(r.title,vv,xx,r.qty));return`<tr>${td(`<button class="rowbutton" data-load-task="${esc(r.id)}">${esc(label(r.params))}</button><span class="second">${esc(vinLabel(r.params))}</span>`)}${td(`<span class="badge ${vv.partial?'amber':''}">${esc(coverage(vv))}</span>`)}${td(`<input class="qty" inputmode="numeric" data-qty="${esc(r.id)}" value="${r.qty}" aria-label="任务数量">`)}${td(num(xx.C,8))}${td(num(xx.raw,8))}${td('<b>'+num(xx.N,0)+'</b>')}${td(cash(xx.cash))}${td(`<button class="link danger-link" data-delete-task="${esc(r.id)}">删除</button>`)}</tr>`;})):'<div class="empty">配置一个任务，点击“加入理论清单”。这里只保存参数与数量，不保存平台实测金额。</div>';end=state.tasks.length?`<span>${state.tasks.length}种规格 / ${count}次 · 核算积分 <strong>${num(sumN,0)}</strong> · 折合金额 <strong>${cash(sumCash)}</strong> · 采购 <strong>${cash(sumC)}</strong> · 模型毛利 <strong>${cash(sub(sumCash,sumC))}</strong></span><span>${partial?'包含未覆盖最低用量的基础理论场景；汇总也仅为理论演算。':'采购与扣分均为公式结果，不是实际结算汇总。'}</span>`:'理论清单与实测记录是两份独立数据；清单按每次取整再乘数量。';}
+if(state.tab==='matrix'){tools=`<span>各格都调用同一参数公式，不插入任何截图金额。</span><span><select id="matrix-axis" aria-label="矩阵维度"><option value="specs" ${state.matrixAxis==='specs'?'selected':''}>分辨率 × 时长</option><option value="ratios" ${state.matrixAxis==='ratios'?'selected':''}>画面比例</option></select> <select id="matrix-metric" aria-label="矩阵数值">${[['N','核算扣分'],['raw','理论积分'],['P','理论刊例成本'],['C','理论采购成本'],['cash','取整折合金额']].map(([k,n])=>`<option value="${k}" ${state.matrixMetric===k?'selected':''}>${n}</option>`).join('')}</select></span>`;
+const metric=state.matrixMetric,base={...state.task},display=z=>['P','C','cash'].includes(metric)?cash(z[metric],4):num(z[metric],metric==='N'?0:4);
+if(state.matrixAxis==='specs')html=table(['分辨率 / 输出时长','4秒','5秒','8秒','10秒','12秒','15秒'],RES.map(res=>'<tr>'+td(res==='4k'?'4K':res)+['4','5','8','10','12','15'].map(seconds=>{const t={...base,res,seconds},vv=theory(t,state.rules,p);tableRows.push(exportRow(label(t)+' / '+vinLabel(t),vv,vv.x));return td(`<button class="matrixbutton" data-matrix="${esc(JSON.stringify(t))}"><b>${display(vv.x)}</b><span class="smallhint">${vv.partial?'基础理论':'公式计算'}</span></button>`);}).join('')+'</tr>'));
+else html=table(['画面比例','映射像素','理论刊例成本','理论采购成本','理论积分','核算扣分'],RATIOS.map(ratio=>{const t={...base,ratio},vv=theory(t,state.rules,p),xx=vv.x;tableRows.push(exportRow(label(t),vv,xx));return'<tr>'+td(`<button class="rowbutton" data-matrix="${esc(JSON.stringify(t))}">${ratio}</button>`)+td(E.DIMS[t.res][ratio].join(' × '))+td(cash(xx.P))+td(cash(xx.C))+td(num(xx.raw,8))+td(num(xx.N,0))+'</tr>';}));
+end=`点击格子载入参数。当前${esc(vinLabel(base))}，${state.matrixAxis==='specs'?'比例 '+base.ratio:'分辨率 '+base.res+'，输出 '+base.seconds+'秒'}。含视频的最低用量未设置时，保持“基础理论”标识。`;}
+if(state.tab==='recharges'){tools=`<span><select id="recharge-mode" aria-label="充值对照模式"><option value="reprice" ${state.rechargeMode==='reprice'?'selected':''}>随充值重新反算倍率</option><option value="fixed" ${state.rechargeMode==='fixed'?'selected':''}>固定当前倍率，看影响</option></select></span><button class="link" id="add-recharge">＋ 充值条件</button>`;if(!x)html='<div class="empty">固定输出比例和时长后比较充值方案。</div>';else{const frozen=state.frozenM?unpack(state.frozenM):p.usedM;html=table(['充值实付','到账积分','每元积分','成本定价倍率','理论积分','核算扣分','取整折合金额','折合刊例折扣'],state.recharges.map(r=>{let pp=idealPricing({...state.plan,...r});if(state.rechargeMode==='fixed')pp.usedM=frozen;const vv=theory(state.task,state.rules,pp),xx=vv.x;tableRows.push({...exportRow(r.pay+'元→'+r.total+'积分',vv,xx),pay:r.pay,total:r.total});return'<tr>'+td('¥'+r.pay)+td(r.total)+td(num(pp.S,6))+td(num(pp.usedM,10))+td(num(xx.raw,8))+td('<b>'+num(xx.N,0)+'</b>')+td(cash(xx.cash))+td(num(xx.effective,5)+'折')+'</tr>';}));}end='只改变充值与定价方案；任务理论成本保持不变。固定倍率不等于固定现金折扣。';}
+$('table-tools').innerHTML=tools;$('table').innerHTML=html;$('table-end').innerHTML=end;}
+function renderActual(){actualRows=[];const p=pricing();$('actual-table').innerHTML=table(['实测记录 / 规格','理论刊例 P','平台记录 P','差额 ΔP','理论采购 C','平台记录 C','当前复算扣分','复算模型毛利','历史实扣积分',''],state.observations.map(o=>{const v=theory(o.params,state.rules,p),x=v.x,a=E.recalcRecord(o,p),profit=a.cash===null?null:sub(a.cash,a.C);actualRows.push({scope:'实测对照',record:o.title,params:label(o.params)+' / '+vinLabel(o.params),coverage:coverage(v),theoryP:decimal(x.P),recordedP:o.P,deltaP:o.P!==''?decimal(sub(o.P,x.P)):'',theoryC:decimal(x.C),recordedC:o.C,deltaC:o.C!==''?decimal(sub(o.C,x.C)):'',recordedN:o.N,usage:o.usage||'',recalcN:a.N===null?'':num(a.N,0),recalcCash:a.cash===null?'':decimal(a.cash),recalcProfit:profit===null?'':decimal(profit),pay:state.plan.pay,total:state.plan.total,M:decimal(p.usedM),targetMode:p.targetMode,note:o.note});return'<tr>'+td(`<b>${esc(o.title)}</b><span class="second">${esc(label(o.params))} / ${esc(vinLabel(o.params))}</span><span class="badge">${esc(coverage(v))}</span>`)+td(num(x.P,8))+td(o.P!==''?esc(o.P):'—')+td(o.P!==''?minus(o.P,x.P):'—')+td(num(x.C,8))+td(o.C!==''?esc(o.C):'—')+td(a.N===null?'—':`<b>${num(a.N,0)}</b>`)+td(profit===null?'—':cash(profit))+td(o.N!==''?esc(o.N):'未知')+td(`<button class="link" data-observation="${esc(o.id)}">计算展开</button><br><button class="link" data-edit-observation="${esc(o.id)}">编辑</button>`)+'</tr>';}));$('other-references').innerHTML=state.references.map(r=>`<p><b>${esc(r.title)}</b> · 刊例约 ¥${esc(r.P)}<br>${esc(r.note)}</p>`).join('');}
+function render(){try{if(!validPlan(state.plan))throw Error('请检查充值金额、到账积分、采购折扣和定价目标；指定倍率须为大于0的数。');if(!validTask(state.task,false))throw Error('输出时长须为4～15秒整数，输入视频总时长须为2～15秒。');globalValid=true;$('globalError').hidden=true;renderPlan();renderComposer();renderResult();renderTable();renderActual();document.querySelectorAll('[data-workspace]').forEach(b=>b.classList.toggle('active',b.dataset.workspace===state.workspace));$('theory-workspace').hidden=state.workspace!=='theory';$('actual-workspace').hidden=state.workspace!=='actual';persist();}catch(e){globalValid=false;$('globalError').hidden=false;$('globalError').textContent=e.message;$('cost-p').textContent='—';$('cost-c').textContent='—';$('calculation').innerHTML='<div class="empty">请先修正输入，避免显示上一组参数的旧结果。</div>';$('table').innerHTML='<div class="empty">输入待修正。</div>';$('actual-table').innerHTML='<div class="empty">请先修正定价参数，避免沿用上一组复算。</div>';$('plan-principle').textContent='定价输入待修正';$('multiplier').textContent='—';$('break-even-m').textContent='—';$('per-yuan').textContent='—';$('per-point').textContent='—';$('point-price').removeAttribute('title');$('table-end').textContent='';$('coverage-note').hidden=true;$('usage-summary').hidden=true;$('usage-help').disabled=true;if(drawerName==='usage')$('drawer-body').innerHTML='<p class="notice red">当前输入无效，请关闭面板后修正参数。</p>';['token-rate','token-estimate','token-minimum'].forEach(id=>{$(id).textContent='—';$(id).removeAttribute('title');});['estimate','minimum'].forEach(name=>{$('token-'+name+'-metric').classList.remove('is-adopted');$('token-'+name+'-adopted').hidden=true;});$('add-task').disabled=true;$('details').disabled=true;}}
+function changeTask(patch){state.task={...state.task,...patch};if(validTask(state.task))state.task=normalizeTask(state.task);render();}
+function showWorkspace(w){state.workspace=w;closeDrawer();render();}
+function amount(v,d=12){return v===null||v===undefined?'—':num(v,d);}
+function formulaDetails(){openDetails('theory');}
+let detailContext={mode:'theory',task:null,recordId:'',text:''};
+function detailStep(n,title,content){return `<section class="detail-section"><h3><span class="detail-index">${n}</span>${title}</h3>${content}</section>`;}
+function detailFact(label,value,emphasis=false){return `<div class="fact${emphasis?' emph':''}"><span>${label}</span><b>${value}</b></div>`;}
+function detailPlan(p){return `<div class="detail-context"><strong>${esc(state.plan.company)}</strong><br>实付 ¥${esc(state.plan.pay)} → 到账 ${esc(state.plan.total)} 积分　·　${esc(targetSummary(p))}<br>成本定价倍率 M = <strong class="num">${num(p.usedM,15)}</strong>　·　每积分 ¥${fixed(p.U,10)}</div>`;}
+function detailBusinessMath(p){return `<details class="record-notes"><summary>充值口径、现金目标与倍率如何得到</summary><div class="formula">S = ${esc(state.plan.total)} ÷ ${esc(state.plan.pay)} = ${num(p.S,14)} 积分/元<br>U = 1 ÷ S ≈ ${num(p.U,18)} 元/积分<br>${p.targetMode==='margin'?`目标现金 R = C ÷ (1 − ${num(div(state.plan.margin,100),8)})<br>M = S ÷ [10 × (1 − ${num(div(state.plan.margin,100),8)})]`:`目标现金 R = P × ${num(p.d,8)}<br>M = ${num(p.d,8)} × S ÷ (${num(p.q,6)} × 10)`}<br>理想 M ≈ ${num(p.M,18)}；本次使用 M ≈ ${num(p.usedM,18)}<br>保本 M = S ÷ 10 = ${num(p.breakEvenM,12)}</div><p class="footnote">${esc(state.plan.basis)}。先用采购成本乘倍率得到积分，再按充值的实际现金价值换算收入。倍率不等于利润率；不再重复乘客户折扣。</p></details>`;}
+function detailVariance(x,scope){return `<details class="record-notes"><summary>与目标差额如何拆分</summary>${detailFact(scope==='actual'?'采购原值与约定采购比例的偏差影响':'采购比例差额（理论按约定比例）',cash(x.costGap,12))}${detailFact('倍率保存精度 / 指定倍率影响',cash(x.precisionGap,12))}${detailFact('逐任务向上取整影响',cash(x.roundGap,12))}${detailFact('合计：扣分折合金额 − 目标金额',cash(x.gap,12),true)}<p class="footnote">以上均按当前方案复算。成本差、倍率差和取整差分开，不把差额全部归因于取整或最低用量。</p></details>`;}
+function theoryBreakdown(t,p){
+ const v=theory(t,state.rules,p),x=v.x;
+ const c=v.calc,rule=v.rule,partial=v.partial;
+ const banner=partial?`<div class="notice detail-warning"><b>最低用量数据待补：下列金额只是基础试算，不是完整理论报价。</b><br>没有采用任何截图费用，也没有把未知门槛当作已确认的0。实测金额复算仍可独立查看。</div>`:`<div class="notice neutral">${rule?'本次估算已计入最低用量门槛；来源见下方。':'无视频输入，按基础用量计算。'}所有金额来自参数与规则，不读取平台金额。</div>`;
+ const minSection=t.video?(rule?`<div class="formula">L = ${esc(rule.tokens)} Token<br>T<sub>估算</sub> = max(${num(c.tokens,14)}, ${esc(rule.tokens)})<br>= <strong>${num(c.billedTokens,14)} Token</strong></div><p class="footnote">${cmp(c.tokens,rule.tokens)<0?'本任务预计触发最低用量：按门槛估算。':'基础用量已达到门槛：按基础用量估算。'}<br>来源：${esc(rule.note)}<br>门槛保留公式精度，不将表格显示整数作为中间输入。<br>匹配范围：Seedance 2.0 · ${esc(state.rules.version)} · ${esc(t.res)} · ${esc(t.ratio)} · 输出${esc(t.seconds)}秒。输入时长不参与门槛键。</p>`:`<div class="formula">L = <strong>尚未取得</strong><br>T<sub>估算</sub> = max(${num(c.tokens,14)}, L)<br>完整用量估算：<strong>待补规则值</strong></div><p class="footnote">不会用约1.88元、1.8928元或其他实测金额倒推 L。下面只展开基础用量的排查结果，未包含门槛。</p>`):'<p class="detail-help">无视频输入，不应用含视频输入的最低用量。T<sub>估算</sub> = T<sub>基础</sub>。</p>';
+ const html=banner+detailStep('01','基础用量',`<div class="formula">T<sub>基础</sub> = (${esc(t.seconds)} + ${t.video?esc(t.vin):'0'}) × ${c.wh[0]} × ${c.wh[1]} × 24 ÷ 1024<br>= <strong>${num(c.tokens,14)} Token</strong></div><p class="footnote">依次为输出秒数、输入视频秒数、输出宽高像素及帧率。像素与费率已核对官方文档（2026-10-19）；金额是参数估算，API 返回的实际用量可能有差异。</p>`)
+ +detailStep('02','最低用量估算',minSection)
+ +detailStep('03',partial?'基础成本演算 · 尚未计门槛':'理论刊例与采购成本',`<div class="formula">P${partial?'<sub>基础</sub>':''} = ${num(c.billedTokens,14)} × ${num(c.rate,6)} ÷ 1,000,000<br>= <strong>¥${num(x.P,18)}</strong><br>C${partial?'<sub>基础</sub>':''} = ${num(x.P,18)} × ${num(p.q,6)}<br>= <strong>¥${num(x.C,20)}</strong></div>`)
+ +detailStep('04',partial?'基础积分演算 · 非完整核价':'理论积分与整数扣分',`<div class="formula">I = ${num(x.C,20)} × ${num(p.usedM,18)} × 10<br>= <strong>${num(x.raw,20)} 积分</strong><br>N = ceil(${num(x.raw,20)}) = <strong>${num(x.N,0)} 积分</strong></div><p class="footnote">${partial?'门槛补齐后，这里的成本、积分及矩阵统一重算；当前值不构成完整理论报价。':'各任务分别向上取整；核算扣分不等于平台实际扣分。'}</p>`)
+ +detailStep('05',partial?'基础试算对应的现金金额':'现金目标与取整影响',`<div class="formula">目标（${targetLabel(p)}）= ¥${num(x.target,18)}<br>扣分折合金额 = ${num(x.N,0)} × (${esc(state.plan.pay)} ÷ ${esc(state.plan.total)})<br>≈ <strong>¥${num(x.cash,18)}</strong></div>${detailFact('折合刊例折扣',num(x.effective,8)+'折')}${detailVariance(x,'theory')}`)
+ +`<div class="detail-scope"><span>计算域：${partial?'基础理论（规则未齐）':'理论规则计算'} · 不采用实测金额</span><button class="btn sm" id="detail-open-rule">查看最低用量规则</button></div>`;
+ const text=[`任务：${label(t)} / ${vinLabel(t)}`,`计算口径：${coverage(v)}`,`基础Token = ${decimal(c.tokens)}`,`最低Token = ${rule?rule.tokens:t.video?'未取得；不是0':'不适用'}`,`规则来源 = ${rule?rule.note:t.video?'未匹配门槛':'无视频输入，不适用最低用量'}`,`以下${partial?'为未计门槛的基础演算，不是完整理论费用':'为公式计算值'}：`,`P = ${decimal(x.P)}`,`C = P × ${num(p.q,6)} = ${decimal(x.C)}`,`理论积分 = C × M × 10 = ${decimal(x.raw)}`,`整数核算 = ${num(x.N,0)}`,`目标现金 = ${decimal(x.target)}`,`扣分折合金额 = ${decimal(x.cash)}`].join('\n');
+ return{html,text};
+}
+function actualBreakdown(o,p){
+ if(!o)return{html:'<div class="notice neutral"><b>这个规格没有平台实测记录。</b><br>不会使用其他规格的金额，也不会把理论计算写成实测记录。</div>',text:'无匹配实测记录。'};
+ const a=E.recalcRecord(o,p),x=a.x;
+ const original=detailStep('01','平台金额原值',`<div class="detail-readonly"><div><small>平台刊例金额 P</small><b>${o.P!==''?'¥'+esc(o.P):'未录入'}</b></div><div><small>平台采购金额 C</small><b>${o.C!==''?'¥'+esc(o.C):'未录入'}</b></div></div><p class="footnote">来源：${esc(o.title)}${o.date?' · '+esc(o.date):''}。${esc(o.note)}<br>采购金额已是 C，不再乘采购比例，不再追加最低用量。</p>`);
+ let integral='';
+ if(a.C===null)integral=detailStep('02','积分复算','<div class="notice neutral">缺少平台实际采购金额 C，无法复算扣分。不会按约定采购比例补造实测 C。</div>');
+ else{
+  const profit=sub(a.cash,a.C),margin=cmp(a.cash,0)>0?mul(div(profit,a.cash),100):null;
+  integral=detailStep('02','按当前倍率复算积分',`<div class="formula">I = ${esc(o.C)} × ${num(p.usedM,18)} × 10<br>= <strong>${num(a.raw,20)} 积分</strong><br>N = ceil(I) = <strong>${num(a.N,0)} 积分</strong></div><p class="footnote">这是原始采购金额按当前企业方案的复算，不是历史实际扣分。</p>`)
+  +detailStep('03','复算现金与模型毛利',`<div class="formula">现金 = ${num(a.N,0)} × (${esc(state.plan.pay)} ÷ ${esc(state.plan.total)})<br>≈ <strong>¥${num(a.cash,18)}</strong></div>${a.target!==null?detailFact(targetLabel(p),cash(a.target,12)):'<p class="footnote">缺少平台刊例 P，无法计算折扣目标金额。</p>'}${detailFact('复算模型毛利（现金 − 原始采购）',cash(profit,12),true)}${detailFact('复算销售毛利率',margin===null?'未定义':num(margin,6)+'%')}${a.P!==null?detailFact('复算现金相对平台刊例',num(x.effective,8)+'折'):'<p class="footnote">未录入平台刊例 P，仅刊例折扣无法计算；采购成本、现金与毛利仍可核算。</p>'}${x?detailVariance(x,'actual'):''}`);
+ }
+ const usage=o.usage?detailStep('API','API实际用量的独立核对',`<div class="formula">completion_tokens = ${esc(o.usage)}<br>按当前官方刊例费率折算 = ${cash(E.fromUsage(o.params,o.usage),12)}</div><p class="footnote">此金额不回填平台P/C。completion_tokens已含最低用量；不与total_tokens相加，也不再次应用门槛。</p>`):'';
+ const historical=detailStep('04','历史实际扣分',`${detailFact('平台原记录',o.N!==''?esc(o.N)+'积分':'未知，保持空白')}<p class="footnote">不把当前复算扣分回填历史；不把当前充值现金价值用于声称历史实际收入。需要当时的充值与定价口径才能判断错扣。</p>`);
+ const html=`<div class="notice neutral">实测金额与理论公式独立；当前方案可用于复算，历史事实保持原样。</div>`+original+integral+usage+historical+`<div class="detail-scope"><span>平台金额复算 · 非历史实扣</span><button class="btn sm" data-edit-observation="${esc(o.id)}">编辑原记录</button></div>`;
+ const text=[`记录：${o.title}`,`任务：${label(o.params)} / ${vinLabel(o.params)}`,`来源：${o.note}`,`平台P原值 = ${o.P||'未录入'}`,`平台C原值 = ${o.C!==''?o.C:'未录入'}`,`API completion_tokens = ${o.usage||'未录入'}`,'不重复乘采购比例或追加门槛。',`当前复算积分 = ${a.raw===null?'未知':decimal(a.raw)}`,`当前复算扣分 = ${a.N===null?'未知':num(a.N,0)}`,`当前复算现金 = ${a.cash===null?'未知':decimal(a.cash)}`,`当前目标现金 = ${a.target===null?'未知':decimal(a.target)}`,`当前复算模型毛利 = ${a.cash===null?'未知':decimal(sub(a.cash,a.C))}`,`历史实际扣分 = ${o.N!==''?o.N:'未知；不得由复算补填'}`].join('\n');
+ return{html,text};
+}
+function openDetails(mode='theory',recordId='',contextTask=null){
+ if(!globalValid){toast('请先修正企业或任务输入。');return;}
+ const record=state.observations.find(r=>r.id===recordId),t=clone(contextTask||record?.params||state.task),p=pricing();
+ const matches=state.observations.filter(r=>key(r.params)===key(t));
+ const selected=matches.find(r=>r.id===recordId)||matches[0]||null;
+ const chosen=mode==='actual'?'actual':'theory';
+ detailContext={mode:chosen,task:t,recordId:selected?.id||'',text:''};
+ const selector=chosen==='actual'&&matches.length?`<div class="detail-selector"><label class="fieldlabel" for="details-record">完全同规格的平台记录${matches.length>1?' · 可切换':''}</label><select class="input" id="details-record">${matches.map(r=>`<option value="${esc(r.id)}" ${r.id===selected.id?'selected':''}>${esc(r.title)} · P ${r.P?esc(r.P):'未知'} / C ${r.C!==''?esc(r.C):'未知'}</option>`).join('')}</select></div>`:'';
+ const view=chosen==='actual'?actualBreakdown(selected,p):theoryBreakdown(t,p);
+ const tabs=`<div class="detail-switch" role="tablist" aria-label="计算展开口径"><button role="tab" aria-selected="${chosen==='theory'}" data-detail-mode="theory" class="${chosen==='theory'?'active':''}">理论计算展开</button><button role="tab" aria-selected="${chosen==='actual'}" data-detail-mode="actual" class="${chosen==='actual'?'active':''}">实测金额复算展开</button></div>`;
+ const content=tabs+detailPlan(p)+selector+view.html+detailBusinessMath(p)+`<div class="actions" style="margin-top:20px"><button class="btn" id="export-calculation">导出这份计算明细 ↓</button><button class="btn" id="close-only">关闭</button></div>`;
+ detailContext.text=[`Reelay V9.2 · ${chosen==='actual'?'平台实测金额复算':'理论计算展开'}`,`企业：${state.plan.company}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`成本定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
+ openDrawer('calculation','计算展开 · 两种独立口径',label(t)+' / '+vinLabel(t)+' · 不改变主表输入',content,true);
+}
+let ruleContext=null;
+function openRules(ruleTask=state.task){
+ ruleContext=clone(ruleTask);const t=ruleContext,p=pricing(),k=minimumKey(t),m=t.video&&k?state.rules.minima[k]:null,official=t.video?R.officialMinimum(t):null;
+ const fixed=t.video;
+ openDrawer('rules','规则、来源与适用范围','Seedance 2.0 标准版 · 核验日期 2026-10-19',`<div class="statusbar">已内置4档分辨率 × 6种比例 × 12档时长，共288种输出规格。<br>沿用2026-10-19保存的表格估算公式并保留精度；实际以 API usage 与平台账单为准。</div><h3>最低用量的估算方法</h3><p>官方说明：含视频输入时适用最低用量，低于最低值时按最低值估价；表格给出的也是估算值。下式由本工具从2026-10-19保存的表格公式字段分离出下限，再与基础用量取较大值；合并计算与原字段公式等价，不是价格文档正文直接列出的公式。</p><div class="formula">输出秒数 = s；输入视频总秒数 = v<br>最低等效输入秒数 = ceil(2 × s ÷ 3)<br>L = (s + ceil(2 × s ÷ 3)) × 宽 × 高 × 24 ÷ 1024<br>T = max((s + v) × 宽 × 高 × 24 ÷ 1024, L)<br>P = T × 刊例费率 ÷ 1,000,000<br>C = P × ${num(p.q,6)}</div><p class="footnote">等效输入秒数用于估算最低用量，不是素材时长要求。无视频输入不应用这道门槛。准确用量以 API 返回的 completion_tokens 为准，返回值已含最低用量，无需再次补足。</p><h3>本规格</h3><p>${esc(label(t))} / ${esc(vinLabel(t))}</p>${fixed?`<div class="fact"><span>官方最低用量 L（估算值）</span><b>${esc(official.tokens)} Token</b></div><div class="fact"><span>当前采用</span><b>${esc(m?.tokens||'缺失')} Token · ${m?.kind==='manual'?'人工覆盖':'表格公式快照'}</b></div><details class="record-notes"><summary>为本规格设置人工门槛覆盖</summary><p>仅用于有明确依据的特殊采购规则。人工覆盖会在结果中单独标记。</p><label class="fieldlabel" for="rule-min">最低 Token</label><input class="input num" id="rule-min" inputmode="decimal" value="${esc(m?.tokens||'')}"><label class="fieldlabel" for="rule-note">规则来源与适用范围</label><textarea class="input" id="rule-note" maxlength="500">${esc(m?.kind==='manual'?m.note:'')}</textarea><div id="rule-error" class="inline-error"></div><div class="rule-tools"><button class="btn primary" id="save-rule">保存人工覆盖</button><button class="btn" id="remove-rule">恢复官方规则</button></div></details>`:'<div class="notice neutral">无视频输入不应用最低用量。</div>'}<h3>当前刊例费率 · 元/百万 Token</h3>${table(['输出规格','无视频输入','有视频输入'],RES.map(r=>'<tr>'+td(r)+td(E.RATES[r][0])+td(E.RATES[r][1])+'</tr>'))}<details class="record-notes"><summary>像素映射</summary>${table(['规格',...RATIOS],RES.map(r=>'<tr>'+td(r)+RATIOS.map(k=>td(E.DIMS[r][k].join(' × '))).join('')+'</tr>'))}</details><h3>来源与版本</h3><p><a href="https://console.volcengine.com/ark/region:cn-beijing/docs/model-pricing" target="_blank" rel="noopener">官方模型价格 ↗</a><br><a href="https://console.volcengine.com/ark/region:cn-beijing/docs/create-video-generation-task-api" target="_blank" rel="noopener">官方像素、帧率与参数 ↗</a><br><a href="https://bytedance.larkoffice.com/wiki/FXaYwxzJ5i5Zdik32ipcWzt7nxd?table=tblmNCuMjADrXtDf&amp;view=vew2CR2JYM" target="_blank" rel="noopener">官方 Seedance 2.0 最低用量表 ↗</a></p><p class="footnote">版本 ${esc(R.VERSION)}。仅标准版2.0，不套用2.5、fast或mini费率。已结束的促销不自动延用。规则是固定日期快照，不会联网自动更新。</p>${Object.keys(state.rules.legacyMinima||{}).length?`<details class="record-notes"><summary>旧方案人工门槛档案（未覆盖官方规则）</summary><pre class="formula">${esc(JSON.stringify(state.rules.legacyMinima,null,2))}</pre></details>`:''}<button class="btn" id="export-rules">导出规则与来源 JSON ↓</button>`,true);
+}
+function openPlan(){const p=pricing();openDrawer('plan','成本定价倍率','倍率把采购成本转换为积分；实际利润还取决于充值现金价值。',`<label class="fieldlabel" for="plan-mode">计算方式</label><select class="input" id="plan-mode"><option value="ideal" ${state.plan.mode==='ideal'?'selected':''}>自动计算</option><option value="saved" ${state.plan.mode==='saved'?'selected':''}>自动计算（限制小数位）</option><option value="manual" ${state.plan.mode==='manual'?'selected':''}>手动指定</option></select><div id="plan-precision" hidden><p class="footnote">将自动倍率按指定小数位处理后再计算积分，用于核对实际系统的精度限制。例如 1.538461… 保留4位后为1.5385，可能改变最终扣分。这里只做试算，不会修改后台。</p><div class="grid2"><div><label class="fieldlabel" for="plan-digits">倍率保留小数位数</label><select class="input" id="plan-digits">${Array.from({length:21},(_,n)=>n).map(n=>`<option value="${n}" ${n===state.plan.digits?'selected':''}>${n}位</option>`).join('')}</select></div><div><label class="fieldlabel" for="plan-round">保存方式</label><select class="input" id="plan-round"><option value="nearest" ${state.plan.round==='nearest'?'selected':''}>四舍五入</option><option value="truncate" ${state.plan.round==='truncate'?'selected':''}>截断</option></select></div></div></div><label class="fieldlabel" for="plan-manual">指定倍率（输入即切换为手动指定）</label><input class="input num" id="plan-manual" inputmode="decimal" value="${esc(state.plan.manualM)}"><label class="fieldlabel" for="plan-basis" style="margin-top:12px">本次充值核算口径</label><textarea class="input" id="plan-basis" maxlength="500">${esc(state.plan.basis)}</textarea><div class="readout"><div class="muted small">理想成本定价倍率</div><div class="big num">${num(p.M,18)}</div><div id="plan-preview" class="state-feedback"></div></div><div id="plan-error" class="inline-error"></div><div class="actions"><button class="btn primary" id="save-plan">应用设置</button></div><p class="footnote">改变理论与实测复算所用的当前倍率，不修改历史原记录。小数位数只能改变倍率保存精度，不能消除整积分取整本身的误差。</p>`);planPreview();}
+function planCandidate(){return{...state.plan,mode:$('plan-mode').value,digits:+$('plan-digits').value,round:$('plan-round').value,manualM:$('plan-manual').value.trim(),basis:$('plan-basis').value};}
+function planPreview(){const saved=$('plan-mode').value==='saved';$('plan-precision').hidden=!saved;$('plan-digits').disabled=!saved;$('plan-round').disabled=!saved;try{const c=planCandidate();if(!validPlan(c))throw Error('倍率或参数无效');const p=pricing(c),v=theory(state.task,state.rules,p);$('plan-preview').textContent=(c.mode==='manual'?'手动指定已选中，当前使用 ':'当前设置下使用 ')+num(p.usedM,18)+' 倍'+(v.x?'；本任务核算 '+num(v.x.N,0)+' 积分。':'。');$('plan-error').textContent='';}catch(e){$('plan-preview').textContent='';$('plan-error').textContent=e.message;}}
+function openUnit(){openDrawer('unit','独立金额演算','这是理论基准校验，不对应某条实际任务，也不写入主工作台。',`<label class="fieldlabel" for="unit-p">假设火山刊例成本 P（元）</label><input class="input num" id="unit-p" value="1" inputmode="decimal"><div class="unit-sandbox" id="unit-result"></div><p class="footnote">采用当前企业充值与倍率。改变这里的假设金额不会改变参数试算或实测记录。</p>`);unitPreview();}
+function unitPreview(){try{const P=$('unit-p').value.trim();if(!positive(P))throw Error('请输入正数金额');const p=pricing(),x=E.settle(P,mul(P,p.q),p);$('unit-result').innerHTML=`<div class="fact"><span>假设采购成本</span><b>${cash(x.C,9)}</b></div><div class="fact"><span>目标现金价</span><b>${cash(x.target,9)}</b></div><div class="fact"><span>理论积分</span><b>${num(x.raw,12)}</b></div><div class="fact emph"><span>向上取整核算扣分</span><b>${num(x.N,0)}分</b></div><div class="fact"><span>取整后折合金额</span><b>${cash(x.cash,9)}</b></div>`;}catch(e){$('unit-result').innerHTML='<div class="notice red">'+esc(e.message)+'</div>';}}
+function observationDetail(id){openDetails('actual',id);}
+function observationEditor(id=''){const old=state.observations.find(o=>o.id===id),o=old||{id:uid(),title:'新增平台实测',params:{...state.task},P:'',C:'',N:'',date:'',note:''};openDrawer('record-edit',old?'编辑平台实测':'录入平台实测','只保存记录，不采用为理论计算输入。',`<div class="record-inputs" data-edit-id="${esc(o.id)}"><label class="fieldlabel" for="o-title">记录名称</label><input class="input" id="o-title" maxlength="100" value="${esc(o.title)}"><div class="grid2"><div><label class="fieldlabel" for="o-res">分辨率</label><select id="o-res">${RES.map(r=>`<option value="${r}" ${r===o.params.res?'selected':''}>${r==='4k'?'4K':r}</option>`).join('')}</select></div><div><label class="fieldlabel" for="o-ratio">画面比例</label><select id="o-ratio">${RATIOS.map(r=>`<option value="${r}" ${r===o.params.ratio?'selected':''}>${r}</option>`).join('')}</select></div></div><div class="grid2"><div><label class="fieldlabel" for="o-seconds">输出时长（秒）</label><input class="input num" id="o-seconds" inputmode="numeric" value="${esc(o.params.seconds)}"></div><div><label class="fieldlabel" for="o-video">视频输入</label><select id="o-video"><option value="false" ${!o.params.video?'selected':''}>无视频输入</option><option value="true" ${o.params.video?'selected':''}>有视频输入</option></select></div></div><label class="fieldlabel" for="o-vin">输入视频总时长（有视频输入时生效）</label><input class="input num" id="o-vin" inputmode="decimal" value="${esc(o.params.vin)}"><div class="grid2"><div><label class="fieldlabel" for="o-p">平台记录刊例 P（元，可留空）</label><input class="input num" id="o-p" inputmode="decimal" value="${esc(o.P)}"></div><div><label class="fieldlabel" for="o-c">平台记录采购 C（元，可留空）</label><input class="input num" id="o-c" inputmode="decimal" value="${esc(o.C)}"></div></div><div class="grid2"><div><label class="fieldlabel" for="o-n">平台实际扣分（不知道则留空）</label><input class="input num" id="o-n" inputmode="numeric" value="${esc(o.N)}"></div><div><label class="fieldlabel" for="o-date">记录日期 / 批次</label><input class="input" id="o-date" maxlength="100" value="${esc(o.date)}"></div></div><label class="fieldlabel" for="o-usage">API completion_tokens（可选，整数；已含最低用量）</label><input class="input num" id="o-usage" value="${esc(o.usage||'')}" inputmode="numeric"><label class="fieldlabel" for="o-note">数据来源、历史定价口径与备注</label><textarea class="input" id="o-note" maxlength="1000">${esc(o.note)}</textarea><div id="record-error" class="inline-error"></div><div class="actions"><button class="btn primary" id="save-observation" data-id="${esc(o.id)}">保存实测记录</button>${old?`<button class="btn danger-link" data-delete-observation="${esc(o.id)}">删除这条实测</button>`:''}</div><p class="footnote">P或C缺失时按缺失保留，不互相反推成实测值。约1.88元等官方预估应保留在其他参考中，不标为平台实测。</p></div>`);}
+function saveObservation(id){const o={...(state.observations.find(r=>r.id===id)||{}),id,title:$('o-title').value.trim(),params:{res:$('o-res').value,ratio:$('o-ratio').value,seconds:$('o-seconds').value.trim(),video:$('o-video').value==='true',vin:$('o-vin').value.trim()},P:$('o-p').value.trim(),C:$('o-c').value.trim(),N:$('o-n').value.trim(),usage:$('o-usage').value.trim(),date:$('o-date').value.trim(),note:$('o-note').value.trim()};if(!validObservation(o)||!o.title){$('record-error').textContent='请检查规格与金额：P/C至少填一项，未知实际扣分留空。输出4～15秒、参考视频2～15秒。';return;}o.params=normalizeTask(o.params,false);const i=state.observations.findIndex(x=>x.id===id);if(i<0){if(state.observations.length>=200)return toast('最多200条实测，请先导出清理。');state.observations.push(o);}else state.observations[i]=o;closeDrawer();render();toast('实测记录已保存；理论输入与结果不变。');}
+function addTask(){const v=current();if(!v.x||!globalValid)return;if(state.tasks.length>=100)return toast('最多保存100种规格。');state.tasks.push({id:uid(),params:normalizeTask(state.task),qty:'1',title:label(state.task)+' / '+vinLabel(state.task)});state.tab='tasks';render();toast('只保存参数与数量；成本始终由当前规则计算。');}
+function openNewRecharge(){openDrawer('recharge','添加充值对照','不改变实测数据，也不执行实际充值。',`<div class="grid2"><div><label class="fieldlabel" for="r-pay">实付金额</label><input class="input" id="r-pay" inputmode="decimal" value="100"></div><div><label class="fieldlabel" for="r-total">到账总积分</label><input class="input" id="r-total" inputmode="decimal" value="1500"></div></div><div class="inline-error" id="r-error"></div><button class="btn primary" id="save-recharge">加入对照</button>`);}
+function download(name,text,type='text/plain;charset=utf-8'){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
+const filename=()=>state.plan.company.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,50)||'Reelay方案';
+function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.2 · 官方规则与利润定价','',state.plan.company,`规则：${R.VERSION}；核验日期2026-10-19；仅Seedance2.0标准版。`,`采购比例 ${num(p.q,6)}；积分换算常数10。`,`充值口径：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`成本定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`理论计算口径：${coverage(v)}`,...(x?[`理论刊例 P = ${decimal(x.P)}`,`理论采购 C = ${decimal(x.C)}`,`理论积分 = ${decimal(x.raw)}`,`核算扣分 = ${num(x.N,0)}`,`现金金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`销售毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`理论清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
+function exportJSON(){download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.0',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',state},null,2),'application/json');}
+function csvCell(x){let s=String(x??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
+function exportCSV(actual=false){const rows=actual?actualRows:tableRows;if(!rows.length)return toast('没有可导出记录。');const titles=actual?{scope:'数据域',record:'记录',params:'规格',coverage:'理论计算口径',theoryP:'理论刊例P',recordedP:'平台记录P',deltaP:'实测P减理论P',theoryC:'理论采购C',recordedC:'平台记录C',deltaC:'实测C减理论C',recordedN:'平台实际扣分_空白为未知',recalcN:'当前复算扣分_非历史',recalcCash:'当前复算现金',recalcProfit:'当前复算模型毛利',pay:'当前充值实付',total:'当前到账积分',M:'当前倍率',targetMode:'当前目标模式',usage:'API_completion_tokens_原记录',note:'备注'}:{scope:'数据域',targetMode:'定价目标模式',targetMargin:'目标销售毛利率百分数_毛利模式',procurementRatio:'采购比例',profit:'每笔模型毛利',margin:'取整后测算销售毛利率百分数',scenario:'场景',coverage:'理论计算口径',ruleVersion:'规则版本',quantity:'数量_逐笔先取整',pay:'实付元',total:'到账积分',discount:'目标现金折扣',M:'成本定价倍率',P:'理论刊例P',C:'理论采购C',raw:'理论积分',N:'每笔核算扣分_非实际',target:'目标现金价',cash:'每笔取整折合金额',gap:'与目标差额'};const ks=Object.keys(titles),csv='\ufeff'+[ks.map(k=>csvCell(titles[k])).join(','),...rows.map(r=>ks.map(k=>csvCell(r[k])).join(','))].join('\r\n');download(filename()+(actual?'_实测对照':'_理论_'+state.tab)+'.csv',csv,'text/csv;charset=utf-8');}
+function openExport(){openDrawer('export','导出计算方案','理论与实测分区保存，导出的理论表也不会带入实测金额。',`<button class="choice" id="export-json"><div class="choice-title"><b>方案 JSON</b><span>↓</span></div><p>企业规则、任务参数、理论清单、独立实测记录。可重新导入V9。</p></button><button class="choice" id="export-summary"><div class="choice-title"><b>理论方案交接摘要</b><span>↓</span></div><p>包含当前公式范围与关键结果；不是供应商实际结算单。</p></button><button class="choice" id="export-theory"><div class="choice-title"><b>当前理论对照表 CSV</b><span>↓</span></div><p>全部行都是公式计算，没有截图金额覆盖。</p></button><button class="choice" id="export-actual"><div class="choice-title"><b>独立实测对照 CSV</b><span>↓</span></div><p>理论值、平台原值、差额分列。未知实扣积分保持空白。</p></button>`);}
+function migrate(payload){if(['reelay.pricing.v9','reelay.pricing.v8'].includes(payload?.format)){return{value:upgradeState(payload.state),note:(payload.format==='reelay.pricing.v8'?'已导入并升级官方规则；旧人工门槛留在规则档案。':'已导入V9方案；理论与实测独立。')+fixedTaskNotice(payload.state?.task)};}
+if(payload?.format==='reelay.pricing.v7'&&payload.state){const old=payload.state,n=defaults();n.plan={...n.plan,...old.plan,q:old.plan?.q||'0.735',targetMode:'discount',margin:'8.125',frozen:undefined};delete n.plan.frozen;if(validTask(old.task))n.task=fixedTask(old.task);if(Array.isArray(old.recharges)&&old.recharges.every(r=>positive(r.pay,false,2)&&positive(r.total,false,4)))n.recharges=clone(old.recharges);const candidates=[...(old.custom||[]),old.cost?.evidence,...(old.tasks||[]).map(r=>r.cost?.evidence)].filter(Boolean);for(const e of candidates){if(['screenshot','bill'].includes(e.kind)&&validTask(e.params,false)){const o={id:String(e.id||uid()),title:String(e.title||'旧版实测'),params:clone(e.params),P:String(e.P??''),C:String(e.C??''),N:'',date:'',note:String(e.note||'从旧版金额记录导入，未确认实际扣分。')};if(validObservation(o)&&!n.observations.some(x=>x.id===o.id))n.observations.push(o);}else{const r={id:String(e.id||uid()),title:String(e.title||'旧版其他参考'),params:e.params||null,P:String(e.P??''),C:String(e.C??''),note:String(e.note||'从旧版迁移，仅作参考，不进入理论计算。')};if(validReference(r)&&!n.references.some(x=>x.id===r.id))n.references.push(r);}}
+for(const r of old.tasks||[]){if(validTask(r.task,false))n.tasks.push({id:String(r.id||uid()),params:clone(r.task),qty:String(r.qty||1),title:label(r.task)+' / '+vinLabel(r.task)});}if(!validState(n))throw Error('旧版方案含无法安全迁移的参数。请保留原文件，并手动录入充值条件。');return{value:upgradeState(n),note:'旧版已迁移：只保留任务规格与数量，理论成本重新计算；旧费用进入实测或其他参考，不再作为主结果输入。'+fixedTaskNotice(old.task)};}
+throw Error('仅支持本工具V9、V8或V7导出的方案JSON。');}
+function openReset(){openDrawer('reset','重置V9本地草稿？','不会删除旧版V7文件或旧版草稿，不影响真实后台。',`<p>将恢复默认企业条件、理论任务参数和原表4条独立实测记录。当前未导出的修改会丢失。</p><div class="actions"><button class="btn primary" id="confirm-reset">确认重置V9</button><button class="btn" id="close-only">取消</button></div>`);}
+document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset,id=b.id;
+if(d.detailMode){openDetails(d.detailMode,detailContext.recordId,detailContext.task);return;}if(d.workspace){showWorkspace(d.workspace);return;}if(d.tab){state.tab=d.tab;render();return;}if(d.example){const preset=QUICK_TASKS[d.example];if(preset)changeTask(clone(preset));return;}if(d.res){changeTask({res:d.res});return;}if(d.ratio){changeTask({ratio:d.ratio});return;}if(d.seconds){changeTask({seconds:d.seconds});return;}if(d.video){changeTask({video:d.video==='true'});return;}if(d.discount){state.plan.discount=d.discount;state.plan.targetMode='discount';render();return;}if(d.margin){state.plan.margin=d.margin;state.plan.targetMode='margin';render();return;}if(d.matrix){try{const t=JSON.parse(d.matrix);if(validTask(t)){state.task=t;render();document.querySelector('.work').scrollIntoView({behavior:'smooth',block:'start'});}}catch(_){}return;}if(d.observation){observationDetail(d.observation);return;}if(d.editObservation){observationEditor(d.editObservation);return;}if(d.deleteObservation){state.observations=state.observations.filter(o=>o.id!==d.deleteObservation);closeDrawer();render();toast('已删除实测记录，理论结果未变。');return;}if(d.loadTask){const r=state.tasks.find(t=>t.id===d.loadTask);if(r){state.task=clone(r.params);render();document.querySelector('.work').scrollIntoView({behavior:'smooth',block:'start'});}return;}if(d.deleteTask){state.tasks=state.tasks.filter(t=>t.id!==d.deleteTask);render();return;}
+if(!globalValid&&['details','actual-calculation','show-formula','plan-settings','task-rule','open-rules','unit-check','economics-how','add-observation','export','table-export','actual-export','add-task'].includes(id)){toast('请先修正顶部定价或任务输入。');return;}
+switch(id){
+case'economics-how':openEconomics();break;
+case'export-rules':download('Reelay_V9_规则来源.json',JSON.stringify({version:R.VERSION,sources:R.sources,rules:state.rules},null,2),'application/json');break;
+case'close-drawer':case'close-only':closeDrawer();break;
+case'open-rules':case'task-rule':case'open-rule-from-formula':openRules();break;
+case'show-formula':formulaDetails();break;
+case'usage-help':openUsage();break;
+case'details':openDetails('theory');break;
+case'actual-calculation':openDetails('actual');break;
+case'export-calculation':download(filename()+'_计算展开_'+(detailContext.mode==='actual'?'实测复算':'理论')+'.txt',detailContext.text);break;
+case'detail-open-rule':openRules(detailContext.task||state.task);break;
+case'detail-add-observation':observationEditor();break;
+case'view-actual':showWorkspace('actual');break;
+case'back-theory':showWorkspace('theory');break;
+case'plan-settings':openPlan();break;
+case'unit-check':openUnit();break;
+case'add-task':addTask();break;
+case'clear-tasks':if(!state.tasks.length)return;openDrawer('clear-tasks','清空理论任务清单？','只删除参数场景，不删除实测记录。','<button class="btn primary" id="confirm-clear-tasks">确认清空理论清单</button>');break;
+case'confirm-clear-tasks':state.tasks=[];closeDrawer();render();break;
+case'add-observation':observationEditor();break;
+case'save-observation':saveObservation(d.id);break;
+case'save-rule':{const tokens=$('rule-min').value.trim(),note=$('rule-note').value.trim();if(!positive(tokens,false,12)||!note){$('rule-error').textContent='请输入正数Token门槛并注明规则来源；未知保持空白，不填0。';return;}state.rules.minima[minimumKey(ruleContext||state.task)]={tokens,note,kind:'manual'};closeDrawer();render();toast('本输出规格人工门槛已保存。不同视频输入时长共用此门槛；实测原值不变。');break;}
+case'remove-rule':state.rules.minima[minimumKey(ruleContext||state.task)]=clone(R.officialMinimum(ruleContext||state.task));closeDrawer();render();toast('已恢复官方规则；实测记录不变。');break;
+case'save-plan':{const p=planCandidate();if(!validPlan(p)){$('plan-error').textContent='请输入有效倍率与口径说明。';return;}state.plan=p;closeDrawer();render();break;}
+case'add-recharge':openNewRecharge();break;
+case'save-recharge':{const r={pay:$('r-pay').value.trim(),total:$('r-total').value.trim()};if(!positive(r.pay,false,2)||!positive(r.total,false,4)){$('r-error').textContent='请输入有效实付金额与到账积分。';return;}if(state.recharges.length>=50)return toast('最多50组充值条件。');state.recharges.push(r);closeDrawer();render();break;}
+case'export':openExport();break;
+case'export-json':if(globalValid)exportJSON();break;
+case'export-summary':if(globalValid)download(filename()+'_理论方案说明.txt',summary());break;
+case'table-export':case'export-theory':if(globalValid)exportCSV(false);break;
+case'actual-export':case'export-actual':if(globalValid)exportCSV(true);break;
+case'import':$('file').click();break;
+case'reset':openReset();break;
+case'confirm-reset':state=defaults();closeDrawer();render();toast('已恢复V9.2默认方案。');break;
+}
+});
+document.addEventListener('input',e=>{const el=e.target,id=el.id;if(id==='manual-m')fitPlanValue(id);if(['pay','total','discount','target-margin','purchase-discount'].includes(id)){if(id==='target-margin')state.plan.margin=el.value;else if(id==='purchase-discount'){state.plan.q=positive(el.value,false,4)?num(div(el.value,10),6):'';}else if(id==='pay'){const gift=$('total').value;state.plan.pay=el.value;if(state.plan.giftMode&&positive(el.value,false,2)&&positive(gift,true,4))state.plan.total=num(add(mul(el.value,10),gift),4);}else if(id==='total'){if(state.plan.giftMode){if(positive(el.value,true,4)&&positive(state.plan.pay,false,2))state.plan.total=num(add(mul(state.plan.pay,10),el.value),4);else state.plan.total='';}else state.plan.total=el.value;}else state.plan.discount=el.value;render();return;}
+if(id==='vin-slider'){if(state.task.video)changeTask({vin:el.value});return;}if(id==='manual-m'){state.plan.mode='manual';state.plan.manualM=el.value.trim();render();return;}if(id==='vin'){
+ const entered=el.value;
+ try{state.task.vin=wholeInputSeconds(entered);el.value=state.task.vin;if(cmp(entered,state.task.vin)!==0)toast('已向上取整：'+entered+' → '+state.task.vin+' 秒。');}
+ catch(_){state.task.vin=entered;}
+ render();return;
+}if(id==='seconds'){state.task.seconds=el.value;render();return;}if(id==='unit-p'){unitPreview();return;}if(id==='plan-manual'){ $('plan-mode').value='manual';planPreview();return;}if(id==='plan-basis'){planPreview();return;}});
+document.addEventListener('change',e=>{const el=e.target,id=el.id;if(id==='total-mode'){if(!globalValid){el.value=state.plan.giftMode?'gift':'total';toast('请先修正定价或任务输入。');return;}const giftMode=el.value==='gift';if(giftMode&&cmp(sub(state.plan.total,mul(state.plan.pay,10)),0)<0){el.value=state.plan.giftMode?'gift':'total';toast('总积分小于基础积分，不能按附赠模式填写。');return;}state.plan.giftMode=giftMode;render();return;}if(id==='pricing-mode'){state.plan.mode=el.value;if(!positive(state.plan.manualM,false,20))state.plan.manualM=num(idealPricing().M,20);render();return;}if(id==='target-mode'){state.plan.targetMode=el.value;render();return;}if(id==='seconds'&&validTask(state.task)){state.task=normalizeTask(state.task);render();return;}if(id==='details-record'){openDetails('actual',el.value,detailContext.task);return;}if(['plan-mode','plan-digits','plan-round'].includes(id)){planPreview();return;}if(id==='matrix-axis'){state.matrixAxis=el.value;render();return;}if(id==='matrix-metric'){state.matrixMetric=el.value;render();return;}if(id==='recharge-mode'){state.rechargeMode=el.value;if(el.value==='fixed')state.frozenM=pack(pricing().usedM);render();return;}if(el.dataset.qty){const t=state.tasks.find(r=>r.id===el.dataset.qty),v=el.value.trim();if(t&&/^\d+$/.test(v)&&+v>=1&&+v<=100000)t.qty=v;else toast('任务数量须为1～100000的整数。');render();}});
+// The compact range and numeric value share one integer duration.
+let vinEditStart='2';
+$('vin').addEventListener('focus',()=>{vinEditStart=positive(state.task.vin,false,4)?state.task.vin:'2';});
+$('vin').addEventListener('keydown',e=>{
+ if(e.key==='Escape'){e.preventDefault();state.task.vin=vinEditStart;$('vin').value=vinEditStart;$('vin').blur();render();}
+ else if(e.key==='Enter'){e.preventDefault();$('vin').blur();}
+});
+$('vin').addEventListener('blur',()=>{
+ try{state.task.vin=wholeInputSeconds($('vin').value);}catch(_){state.task.vin=vinEditStart;}
+ $('vin').value=state.task.vin;render();
+});
+$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeDrawer();});
+document.addEventListener('keydown',e=>{if($('modal').hidden)return;if(e.key==='Escape'){e.preventDefault();closeDrawer();}if(e.key==='Tab'){const els=[...$('drawer').querySelectorAll('button,input,select,textarea,a[href],summary')].filter(x=>!x.disabled&&x.getClientRects().length);if(!els.length)return;const first=els[0],last=els.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
+$('file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>3e6)throw Error('文件超过3MB，请检查是否为方案JSON。');const loaded=migrate(JSON.parse(await f.text()));state=loaded.value;closeDrawer();render();toast(loaded.note);}catch(err){toast('导入失败：'+err.message);}finally{e.target.value='';}});
+
+function targetLabel(p){return p.targetMode==='margin'?'采购成本 ÷ (1 − 目标毛利率)':'刊例金额 × '+num(mul(p.d,10),6)+'折';}
+function targetSummary(p){return (state.plan.mode==='manual'?'对照目标 · ':'')+(p.targetMode==='margin'?'目标销售毛利率 '+state.plan.margin+'%':'目标现金 '+num(mul(p.d,10),6)+'折');}
+function openEconomics(){const p=pricing();openDrawer('economics','从成本到现金，再到利润','同一金额链条，四个不同概念。',`<div class="principle-steps"><section><b>01 · 成本</b><p>官方用量规则得到刊例 P；采购合同确定采购比例 q；理论采购 C = P × q。平台实测 C 是独立证据。</p></section><section><b>02 · 现金目标</b><p>按折扣：R = P × d。按销售毛利率 g：R = C ÷ (1 − g)。后者不是 C × (1 + g)。</p></section><section><b>03 · 积分收费</b><p>每元到账 S = 总积分 ÷ 实付现金。每积分现金价值 U = 1 ÷ S。积分 I = C × M × 10；逐笔 N = ceil(I)。</p></section><section><b>04 · 利润</b><p>现金收入 = N × U；模型毛利 = 现金收入 − C；销售毛利率 = 毛利 ÷ 现金收入；成本加成率 = 毛利 ÷ C。</p></section></div><div class="formula">当前每积分 ≈ ¥${num(p.U,12)}<br>当前保本倍率 = S ÷ 10 = ${num(p.breakEvenM,12)}<br>一次向上取整增加的现金：0 ≤ 差额 &lt; ¥${num(p.U,12)}</div><div class="notice">赠分会降低每积分的现金价值，因此倍率增大并不自动表示利润增加。保本方案的零星取整收入不构成稳定毛利。</div><p>这里计算的是模型采购毛利，不是净利润。税费、通道费、存储、运维和失败重试成本需在经营预算中另计。历史余额混合了不同充值批次时，当前 U 只代表所填批次。</p>`);}
+
+// Exposed for transparent regression tests. Theory takes no observations argument.
+window.ReelayApp={getState:()=>clone(state),setState:s=>{state=upgradeState(s);render();},defaults,validState,upgradeState,normalizeTask,reset:()=>{state=defaults();render();},pricing,theory,theoryOne,current,summary,key,minimumKey,normalizeMinimumKeys,openDetails,recalcRecord:E.recalcRecord,migrate,OBS,REFS,getTheoryRows:()=>clone(tableRows),getActualRows:()=>clone(actualRows)};
+render();
+if(taskMigrationNotice)toast(taskMigrationNotice);
+})();
+</script></body></html>

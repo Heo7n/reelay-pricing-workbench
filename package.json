@@ -1,0 +1,18 @@
+{
+  "name": "reelay-pricing-v9",
+  "version": "9.2.0",
+  "description": "Offline pricing workbench with versioned official rules",
+  "main": "app.js",
+  "scripts": {
+    "build": "node build.cjs",
+    "test": "node --test engine.test.cjs integration.test.cjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  },
+  "private": true
+}
