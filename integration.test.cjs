@@ -26,7 +26,7 @@ function boot(t, storedEntries = []) {
   w.HTMLElement.prototype.scrollIntoView = () => {};
   w.navigator.clipboard = {writeText:async () => {}};
   for (const [key,value] of storedEntries) w.localStorage.setItem(key,value);
-  for (const file of ['engine.js', 'generated-minima.js', 'data.js', 'generated-model-minima.js', 'models.js', 'app.js']) w.eval(read(file));
+  for (const file of ['engine.js', 'generated-minima.js', 'data.js', 'generated-model-minima.js', 'models.js', 'pricing-profiles.js', 'app.js']) w.eval(read(file));
   t.after(() => dom.window.close());
   const api = w.ReelayApp;
   const good = () => {
@@ -96,16 +96,16 @@ test('procurement input and target modes change the intended financial quantitie
   equal(h.api.pricing().q,'0.6');
   equal(h.api.current().x.C,E.mul(h.api.current().x.P,'0.6'));
   equal(h.api.current().x.target,initialTarget,'discount objective keeps the customer target despite a changed procurement ratio');
-  h.input('target-mode','margin','change');
+  h.click('[data-pricing-basis="margin"]');
   h.input('target-margin','30');
   equal(h.api.pricing().d,E.div('0.6','0.7'));
   h.input('purchase-discount','7.35');
   equal(h.api.pricing().d,'1.05');
   equal(h.api.current().x.target,E.mul(h.api.current().x.P,'1.05'));
-  assert.match(h.w.document.getElementById('plan-principle').textContent,/高于刊例/);
+  assert.match(h.w.document.getElementById('policy-notice').textContent,/高于刊例/);
   h.api.openDetails('theory');
   const detail=h.w.document.getElementById('drawer-body').textContent;
-  assert.match(detail,/采购成本 ÷ \(1 − 目标毛利率\)/);
+  assert.match(detail,/倍率 = 每元积分 ÷［10 ×（1 − 目标毛利率）］/);
   assert.doesNotMatch(detail,/\$\{/);
 });
 
@@ -256,7 +256,7 @@ test('runtime lookup and MAX agree with the captured full formula for all 4032 v
 
 test('Oct19 drafts upgrade without losing pricing, explicit overrides or raw observations', t => {
   const first=boot(t),old=first.api.getState(),previous=R.PREVIOUS_VERSIONS[0];
-  old.plan.mode='manual';old.plan.manualM='1.65';old.plan.q='1';old.plan.discount='10';
+  old.plan.mode='manual';old.plan.manualM='1.65';old.plan.q='1';old.plan.discount='10';delete old.plan.modelPricing;delete old.plan.pricingModel;
   old.observations[2].params.vin='3.0001';old.observations[2].usage='67201';
   old.rules.version=previous;
   old.rules.minima=Object.fromEntries(Object.entries(old.rules.minima).map(([key,row])=>[
@@ -286,7 +286,7 @@ test('standard procurement can use either the exact cash target or a manually sp
   h.input('purchase-discount','10');
   h.input('discount','10');
   equal(h.api.pricing().usedM,'1.538','100 yuan / 1538 points and list-price sales require 1.538 automatically');
-  h.input('pricing-mode','manual','change');
+  h.click('[data-pricing-basis="manual"]');
   h.input('manual-m','1.8');
   equal(h.api.pricing().usedM,'1.8');
   h.input('purchase-discount','7.35');
@@ -294,55 +294,51 @@ test('standard procurement can use either the exact cash target or a manually sp
   equal(h.api.pricing().usedM,'1.8','manual mode survives changes to procurement and recharge');
   h.input('purchase-discount','10');
   h.input('pay','100');
-  h.input('pricing-mode','manual','change');
+  h.click('[data-pricing-basis="manual"]');
   h.input('manual-m','1.65');
   assert.equal(h.api.getState().plan.mode,'manual');
   equal(h.api.pricing().usedM,'1.65');
   assert.equal(h.w.document.getElementById('manual-m').value,'1.65');
   equal(h.api.pricing().q,'1');
-  equal(h.api.pricing().d,'1');
+  assert.equal(h.api.pricing().targetAvailable,false);
   const p=h.api.pricing(), x=h.api.current().x;
   equal(E.div(x.rawCash,x.P),E.div('16.5','15.38'));
   equal(E.mul(E.div(E.sub(x.rawCash,x.C),x.rawCash),100),E.div('1120','165'));
   equal(x.raw,E.mul(x.C,'16.5'));
   equal(x.N,E.ceil(x.raw));
-  assert.match(h.w.document.getElementById('target-context').textContent,/参考目标/);
+  assert.equal(h.api.current().x.target,null);
   const principle=h.w.document.getElementById('plan-principle').textContent;
   assert.match(principle,/10\.7282/,'manual mode reports its actual unrounded list-price equivalent');
   assert.match(principle,/6\.787[89]/,'manual mode reports its actual unrounded margin rather than the 0% target');
-  h.input('pricing-mode','ideal','change');
+  h.click('[data-pricing-basis="discount"]');
   equal(h.api.pricing().usedM,'1.538');
   equal(h.api.current().x.rawCash,h.api.current().x.target);
-  assert.doesNotMatch(h.w.document.getElementById('target-context').textContent,/参考目标/);
+  assert.equal(h.api.pricing().targetAvailable,true);
 });
 
-test('manual mode in the multiplier drawer previews its value before applying', t => {
-  const h=boot(t);
-  h.input('purchase-discount','10');
-  h.input('discount','10');
+test('precision settings contain only precision controls and leave active pricing unchanged until applied', t => {
+  const h=boot(t),doc=h.w.document;
+  h.input('purchase-discount','10');h.input('discount','10');
+  const before=plain(h.api.getState().plan);
   h.click('#plan-settings');
-  assert.equal(h.w.document.getElementById('plan-mode').value,'ideal');
-  assert.equal(h.w.document.getElementById('plan-manual-field').hidden,true);
-  h.input('plan-mode','manual','change');
-  assert.equal(h.w.document.getElementById('plan-manual-field').hidden,false);
-  h.input('plan-manual','1.65');
-  assert.equal(h.w.document.getElementById('plan-mode').value,'manual');
-  assert.match(h.w.document.getElementById('plan-preview').textContent,/1\.65/);
-  assert.equal(h.w.document.getElementById('plan-comparison').hidden,false);
-  assert.match(h.w.document.getElementById('plan-ideal-value').textContent,/= 1\.538$/);
-  assert.match(h.w.document.getElementById('plan-result-note').textContent,/仅作对照/);
-  equal(h.api.pricing().usedM,'1.538','draft is not applied until saving');
-  h.click('#save-plan');
-  assert.equal(h.api.getState().plan.mode,'manual');
+  assert.equal(doc.getElementById('drawer-title').textContent,'倍率精度');
+  assert.equal(doc.querySelector('#plan-mode, #plan-manual'),null);
+  assert.equal(doc.getElementById('plan-source-value').textContent,'1.538');
+  h.click('#plan-limit-precision');h.input('plan-digits','2','change');
+  assert.equal(doc.getElementById('plan-used-value').textContent,'1.54');
+  assert.match(doc.getElementById('plan-result-note').textContent,/本次任务：\d+ → \d+ 积分/);
+  assert.deepEqual(plain(h.api.getState().plan),before);
+  h.click('#close-drawer');equal(h.api.pricing().usedM,'1.538','closing a preview does not apply it');
+  h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');
+  assert.equal(doc.getElementById('plan-settings').hidden,true,'an explicitly supplied decimal has no automatic rounding setting');
   equal(h.api.pricing().usedM,'1.65');
-  assert.equal(h.w.document.getElementById('pricing-mode').value,'manual');
 });
 
 test('automatic precision is optional, persists as a saved plan and restores exact calculation', t => {
   const h=boot(t),doc=h.w.document;
   h.input('purchase-discount','10');h.input('discount','10');
   h.click('#plan-settings');
-  assert.deepEqual([...doc.getElementById('plan-mode').options].map(o=>o.textContent),['自动计算','手动指定']);
+  assert.equal(doc.getElementById('plan-mode'),null,'precision does not duplicate pricing basis');
   assert.equal(doc.getElementById('plan-limit-precision').checked,false);
   assert.equal(doc.getElementById('plan-precision').hidden,true);
   h.click('#plan-limit-precision');
@@ -360,7 +356,7 @@ test('automatic precision is optional, persists as a saved plan and restores exa
   });
   const restored=boot(t,entries),rdoc=restored.w.document;
   restored.click('#plan-settings');
-  assert.equal(rdoc.getElementById('plan-mode').value,'ideal');
+  assert.equal(rdoc.getElementById('plan-mode'),null);
   assert.equal(rdoc.getElementById('plan-limit-precision').checked,true);
   assert.equal(rdoc.getElementById('plan-digits').value,'2');
   assert.equal(rdoc.getElementById('plan-round').value,'truncate');
@@ -370,60 +366,49 @@ test('automatic precision is optional, persists as a saved plan and restores exa
   equal(restored.api.pricing().usedM,'1.538');
 });
 
-test('multiplier derivation uses original recharge and discount inputs and identifies approximations', t => {
+test('calculation details derive the multiplier from original inputs without rounding them first', t => {
   const h=boot(t),doc=h.w.document;
-  h.input('discount','8');h.click('#plan-settings');
-  assert.match(doc.getElementById('plan-recharge-calculation').textContent,/1538 ÷ 100 = 15\.38/);
-  assert.match(doc.getElementById('plan-multiplier-formula').textContent,/客户折扣 ÷ 采购折扣/);
-  assert.match(doc.getElementById('plan-multiplier-substitution').textContent,/（1538 ÷ 100）×（8 ÷ 7\.35）÷ 10/);
-  assert.equal(doc.getElementById('plan-ideal-value').textContent,'≈ 1.674013605442');
-  h.click('#close-drawer');h.input('purchase-discount','10');h.input('discount','10');h.click('#plan-settings');
-  assert.match(doc.getElementById('plan-derivation').textContent,/刊例价（10折）/);
-  assert.match(doc.getElementById('plan-derivation').textContent,/客户无折扣（10折）/);
-  assert.equal(doc.getElementById('plan-ideal-value').textContent,'= 1.538');
-  h.click('#close-drawer');h.input('pay','3');h.input('total','10');h.click('#plan-settings');
-  assert.match(doc.getElementById('plan-recharge-calculation').textContent,/10 ÷ 3 ≈ 3\.333333333333/);
-  assert.match(doc.getElementById('plan-multiplier-substitution').textContent,/（10 ÷ 3）×（10 ÷ 10）÷ 10/);
+  h.input('discount','8');h.click('#details');
+  let text=doc.getElementById('drawer-body').textContent;
+  assert.match(text,/倍率 = 每元积分 × 客户折扣 ÷ 采购折扣 ÷ 10/);
+  assert.match(text,/\(1538 ÷ 100\) × 8 ÷ 7\.35 ÷ 10/);
+  assert.match(text,/≈ 1\.674013605442/);
+  assert.equal(doc.querySelector('[data-detail-mode]'),null,'theoretical and actual workflows are not mixed into tabs');
+  h.click('#close-drawer');h.input('purchase-discount','10');h.input('discount','10');h.input('pay','3');h.input('total','10');h.click('#details');
+  text=doc.getElementById('drawer-body').textContent;
+  assert.match(text,/\(10 ÷ 3\) × 10 ÷ 10 ÷ 10/);assert.match(text,/≈ 0\.333333333333/);
   equal(h.api.pricing().usedM,E.div('1','3'),'rounded display does not enter the calculation');
 });
 
-test('margin derivation explains procurement cancellation while customer cash price still changes', t => {
+test('margin-based multiplier stays constant when procurement changes while customer cash price follows cost', t => {
   const h=boot(t),doc=h.w.document;
-  h.input('target-mode','margin','change');h.input('target-margin','8.125');
+  h.click('[data-pricing-basis="margin"]');h.input('target-margin','8.125');
   const before=h.api.pricing().usedM,cashBefore=h.api.current().x.target;
-  h.click('#plan-settings');
-  assert.match(doc.getElementById('plan-multiplier-formula').textContent,/每元积分 ÷［（1 − 目标毛利率）× 10］/);
-  assert.match(doc.getElementById('plan-multiplier-substitution').textContent,/（1538 ÷ 100）÷［（1 − 8\.125%）× 10］/);
-  assert.match(doc.getElementById('plan-derivation').textContent,/采购成本在推导中约掉/);
-  h.click('#close-drawer');h.input('purchase-discount','5');h.click('#plan-settings');
+  h.click('#details');
+  const text=doc.getElementById('drawer-body').textContent;
+  assert.match(text,/倍率 = 每元积分 ÷［10 ×（1 − 目标毛利率）］/);
+  assert.match(text,/\(1538 ÷ 100\) ÷［10 ×（1 − 8\.125%）］/);
+  h.click('#close-drawer');h.input('purchase-discount','5');h.click('#details');
   equal(h.api.pricing().usedM,before);
   assert.notEqual(E.cmp(h.api.current().x.target,cashBefore),0);
-  assert.equal(doc.getElementById('plan-ideal-value').textContent,'≈ 1.674013605442');
+  assert.match(doc.getElementById('drawer-body').textContent,/≈ 1\.674013605442/);
 });
 
-test('invalid multiplier drafts cannot apply and recover when returning to automatic calculation', t => {
+test('invalid manual values recover through basis selection and zero precision results cannot be applied', t => {
   const h=boot(t),doc=h.w.document;
-  h.click('#plan-settings');h.input('plan-mode','manual','change');h.input('plan-manual','');
-  assert.equal(doc.getElementById('save-plan').disabled,true);
-  assert.match(doc.getElementById('plan-error').textContent,/大于0/);
-  assert.equal(doc.getElementById('plan-used-value').textContent,'—');
-  h.input('plan-mode','ideal','change');
-  assert.equal(doc.getElementById('save-plan').disabled,false);
-  assert.equal(doc.getElementById('plan-error').textContent,'');
-  h.click('#save-plan');
-  assert.equal(h.api.getState().plan.mode,'ideal');
+  h.click('[data-pricing-basis="manual"]');h.input('manual-m','');
+  assert.equal(doc.getElementById('platformError').hidden,false);assert.equal(doc.getElementById('manual-m').getAttribute('aria-invalid'),'true');
+  assert.equal(doc.getElementById('integer-points').textContent,'—');
+  h.click('[data-pricing-basis="discount"]');
+  assert.equal(doc.getElementById('platformError').hidden,true);assert.equal(h.api.getState().plan.mode,'ideal');
   h.input('purchase-discount','10');h.input('discount','10');h.input('total','10');
   const before=JSON.stringify(h.api.getState().plan);
   h.click('#plan-settings');h.click('#plan-limit-precision');h.input('plan-digits','0','change');h.input('plan-round','truncate','change');
-  assert.equal(doc.getElementById('save-plan').disabled,true);
-  assert.match(doc.getElementById('plan-error').textContent,/倍率为0/);
-  doc.getElementById('save-plan').disabled=false;
-  h.click('#save-plan');
-  assert.equal(doc.getElementById('save-plan').disabled,true,'save handler validates even if button is enabled externally');
-  assert.equal(JSON.stringify(h.api.getState().plan),before,'invalid draft never reaches active state');
-  equal(h.api.pricing().usedM,'0.01');
-  h.input('plan-digits','2','change');
-  assert.equal(doc.getElementById('save-plan').disabled,false);
+  assert.equal(doc.getElementById('save-plan').disabled,true);assert.match(doc.getElementById('plan-error').textContent,/倍率为0/);
+  doc.getElementById('save-plan').disabled=false;h.click('#save-plan');
+  assert.equal(doc.getElementById('save-plan').disabled,true,'save validates even if the button is enabled externally');
+  assert.equal(JSON.stringify(h.api.getState().plan),before);equal(h.api.pricing().usedM,'0.01');
+  h.input('plan-digits','2','change');assert.equal(doc.getElementById('save-plan').disabled,false);
   h.click('#save-plan');equal(h.api.pricing().usedM,'0.01');
 });
 
@@ -431,7 +416,7 @@ test('manual mode and multiplier survive local storage reload and exported JSON 
   const h=boot(t);
   h.input('purchase-discount','10');
   h.input('discount','10');
-  h.input('pricing-mode','manual','change');
+  h.click('[data-pricing-basis="manual"]');
   h.input('manual-m','1.65');
   const entries=Array.from({length:h.w.localStorage.length},(_,i)=>{
     const key=h.w.localStorage.key(i); return [key,h.w.localStorage.getItem(key)];
@@ -440,7 +425,7 @@ test('manual mode and multiplier survive local storage reload and exported JSON 
   const reloaded=boot(t,entries);
   assert.equal(reloaded.api.getState().plan.mode,'manual');
   equal(reloaded.api.pricing().usedM,'1.65');
-  assert.equal(reloaded.w.document.getElementById('pricing-mode').value,'manual');
+  assert.equal(reloaded.w.document.querySelector('[data-pricing-basis="manual"]').getAttribute('aria-pressed'),'true');
   h.click('#export'); h.click('#export-json');
   const payload=JSON.parse(await h.downloads[0].blob.text());
   assert.equal(payload.state.plan.mode,'manual');
@@ -449,8 +434,8 @@ test('manual mode and multiplier survive local storage reload and exported JSON 
   reloaded.api.setState(roundtrip); reloaded.good();
   equal(reloaded.api.pricing().usedM,'1.65');
   equal(reloaded.api.pricing().q,'1');
-  equal(reloaded.api.pricing().d,'1');
-  reloaded.input('pricing-mode','ideal','change');
+  assert.equal(reloaded.api.pricing().targetAvailable,false);
+  reloaded.click('[data-pricing-basis="discount"]');
   equal(reloaded.api.pricing().usedM,'1.538');
 });
 
@@ -484,7 +469,7 @@ test('task controls and compact input duration update live without changing pric
   assert.equal(slider.nextElementSibling.contains(vin),true);
   assert.equal(doc.getElementById('vin-scrubber'),null);
   assert.equal(doc.getElementById('vin-editor'),null);
-  h.input('pricing-mode','manual','change');
+  h.click('[data-pricing-basis="manual"]');
   h.input('manual-m','1.65');
   h.setVideo(true);
   assert.equal(doc.getElementById('video-detail').hidden,false);
@@ -646,7 +631,7 @@ test('compact reference slider and number stay synchronized across edits, preset
     equal(h.api.current().x.P,E.estimate(task,task.video?R.officialMinimum(task).tokens:'').P);
     equal(h.api.pricing().usedM,'1.65');
   };
-  h.input('pricing-mode','manual','change');
+  h.click('[data-pricing-basis="manual"]');
   h.input('manual-m','1.65');
   for(const seconds of [2,8,15,3]){h.input('vin-slider',String(seconds));value(seconds);}
   assert.equal(doc.getElementById('coverage-note').hidden,true,'3-second input exactly reaches the 4-second output threshold');
@@ -708,7 +693,7 @@ test('legacy range drafts and imports resolve to fixed tasks while preserving pr
   assert.equal(doc.getElementById('seconds-range'),null);
   assert.equal(doc.getElementById('ratio-scope'),null);
   const original=plain(h.api.defaults());
-  original.plan.mode='manual';original.plan.manualM='1.65';
+  original.plan.mode='manual';original.plan.manualM='1.65';delete original.plan.modelPricing;delete original.plan.pricingModel;
   original.tasks=[{id:'keep-task',title:'已保存任务',params:{...original.task},qty:'3'}];
   for(const [ratio,seconds,wantRatio,wantSeconds] of [
     ['auto','auto','16:9','15'], ['auto','9','16:9','9'],
@@ -723,7 +708,8 @@ test('legacy range drafts and imports resolve to fixed tasks while preserving pr
       assert.equal(imported.value.task.ratio,wantRatio);
       assert.equal(imported.value.task.seconds,wantSeconds);
       assert.equal(imported.value.task.vin,'8');
-      assert.deepEqual(plain(imported.value.plan),original.plan);
+      for(const [key,value] of Object.entries(original.plan))assert.deepEqual(plain(imported.value.plan[key]),value,key+' is preserved');
+      assert.ok(Object.values(imported.value.plan.modelPricing).every(profile=>profile.mode==='manual'&&profile.manualM==='1.65'));
       assert.deepEqual(plain(imported.value.tasks),original.tasks);
       assert.deepEqual(plain(imported.value.observations).map(({usage,...o})=>o),original.observations);
       assert.deepEqual(plain(imported.value.references),original.references);
@@ -832,7 +818,7 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   assert.equal(shown('token-minimum'),'437,400');
   assert.equal(adopted('minimum'),'437,400');
   equal(h.api.current().x.P,'13.5594');
-  assert.equal(shown('cost-p'),'13.559400');
+  assert.equal(shown('cost-p'),'13.56');
   h.input('purchase-discount','10');
   assert.equal(shown('token-rate'),'31.00');assert.equal(adopted('minimum'),'437,400');
   equal(h.api.current().x.C,'13.5594');
@@ -898,6 +884,7 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
 
 test('usage calculation leads the explanation and substitutes each model specification without input video', t => {
   const h=boot(t),doc=h.w.document;
+  h.click('#fee-digits');
   const clean=el=>el.textContent.replace(/[,\s]/g,'');
   const cases=[
     {model:'seedance-2.0',label:'Seedance 2.0',res:'1080p',ratio:'4:3',seconds:'5',wh:[1664,1248],rate:'51',tokens:'243,360',fee:'12.411360',approximate:false},
@@ -937,6 +924,34 @@ test('usage calculation leads the explanation and substitutes each model specifi
     assert.match(fee.textContent,/元\/个/);
     equal(doc.getElementById('usage-calc-estimate').textContent.replaceAll(',',''),h.api.quote().calc.tokens);
   }
+});
+
+test('fee display precision changes only the summary and retains exact pricing', t => {
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.task={model:'seedance-2.0',res:'720p',ratio:'4:3',seconds:'4',video:true,vin:'2'};});
+  h.click('#usage-help');
+  const savedState=JSON.stringify(h.api.getState());
+  const quoteBefore=h.api.current();
+  const calculationBefore=doc.getElementById('usage-calculation').innerHTML;
+  const shown=()=>doc.getElementById('cost-p').textContent;
+  const toggle=doc.getElementById('fee-digits');
+  assert.equal(toggle.tagName,'BUTTON');assert.equal(toggle.type,'button');
+  assert.equal(toggle.textContent,'2 位');
+  assert.equal(toggle.getAttribute('aria-label'),'费用显示 2 位小数，点击切换为 6 位');
+  assert.equal(shown(),'4.26');
+  h.click('#fee-digits');
+  assert.equal(toggle.textContent,'6 位');
+  assert.equal(toggle.getAttribute('aria-label'),'费用显示 6 位小数，点击切换为 2 位');
+  assert.equal(shown(),'4.260281');
+  equal(h.api.current().x.P,'4.2602805');
+  assert.equal(JSON.stringify(h.api.getState()),savedState,'display preference is outside the task and plan');
+  assert.deepEqual(h.api.current(),quoteBefore,'all pricing results retain full precision');
+  assert.equal(doc.getElementById('usage-calculation').innerHTML,calculationBefore,'detailed calculations retain six decimals');
+  h.input('vin-slider','15');
+  assert.equal(shown(),E.fixed(h.api.current().x.P,6),'precision survives task changes');
+  h.click('#fee-digits');
+  assert.equal(toggle.textContent,'2 位');
+  assert.equal(shown(),E.fixed(h.api.current().x.P,2));
 });
 
 test('usage calculation compares exact minima and follows threshold changes while the dialog is open', t => {
@@ -985,7 +1000,7 @@ test('usage calculation stays model-only when platform pricing changes or rechar
   h.input('purchase-discount','10');
   h.input('discount','10');
   assert.equal(trace(),original,'recharge, procurement and customer discounts do not change model usage or list fees');
-  h.input('target-mode','margin','change');
+  h.click('[data-pricing-basis="margin"]');
   h.input('target-margin','20');
   assert.equal(trace(),original,'the platform margin objective does not affect the model calculation');
   h.input('pay','');
@@ -1070,7 +1085,7 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   assert.equal(JSON.stringify(h.api.getState()),before,'reading the explanation never changes the quote');
   h.click('#usage-help');h.click('#close-drawer');assert.equal(modal.hidden,true);
   h.click('#usage-help');modal.click();assert.equal(modal.hidden,true);
-  h.click('#show-formula');assert.equal(modal.classList.contains('centered'),false,'other calculation views retain their drawer layout');
+  h.click('#show-formula');assert.equal(modal.classList.contains('centered'),true,'calculation details use the larger centered panel');
   h.click('#close-drawer');
   const vin=doc.getElementById('vin');vin.focus();vin.value='';vin.dispatchEvent(new h.w.Event('input',{bubbles:true}));
   assert.equal(help.disabled,true);vin.blur();h.good();assert.equal(help.disabled,false);
@@ -1379,7 +1394,7 @@ test('quick drawer closing fallback is cancelled on reopen and reduced motion fi
 test('four quick configurations are true official token extrema over all supported specifications', t => {
   const h=boot(t), selectors=['none-min','none-max','video-min','video-max'];
   assert.deepEqual([...h.w.document.querySelectorAll('[data-example]')].map(button=>button.dataset.example),selectors);
-  h.input('pricing-mode','manual','change');
+  h.click('[data-pricing-basis="manual"]');
   h.input('manual-m','1.65');
   // Independently enumerate the official formula instead of sharing the preset lookup.
   // With video input, effective input is max(actual input, ceil(2 * output / 3)).
@@ -1408,83 +1423,44 @@ test('four quick configurations are true official token extrema over all support
   }
 });
 
-test('architecture: one workbench groups generation and its estimate on the left, platform pricing on the right', t => {
+test('architecture: pricing separates shared conditions, model policy and current task results', t => {
   const h=boot(t),doc=h.w.document;
-  const workbench=doc.getElementById('theory-workspace'),actual=doc.getElementById('actual-workspace');
-  assert.equal(h.api.getState().workspace,'theory');
-  assert.equal(workbench.hidden,false);assert.equal(actual.hidden,true);
-  assert.equal(doc.querySelector('.workspace-nav'),null);
-  assert.equal(doc.getElementById('platform-workspace'),null);
-  assert.equal(doc.getElementById('open-platform'),null);
-  const plan=workbench.querySelector('.plan'),work=workbench.querySelector('.work');
-  const generation=work.querySelector('.generation-panel');
-  assert.equal(workbench.firstElementChild,work);
-  assert.equal(work.children.length,2,'two cards follow the model-to-platform calculation flow');
-  assert.equal(work.firstElementChild,generation);
-  assert.equal(work.lastElementChild,plan);
-  assert.ok(generation.compareDocumentPosition(plan)&h.w.Node.DOCUMENT_POSITION_FOLLOWING);
-  for(const id of ['pay','total','purchase-discount','target-mode','manual-m'])assert.ok(plan.contains(doc.getElementById(id)));
-  for(const id of ['model','seconds','vin-slider','token-estimate','token-minimum','cost-p','usage-help','cost-c','calculation','add-task']){
-    const el=doc.getElementById(id);assert.ok(work.contains(el),id+' is in the same parameter/result area');
-    assert.equal(el.closest('[hidden]'),null,id+' needs no stage switch');
-  }
+  const workbench=doc.getElementById('theory-workspace'),actual=doc.getElementById('actual-workspace'),work=workbench.querySelector('.work');
+  const generation=work.querySelector('.generation-panel'),plan=work.querySelector('.plan');
+  assert.equal(h.api.getState().workspace,'theory');assert.equal(actual.hidden,true);
+  assert.equal(doc.querySelector('.workspace-nav'),null);assert.equal(doc.getElementById('platform-workspace'),null);
+  assert.equal(work.children.length,2);assert.equal(work.firstElementChild,generation);assert.equal(work.lastElementChild,plan);
   for(const id of ['model','seconds','vin-slider','token-estimate','token-minimum','cost-p','usage-help','globalError'])assert.ok(generation.contains(doc.getElementById(id)),id+' stays with generation');
-  for(const id of ['purchase-discount','procurement-status','cost-c','integer-points','actual-cash','platformError'])assert.ok(plan.contains(doc.getElementById(id)),id+' stays with platform pricing');
-  assert.equal(generation.querySelectorAll('#cost-p').length,1,'video estimate and list-price cost are the same amount');
-  assert.equal(plan.contains(doc.getElementById('cost-p')),false,'list-price cost is not duplicated in the platform panel');
-  assert.equal(generation.contains(doc.getElementById('cost-c')),false,'procurement is platform-dependent');
-  assert.equal(doc.getElementById('pixels').closest('[hidden]'),null,'pixel dimensions remain visible below aspect ratios');
-  assert.match(doc.querySelector('.pixel-line').textContent,/24 fps/);
-  assert.ok(doc.querySelector('[data-field="ratio"]').contains(doc.getElementById('pixels')));
+  for(const id of ['pay','total','purchase-discount','procurement-status','discount','target-margin','manual-m','cost-c','integer-points','actual-cash','platformError'])assert.ok(plan.contains(doc.getElementById(id)),id+' belongs to platform pricing');
+  assert.equal(doc.querySelectorAll('#cost-p').length,1);assert.equal(plan.contains(doc.getElementById('cost-p')),false);
+  assert.equal(doc.getElementById('pixels').closest('[hidden]'),null);assert.match(doc.querySelector('.pixel-line').textContent,/24 fps/);
   assert.equal(doc.getElementById('preview-frame'),null);
-  const blocks=[...plan.querySelector('.plan-grid').children];
-  assert.equal(blocks.length,3);
-  assert.ok(blocks[0].classList.contains('foundation-block'));
-  assert.ok(blocks[1].classList.contains('procurement-block'));
-  assert.ok(blocks[1].classList.contains('client-pricing'));
-  assert.ok(blocks[2].classList.contains('multiplier-block'));
-  assert.ok(blocks[1].contains(doc.getElementById('pricing-model')),'model context belongs to procurement');
-  assert.ok(blocks[0].contains(doc.getElementById('per-point')),'both conversion directions belong to recharge');
-  assert.ok(blocks[1].contains(doc.getElementById('target-settings')),'procurement and the customer target share the middle column');
-  assert.ok(blocks[2].contains(doc.getElementById('pricing-mode')));
-  assert.ok(blocks[2].contains(doc.getElementById('manual-m')));
-  const resultPairs=[...doc.querySelectorAll('#calculation .platform-result-grid > dl.metric-pair')];
-  assert.equal(resultPairs.length,3);
-  for(const [i,ids] of [['list-cost','cost-c'],['raw-points','integer-points'],['target-cash','actual-cash']].entries()){
-    const pair=resultPairs[i];
-    for(const id of ids){
-      assert.equal(doc.querySelectorAll('#'+id).length,1,id+' has one update target');
-      assert.ok(pair.contains(doc.getElementById(id)),id+' belongs to result column '+(i+1));
-    }
-    assert.ok(doc.getElementById(ids[0]).compareDocumentPosition(doc.getElementById(ids[1]))&h.w.Node.DOCUMENT_POSITION_FOLLOWING);
+  const conditions=plan.querySelector('.pricing-conditions'),rule=plan.querySelector('.pricing-rule-section'),result=plan.querySelector('.customer-charge-section');
+  assert.ok(conditions.compareDocumentPosition(rule)&h.w.Node.DOCUMENT_POSITION_FOLLOWING);
+  assert.ok(rule.compareDocumentPosition(result)&h.w.Node.DOCUMENT_POSITION_FOLLOWING);
+  assert.ok(conditions.querySelector('.pricing-recharge').contains(doc.getElementById('per-point')));
+  assert.ok(conditions.querySelector('.pricing-procurement').contains(doc.getElementById('purchase-discount')));
+  assert.deepEqual([...rule.querySelectorAll('[data-pricing-basis]')].map(el=>el.dataset.pricingBasis),['discount','margin','manual']);
+  assert.equal(doc.querySelector('#pricing-mode, #target-mode, #target-settings, #per-yuan'),null);
+  assert.equal(doc.getElementById('plan-principle').closest('details'),null,'policy results are visible before task rounding');
+  for(const id of ['list-cost','raw-points','target-cash','pricing-detail','charge-breakdown','unit-check','economics-how','actual-calculation'])assert.equal(doc.getElementById(id),null,id+' is no longer a competing primary metric or entry');
+  for(const id of ['integer-points','actual-cash','cost-c','model-profit','model-margin']){
+    const el=doc.getElementById(id);assert.ok(result.contains(el));assert.equal(doc.querySelectorAll('#'+id).length,1);assert.equal(el.closest('details'),null);
   }
-  const profit=doc.querySelector('.platform-profit-row');
-  assert.ok(profit.contains(doc.getElementById('model-profit')));
-  assert.ok(profit.contains(doc.getElementById('model-margin')));
-  const pricingDetail=doc.getElementById('pricing-detail');
-  assert.equal(pricingDetail.open,false);
-  assert.ok(doc.getElementById('calculation').compareDocumentPosition(pricingDetail)&h.w.Node.DOCUMENT_POSITION_FOLLOWING);
-  assert.ok(pricingDetail.contains(doc.getElementById('plan-principle')));
-  for(const id of ['procurement-equation','points-equation','cash-equation','cash-gap'])assert.ok(pricingDetail.contains(doc.getElementById(id)),id+' is available in the calculation details');
-  for(const pair of resultPairs)assert.equal(pair.closest('details'),null,'paired results remain visible without opening details');
-  assert.equal(doc.getElementById('quick-toggle').closest('[hidden]'),null,'the quick-options trigger is always available');
-  assert.equal(doc.getElementById('quick-drawer').hidden,true,'quick options stay collapsed until requested');
+  assert.ok(result.contains(doc.getElementById('details')));assert.ok(result.contains(doc.getElementById('add-task')));
+  assert.equal(doc.getElementById('quick-toggle').closest('[hidden]'),null);assert.equal(doc.getElementById('quick-drawer').hidden,true);
   assert.equal(doc.getElementById('platform-comparison').open,false);
-  const estimate=h.api.quote().calc;
-  h.click('#open-actual');assert.equal(actual.hidden,false);assert.equal(workbench.hidden,true);
-  h.click('#back-theory');assert.equal(workbench.hidden,false);assert.equal(actual.hidden,true);
-  equal(h.api.quote().calc.P,estimate.P,'opening reconciliation does not modify the quote');
-  const legacy=h.api.getState();legacy.workspace='platform';legacy.plan.manualM='1.65';legacy.plan.mode='manual';
+  const estimate=h.api.quote().calc;h.click('#open-actual');assert.equal(actual.hidden,false);assert.equal(workbench.hidden,true);
+  h.click('#back-theory');assert.equal(workbench.hidden,false);equal(h.api.quote().calc.P,estimate.P);
+  const legacy=h.api.getState();legacy.workspace='platform';legacy.plan.manualM='1.65';legacy.plan.mode='manual';delete legacy.plan.modelPricing;delete legacy.plan.pricingModel;
   const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(legacy)]]);
-  assert.equal(restored.api.getState().workspace,'theory','old platform drafts reopen the unified calculator');
-  assert.equal(restored.api.getState().plan.manualM,'1.65');
-  assert.equal(restored.w.document.getElementById('theory-workspace').hidden,false);
+  assert.equal(restored.api.getState().workspace,'theory');assert.equal(restored.api.getState().plan.manualM,'1.65');
 });
 
 test('architecture: invalid recharge input clears only platform results and leaves model estimates usable', t => {
   const h=boot(t),doc=h.w.document,before=h.api.quote().calc;
   const shown=Object.fromEntries(['cost-p','token-estimate','token-minimum'].map(id=>[id,doc.getElementById(id).textContent]));
-  const platformIds=['list-cost','cost-c','raw-points','integer-points','target-cash','actual-cash'];
+  const platformIds=['cost-c','integer-points','actual-cash','model-profit','model-margin'];
   const resultNodes=Object.fromEntries(platformIds.map(id=>[id,doc.getElementById(id)]));
   const previousResults=Object.fromEntries(platformIds.map(id=>[id,resultNodes[id].textContent]));
   for(const invalid of ['', 'not-a-price', '0']){
@@ -1515,48 +1491,30 @@ test('architecture: invalid recharge input clears only platform results and leav
   equal(h.api.current().x.P,before.P);
 });
 
-test('platform result pairs track procurement, customer targets and manual multipliers through the accounting engine', t => {
+test('platform task results agree with exact accounting across all pricing bases', t => {
   const h=boot(t),doc=h.w.document;
   const observations=plain(h.api.getState().observations),modelEstimate=h.api.quote().calc.P;
   const verify=planInput=>{
     const p=E.plan(planInput),x=E.settle(modelEstimate,E.mul(modelEstimate,p.q),p);
-    const expected={
-      'list-cost':'¥'+E.fixed(x.P,6),
-      'cost-c':'¥'+E.fixed(x.C,6),
-      'raw-points':E.trim(x.raw,12),
-      'integer-points':E.fixed(x.N,0),
-      'target-cash':x.target===null?'—':'¥'+E.fixed(x.target,6),
-      'actual-cash':'¥'+E.fixed(x.cash,6)
-    };
-    for(const [id,value] of Object.entries(expected))assert.equal(doc.getElementById(id).textContent,value,id+' matches the accounting result');
-    assert.match(doc.getElementById('integer-points').textContent,/^\d+$/,'the unit is outside the integer result');
-    assert.equal(doc.getElementById('model-profit').textContent,'¥'+E.fixed(x.profit,6));
-    assert.ok(doc.getElementById('model-margin').textContent.includes(E.trim(x.margin,4)+'%'));
+    const expected={'cost-c':'¥'+E.fixed(x.C,6),'integer-points':E.fixed(x.N,0),'actual-cash':'¥'+E.fixed(x.cash,6),'model-profit':'¥'+E.fixed(x.profit,6),'model-margin':E.trim(x.margin,4)+'%'};
+    for(const [id,value] of Object.entries(expected))assert.equal(doc.getElementById(id).textContent,value,id+' matches exact accounting');
+    assert.match(doc.getElementById('integer-points').textContent,/^\d+$/);
     const loss=E.cmp(x.profit,0)<0;
-    assert.equal(doc.getElementById('pricing-loss').hidden,!loss,'loss status follows the current rounded charge');
+    assert.equal(doc.getElementById('pricing-loss').hidden,!loss);
     assert.equal(doc.getElementById('model-profit').classList.contains('loss'),loss);
-    assert.equal(doc.getElementById('model-margin').classList.contains('loss'),loss);
-    assert.equal(doc.getElementById('target-cash-label').textContent,planInput.appliedM?'参考目标金额':'目标金额');
-    equal(h.api.quote().calc.P,modelEstimate,'financial edits do not alter the model estimate');
-    assert.deepEqual(plain(h.api.getState().observations),observations,'financial edits do not alter recorded bills');
+    equal(h.api.quote().calc.P,modelEstimate);assert.deepEqual(plain(h.api.getState().observations),observations);
   };
   const recharge={pay:'100',total:'1538'};
   verify({...recharge,q:'0.735',discount:'7.35'});
-  h.input('purchase-discount','10');
-  verify({...recharge,q:'1',discount:'7.35'});
-  h.input('purchase-discount','6');
-  verify({...recharge,q:'0.6',discount:'7.35'});
-  h.input('target-mode','margin','change');h.input('target-margin','20');
-  verify({...recharge,q:'0.6',targetMode:'margin',margin:'20'});
-  h.input('pricing-mode','manual','change');h.input('manual-m','1.65');
-  verify({...recharge,q:'0.6',targetMode:'margin',margin:'20',appliedM:'1.65'});
-  h.input('target-mode','discount','change');h.input('discount','');
-  assert.equal(doc.getElementById('platformError').hidden,true,'an unset reference target does not prevent manual settlement');
-  verify({...recharge,q:'0.6',targetMode:'discount',targetAvailable:false,appliedM:'1.65'});
-  h.input('discount','8');
-  verify({...recharge,q:'0.6',discount:'8',appliedM:'1.65'});
-  h.input('pricing-mode','ideal','change');
-  verify({...recharge,q:'0.6',discount:'8'});
+  h.input('purchase-discount','10');verify({...recharge,q:'1',discount:'7.35'});
+  h.input('purchase-discount','6');verify({...recharge,q:'0.6',discount:'7.35'});
+  h.click('[data-pricing-basis="margin"]');h.input('target-margin','20');verify({...recharge,q:'0.6',targetMode:'margin',margin:'20'});
+  h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');verify({...recharge,q:'0.6',targetMode:'margin',targetAvailable:false,appliedM:'1.65'});
+  h.input('discount','');h.input('target-margin','100');
+  assert.equal(doc.getElementById('platformError').hidden,true,'unselected targets cannot invalidate specified pricing');
+  verify({...recharge,q:'0.6',targetAvailable:false,appliedM:'1.65'});
+  h.click('[data-pricing-basis="discount"]');assert.equal(doc.getElementById('platformError').hidden,false);
+  h.input('discount','8');verify({...recharge,q:'0.6',discount:'8'});
 });
 
 test('architecture: model drafts and quote exports remain independent of an invalid platform plan', async t => {
@@ -1568,14 +1526,14 @@ test('architecture: model drafts and quote exports remain independent of an inva
   h.input('seconds','30');
   h.input('vin-slider','30');
   assert.equal(doc.getElementById('platformError').hidden,false);
-  assert.match(doc.getElementById('storage-status').textContent,/模型草稿已保存/);
-  assert.match(doc.getElementById('storage-status').textContent,/平台保留上次有效方案/);
+  assert.match(doc.getElementById('storage-status').textContent,/输入待修正/);
+  assert.match(doc.getElementById('storage-status').textContent,/已保存有效设置/);
   assert.equal(h.api.getState().plan.pay,'','saving a model draft does not silently repair the visible platform input');
   const stored=JSON.parse(h.w.localStorage.getItem('reelay_pricing_v9_official'));
   assert.equal(stored.task.model,'seedance-2.5');
   assert.equal(stored.task.seconds,'30');assert.equal(stored.task.vin,'30');
-  const modelPlan={...lastValidPlan,procurementModel:'seedance-2.5',q:lastValidPlan.procurementByModel['seedance-2.5']};
-  assert.deepEqual(stored.plan,modelPlan,'persist valid financial settings and map while aligning only the active procurement mirror');
+  const modelPlan={...lastValidPlan,...lastValidPlan.modelPricing['seedance-2.5'],procurementModel:'seedance-2.5',pricingModel:'seedance-2.5'};
+  assert.deepEqual(stored.plan,modelPlan,'persist valid shared conditions and all policies while aligning the active model profile');
   h.click('#export');
   assert.equal(doc.getElementById('export-quote').disabled,false);
   assert.equal(doc.getElementById('export-json').disabled,true);
@@ -1807,93 +1765,151 @@ test('architecture: an incomplete composer does not hide saved actual records or
   h.input('vin','2');h.good();
 });
 
-test('models: platform calculation details and the usage price table use the selected Fast or 2.5 identity', t => {
+test('model calculation details link to the corresponding usage rules and return without mixing actual records', t => {
   const h=boot(t),doc=h.w.document;
   for(const model of ['seedance-2.0-fast','seedance-2.5']){
-    h.input('model',model,'change');
-    const spec=h.w.ReelayModels.get(model),task=h.api.getState().task;
-    h.api.openDetails('theory');h.good();
-    const section=[...doc.querySelectorAll('#drawer-body .detail-section')]
-      .find(el=>el.querySelector('h3').textContent.includes('最低用量估算'));
-    assert.ok(section);
-    assert.ok(section.textContent.includes('匹配范围：'+spec.label+' · '+spec.version+' · '+task.res+' · '+task.ratio+' · 输出'+task.seconds+'秒'));
-    assert.equal(section.textContent.includes('匹配范围：Seedance 2.0 · '+R.VERSION),false,'source scope must not fall back to the standard model');
-    assert.ok(section.textContent.includes(h.api.quote().rule.note));
-    h.click('#detail-open-rule');
+    h.input('model',model,'change');const spec=h.w.ReelayModels.get(model),task=h.api.getState().task;
+    h.click('#details');
+    const calculations=doc.getElementById('drawer-body').textContent;
+    assert.match(doc.getElementById('drawer-title').textContent,/计算明细/);
+    assert.ok(doc.getElementById('drawer-sub').textContent.includes(spec.label));assert.equal(doc.querySelector('[data-detail-mode]'),null);
+    assert.equal(doc.querySelector('#usage-calculation, #usage-price-table'),null,'Token derivation is not repeated in pricing details');
+    assert.equal(doc.querySelectorAll('.pricing-details > .detail-section').length,4);
+    h.click('#detail-usage');
     assert.equal(doc.getElementById('drawer-title').textContent,'用量说明');
-    assert.equal(doc.getElementById('drawer-sub').textContent,spec.label+' · 规则版本 '+spec.version);
     const sourceLinks=[...doc.querySelectorAll('#drawer-body a')].map(el=>el.getAttribute('href'));
-    assert.ok(sourceLinks.includes(spec.sources.minima.calculatorUrl));
-    assert.ok(sourceLinks.includes(spec.sources.pricing.pageUrl));
-    assert.ok(sourceLinks.includes(spec.sources.minima.url));
+    for(const url of [spec.sources.minima.calculatorUrl,spec.sources.pricing.pageUrl,spec.sources.minima.url])assert.ok(sourceLinks.includes(url));
     const currentRate=doc.querySelector('#usage-price-table [aria-current="true"]');
-    assert.equal(currentRate.closest('tr').dataset.model,model);
-    assert.equal(currentRate.textContent,E.fixed(spec.rates[task.res][task.video?1:0],2));
+    assert.equal(currentRate.closest('tr').dataset.model,model);assert.equal(currentRate.textContent,E.fixed(spec.rates[task.res][task.video?1:0],2));
+    h.click('#back-pricing-details');assert.equal(doc.getElementById('drawer-body').textContent,calculations);
     h.click('#close-drawer');
   }
 });
 
 
-test('manual pricing reveals the active multiplier and keeps an optional comparison target editable', t => {
-  const h=boot(t),doc=h.w.document,targets=doc.getElementById('target-settings');
-  const targetParent=targets.parentElement,multiplier=doc.querySelector('.plan-grid > .multiplier-block');
-  assert.ok(targets.closest('.procurement-block'),'reference targets have a stable place with procurement');
-  assert.equal(targets.open,true);
-  assert.equal(doc.getElementById('target-summary').hidden,true);
-  h.input('purchase-discount','10');h.input('discount','10');
-  const modelBefore=h.api.quote().calc.P;
-  h.input('pricing-mode','manual','change');h.input('manual-m','1.65');
-  assert.equal(targets.open,false,'reference target is secondary in manual mode');
-  assert.equal(doc.getElementById('target-summary').hidden,false);
-  assert.equal(doc.getElementById('manual-m-control').closest('details'),null);
-  assert.equal(targets.parentElement,targetParent,'manual mode keeps the target in its original column');
-  assert.ok(targets.compareDocumentPosition(multiplier)&h.w.Node.DOCUMENT_POSITION_FOLLOWING,'the three-column reading order stays stable');
-  const manualRaw=h.api.current().x.raw;
-  h.click('#target-summary');assert.equal(targets.open,true);
-  h.input('discount','8');
-  assert.equal(targets.open,true,'editing a comparison target must not collapse the controls');
-  equal(h.api.current().x.raw,manualRaw,'comparison target cannot change manual charges');
-  equal(h.api.pricing().usedM,'1.65');
-  equal(h.api.quote().calc.P,modelBefore,'pricing UI never changes model costs');
-  h.input('seconds','10');assert.equal(targets.open,true,'task edits preserve the open comparison');
-  h.input('pricing-mode','ideal','change');
-  assert.equal(targets.open,true);assert.equal(targets.parentElement,targetParent);
-  assert.equal(doc.getElementById('target-summary').hidden,true);
-  equal(h.api.current().x.rawCash,h.api.current().x.target,'auto mode restores the selected target');
-  h.input('pricing-mode','manual','change');assert.equal(targets.open,false);
-  equal(h.api.pricing().usedM,'1.65','switching modes retains the specified multiplier');
+test('pricing basis exposes one independent input and restores its model-specific draft', t => {
+  const h=boot(t),doc=h.w.document;
+  const visible=()=>['discount-control','margin-control','manual-m-control'].filter(id=>!doc.getElementById(id).hidden);
+  assert.deepEqual(visible(),['discount-control']);h.input('discount','8');
+  h.click('[data-pricing-basis="margin"]');h.input('target-margin','20');assert.deepEqual(visible(),['margin-control']);
+  h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');assert.deepEqual(visible(),['manual-m-control']);
+  assert.equal(doc.getElementById('target-settings'),null);assert.equal(doc.getElementById('discount-picks').hidden,true);
+  equal(h.api.pricing().usedM,'1.65');assert.equal(h.api.current().x.target,null);
+  h.click('[data-pricing-basis="discount"]');assert.deepEqual(visible(),['discount-control']);assert.equal(doc.getElementById('discount').value,'8');
+  equal(h.api.current().x.rawCash,h.api.current().x.target);
+  h.click('[data-pricing-basis="margin"]');assert.equal(doc.getElementById('target-margin').value,'20');
+  h.click('[data-pricing-basis="manual"]');equal(h.api.pricing().usedM,'1.65');
+  assert.equal(doc.querySelectorAll('[data-pricing-basis][aria-pressed="true"]').length,1);
 });
 
 
-test('manual charges do not require a reference target, including after reload and export', async t => {
+test('manual pricing has no hidden target or variance, including after reload and export', async t => {
   const h=boot(t),doc=h.w.document;
   h.input('discount','');assert.equal(doc.getElementById('platformError').hidden,false);
-  h.input('pricing-mode','manual','change');h.input('manual-m','1.65');
-  assert.equal(doc.getElementById('manual-m-control').hidden,false,'mode controls remain usable after invalid auto target');
+  h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');h.input('discount','n/a');h.input('target-margin','100');
   assert.equal(doc.getElementById('platformError').hidden,true);
-  const expected=h.api.current().x;
-  assert.equal(expected.target,null);assert.equal(expected.gap,null);
-  equal(expected.raw,E.mul(expected.C,'16.5'));
-  h.click('.platform-calculation-detail > summary');
-  assert.equal(doc.getElementById('target-cash').textContent,'—');assert.equal(doc.getElementById('cash-gap').textContent,'—');
-  h.click('#target-summary');h.input('discount','n/a');
-  assert.equal(doc.getElementById('platformError').hidden,true);
-  assert.equal(doc.querySelector('.platform-calculation-detail').open,true);
-  equal(h.api.current().x.N,expected.N);
-  h.click('#plan-settings');h.input('plan-manual','1.65');h.click('#save-plan');
-  h.click('#details');assert.match(doc.getElementById('drawer-body').textContent,/参考目标未设置或无效/);h.click('#close-drawer');
-  h.click('#open-actual');assert.ok(doc.querySelectorAll('#actual-table tbody tr').length);h.click('#back-theory');
-  h.click('[data-tab="recharges"]');assert.match(doc.getElementById('table').textContent,/固定当前倍率/);
-  h.input('recharge-mode','fixed','change');assert.ok(doc.querySelectorAll('#table tbody tr').length);
-  h.click('#export');h.click('#export-json');
-  const exported=JSON.parse(await h.downloads.at(-1).blob.text());
+  const expected=h.api.current().x;assert.equal(expected.target,null);assert.equal(expected.gap,null);equal(expected.raw,E.mul(expected.C,'16.5'));
+  h.click('#details');const text=doc.getElementById('drawer-body').textContent;
+  assert.match(text,/采用指定倍率 M = 1\.65/);assert.doesNotMatch(text,/参考目标|与目标差额如何拆分|理想 M/);
+  h.click('#close-drawer');h.click('#open-actual');assert.ok(doc.querySelectorAll('#actual-table tbody tr').length);h.click('#back-theory');
+  h.click('[data-tab="recharges"]');assert.equal(doc.getElementById('recharge-mode').value,'fixed');assert.ok(doc.querySelectorAll('#table tbody tr').length);
+  h.input('recharge-mode','reprice','change');assert.equal(doc.querySelectorAll('#table tbody tr').length,0);
+  h.input('recharge-mode','fixed','change');
+  h.click('#export');h.click('#export-json');const exported=JSON.parse(await h.downloads.at(-1).blob.text());
   assert.equal(exported.state.plan.discount,'n/a');assert.equal(exported.state.plan.manualM,'1.65');
   const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(exported.state)]]);
   equal(restored.api.current().x.N,expected.N);assert.equal(restored.api.current().x.target,null);
-  h.click('#close-drawer');h.input('target-mode','margin','change');h.input('target-margin','100');
-  assert.equal(doc.getElementById('platformError').hidden,true);equal(h.api.current().x.N,expected.N);
-  h.input('pricing-mode','ideal','change');assert.equal(doc.getElementById('platformError').hidden,false);
-  assert.equal(doc.getElementById('manual-m-control').hidden,true);assert.equal(doc.getElementById('target-settings').open,true);
-  h.input('target-margin','20');assert.equal(doc.getElementById('platformError').hidden,true);
-  equal(h.api.current().x.rawCash,h.api.current().x.target,'only the selected valid target is required in auto mode');
+  h.click('#close-drawer');h.click('[data-pricing-basis="margin"]');assert.equal(doc.getElementById('platformError').hidden,false);
+  h.input('target-margin','20');assert.equal(doc.getElementById('platformError').hidden,true);equal(h.api.current().x.rawCash,h.api.current().x.target);
+});
+
+
+test('unrounded policy loss remains visible even when point rounding makes the current task profitable',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.input('purchase-discount','1');h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.53');
+  const x=h.api.current().x;
+  assert.ok(E.cmp(x.unroundedCashProfit,0)<0);assert.ok(E.cmp(x.profit,0)>0);equal(x.N,'3');
+  const policy=doc.getElementById('plan-principle');assert.equal(policy.closest('details'),null);
+  assert.match(policy.textContent,/−0\.5229%/);assert.ok(policy.querySelector('.loss'));
+  assert.equal(doc.getElementById('policy-notice').hidden,false);assert.match(doc.getElementById('policy-notice').textContent,/取整前亏损/);
+  assert.equal(doc.getElementById('pricing-loss').hidden,true);assert.equal(doc.getElementById('model-profit').classList.contains('loss'),false);
+});
+
+test('negative profit and margin remain readable in complete calculation details',t=>{
+  const h=boot(t),doc=h.w.document;h.input('purchase-discount','10');h.setVideo(false);h.input('seconds','9');
+  assert.ok(E.cmp(h.api.current().x.profit,0)<0);h.click('#details');
+  assert.equal(doc.getElementById('drawer-title').textContent,'计算明细');
+  assert.equal(doc.querySelectorAll('.pricing-details > .detail-section').length,4);
+  assert.match(doc.getElementById('cash-equation').textContent,/−\d/);assert.doesNotMatch(doc.getElementById('drawer-body').textContent,/NaN|undefined|Infinity/);
+  const before=JSON.stringify(h.api.getState()),original=h.api.current().x;
+  h.input('unit-p','10');assert.match(doc.getElementById('unit-result').textContent,/假设采购成本/);
+  h.input('unit-p','');assert.match(doc.getElementById('unit-result').textContent,/正数金额/);
+  assert.equal(JSON.stringify(h.api.getState()),before);equal(h.api.current().x.N,original.N);
+});
+
+test('a task input error leaves a valid policy outcome visible while clearing only its task result',t=>{
+  const h=boot(t),doc=h.w.document;h.input('discount','8');const outcome=doc.getElementById('plan-principle').textContent;
+  const vin=doc.getElementById('vin');vin.value='';vin.dispatchEvent(new h.w.Event('input',{bubbles:true}));
+  assert.equal(doc.getElementById('globalError').hidden,false);assert.equal(doc.getElementById('plan-principle').textContent,outcome);
+  for(const id of ['integer-points','actual-cash','cost-c','model-profit','model-margin'])assert.equal(doc.getElementById(id).textContent,'—');
+  h.input('vin','2');assert.equal(doc.getElementById('globalError').hidden,true);
+});
+
+test('model overview compares each model policy and switches only the selected context',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.input('discount','8');h.input('model','seedance-2.5','change');h.click('[data-pricing-basis="margin"]');h.input('target-margin','20');
+  h.input('model','seedance-2.0-fast','change');h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');
+  const before=plain(h.api.getState()),profiles=plain(before.plan.modelPricing);
+  h.click('#model-pricing-overview');assert.equal(doc.getElementById('modal').classList.contains('centered'),true);
+  const rows=[...doc.querySelectorAll('.pricing-overview-table tbody tr')];assert.equal(rows.length,3);
+  for(const row of rows){const model=row.querySelector('[data-pricing-model]').dataset.pricingModel,p=h.api.pricingForModel(model);assert.ok(row.textContent.includes(E.trim(p.usedM,10)));}
+  assert.deepEqual(plain(h.api.getState()),before,'opening comparison is read-only');
+  h.click('[data-pricing-model="seedance-2.0"]');assert.equal(h.api.getState().task.model,'seedance-2.0');
+  assert.equal(doc.getElementById('discount').value,'8');assert.equal(doc.getElementById('modal').hidden,true);assert.equal(doc.activeElement.id,'plan-title');
+  assert.deepEqual(plain(h.api.getState().plan.modelPricing),profiles);
+});
+
+test('recharge comparison holds the current model multiplier live rather than a stale captured value',t=>{
+  const h=boot(t),doc=h.w.document;
+  assert.equal(h.api.getState().rechargeMode,'fixed');h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');h.click('[data-tab="recharges"]');
+  const verify=M=>{const rows=h.api.getTheoryRows();assert.equal(rows.length,3);for(const row of rows)equal(row.M,M);assert.equal(new Set(rows.map(row=>row.N)).size,1,'gift points change cash equivalence, not the fixed points charge');return rows;};
+  const rows=verify('1.65');assert.ok(E.cmp(rows[0].cash,rows[2].cash)>0,'more gift points reduce cash-equivalent price');
+  h.input('manual-m','1.8');verify('1.8');
+  h.input('model','seedance-2.5','change');verify('1.538');
+  h.click('[data-pricing-basis="manual"]');h.input('manual-m','2');verify('2');
+  h.input('model','seedance-2.0','change');verify('1.8');
+  assert.equal(doc.getElementById('recharge-mode').value,'fixed');
+  const old=plain(h.api.getState());old.frozenM={n:'999',d:'1'};
+  const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(old)]]);
+  assert.equal(restored.api.getState().frozenM,null);for(const row of restored.api.getTheoryRows())equal(row.M,'1.8');
+});
+
+test('explicit recharge repricing preserves the chosen target and its saved multiplier precision',t=>{
+  const h=boot(t),doc=h.w.document;h.input('discount','8');h.click('#plan-settings');h.click('#plan-limit-precision');h.input('plan-digits','2','change');h.input('plan-round','truncate','change');h.click('#save-plan');
+  h.click('[data-tab="recharges"]');h.input('recharge-mode','reprice','change');
+  const rows=h.api.getTheoryRows();assert.equal(rows.length,3);assert.ok(new Set(rows.map(row=>row.M)).size>1);
+  for(const row of rows){const p=E.plan({pay:row.pay,total:row.total,q:'0.735',discount:'8'});equal(row.M,E.decimalString(p.M,2,'truncate'));equal(row.target,E.mul(row.P,'0.8'));}
+  h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');
+  assert.equal(doc.querySelectorAll('#table tbody tr').length,0,'manual rules do not silently borrow an inactive target');
+  assert.match(doc.getElementById('table').textContent,/指定倍率/);
+  h.input('recharge-mode','fixed','change');assert.equal(h.api.getTheoryRows().length,3);
+});
+
+test('automatic precision survives a manual basis round-trip and remains model-specific',t=>{
+  const h=boot(t),doc=h.w.document;h.input('discount','8');h.click('#plan-settings');h.click('#plan-limit-precision');h.input('plan-digits','3','change');h.input('plan-round','truncate','change');h.click('#save-plan');
+  equal(h.api.pricing().usedM,'1.674');h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');
+  h.input('model','seedance-2.5','change');assert.equal(h.api.getState().plan.mode,'ideal');
+  h.input('model','seedance-2.0','change');equal(h.api.pricing().usedM,'1.65');
+  h.click('[data-pricing-basis="discount"]');assert.equal(h.api.getState().plan.mode,'saved');equal(h.api.pricing().usedM,'1.674');
+  h.click('#plan-settings');assert.equal(doc.getElementById('plan-limit-precision').checked,true);assert.equal(doc.getElementById('plan-digits').value,'3');assert.equal(doc.getElementById('plan-round').value,'truncate');
+});
+
+
+test('applying a discount comparison row produces its displayed charge under the chosen precision',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.click('#plan-settings');h.click('#plan-limit-precision');h.input('plan-digits','2','change');h.input('plan-round','truncate','change');h.click('#save-plan');
+  h.click('[data-tab="discounts"]');const row=h.api.getTheoryRows().find(row=>row.scenario==='8折');assert.ok(row);
+  const expected=E.plan({pay:'100',total:'1538',q:'0.735',discount:'8'});equal(row.M,E.decimalString(expected.M,2,'truncate'));
+  h.click('#table [data-discount="8"]');equal(h.api.current().x.N,row.N);assert.equal(E.decimalString(h.api.current().x.cash,20),row.cash);equal(h.api.pricing().usedM,row.M);
+  assert.equal(doc.getElementById('discount').value,'8');assert.equal(h.api.getState().plan.mode,'saved');
 });
