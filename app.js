@@ -157,7 +157,7 @@ function persist(){
  saved.plan.procurementModel=state.task.model;saved.plan.q=saved.plan.procurementByModel[state.task.model];
  try{localStorage.setItem(KEY,JSON.stringify(saved));$('storage-status').innerHTML='<i class="live-dot"></i>'+ (platformValid?'本地草稿已保存':'模型草稿已保存 · 平台保留上次有效方案');}catch(_){$('storage-status').textContent='浏览器未保存草稿，请导出方案留存。';}
 }
-function openDrawer(name,title,subtitle,html,wide=false){lastFocus=document.activeElement;drawerName=name;$('drawer-title').textContent=title;$('drawer-sub').textContent=subtitle;$('drawer-sub').hidden=!subtitle;$('drawer-body').innerHTML=html;$('drawer-footer').hidden=true;$('drawer').classList.toggle('wide',wide);$('modal').classList.toggle('centered',name==='usage');$('modal').hidden=false;document.body.classList.add('modal-open');$('close-drawer').focus();}
+function openDrawer(name,title,subtitle,html,wide=false){lastFocus=document.activeElement;drawerName=name;$('drawer-title').textContent=title;$('drawer-sub').textContent=subtitle;$('drawer-sub').hidden=!subtitle;$('drawer-body').innerHTML=html;$('drawer-footer').hidden=true;$('drawer').classList.toggle('wide',wide);$('modal').classList.toggle('centered',name==='usage');$('modal').hidden=false;document.body.classList.add('modal-open');if(name==='usage'){usageJumpPosition=null;setUsageSection('usage-calculation');$('drawer-body').scrollTop=0;}$('close-drawer').focus();}
 function closeDrawer(){if($('modal').hidden)return;$('modal').hidden=true;document.body.classList.remove('modal-open');drawerName='';if(lastFocus?.isConnected)lastFocus.focus();}
 function table(headers,rows,cls=''){return'<table class="'+cls+'"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>';}
 const td=(s,cls='number')=>'<td class="'+cls+'">'+s+'</td>',minus=(a,b)=>{const d=sub(a,b);return(cmp(d,0)>0?'+':'')+num(d,10);};
@@ -230,8 +230,9 @@ function renderUsage(v,t){
  const c=v.calc,rule=v.rule,manual=rule?.kind==='manual',hasMinimum=t.video&&!!rule;
  $('usage-summary').hidden=false;$('usage-help').disabled=false;
  $('usage-metrics').setAttribute('aria-label',t.video?'估算与最低 Token 用量':'估算 Token 用量');
+ $('usage-metrics').classList.toggle('is-single',!t.video);
  $('token-minimum-metric').hidden=!t.video;
- const show=(id,value)=>{const el=$(id),rounded=num(value,8);el.textContent=(cmp(rounded,value)!==0?'≈ ':'')+tokenText(value,8);el.title=tokenText(value)+' Token';};
+ const show=(id,value)=>{const el=$(id),rounded=num(value,8);el.textContent=(cmp(rounded,value)!==0?'≈ ':'')+tokenText(value,8);el.title=tokenText(value)+' Token';el.style.setProperty('--token-chars',el.textContent.length);el.scrollLeft=0;};
  show('token-estimate',c.tokens);
  $('token-minimum').removeAttribute('title');
  if(hasMinimum)show('token-minimum',rule.tokens);else $('token-minimum').textContent=t.video?'待补齐':'不适用';
@@ -312,25 +313,63 @@ function usageDimensionTable(){
  }).join('');
  return `<div class="usage-table-scroll" tabindex="0" role="region" aria-labelledby="usage-dimensions-heading"><table class="usage-dimension-table" id="usage-dimension-table" aria-labelledby="usage-dimensions-heading"><colgroup><col class="dimension-model-column"><col class="dimension-resolution-column"><col span="6"></colgroup><thead><tr><th scope="col">模型</th><th scope="col">分辨率</th>${M.RATIOS.map(ratio=>`<th scope="col">${esc(ratio)}</th>`).join('')}</tr></thead>${groups}</table></div>`;
 }
-function usageExplanation(v,t){
+const USAGE_SECTIONS=Object.freeze([['usage-calculation','本次计算'],['usage-prices','模型刊例价'],['usage-dimensions','分辨率映射'],['usage-estimate-definition','估算 Token 用量'],['usage-minimum-definition','最低 Token 用量'],['usage-sources','相关资料']]);
+let activeUsageSection='usage-calculation',usageJumpPosition=null;
+function setUsageSection(id){
+ if(!USAGE_SECTIONS.some(([key])=>key===id))return;
+ activeUsageSection=id;
+ document.querySelectorAll('[data-usage-section]').forEach(button=>{if(button.dataset.usageSection===id)button.setAttribute('aria-current','location');else button.removeAttribute('aria-current');});
+ const nav=$('usage-toc'),selected=nav?.querySelector('[aria-current="location"]');
+ if(nav&&selected&&nav.clientWidth&&getComputedStyle(nav).flexDirection==='row'){
+  const bounds=nav.getBoundingClientRect(),item=selected.getBoundingClientRect();
+  if(item.left<bounds.left)nav.scrollLeft+=item.left-bounds.left-8;
+  else if(item.right>bounds.right)nav.scrollLeft+=item.right-bounds.right+8;
+ }
+}
+function usageNavOffset(){const nav=$('usage-toc');return nav&&getComputedStyle(nav).flexDirection==='row'?nav.getBoundingClientRect().height+16:12;}
+function goToUsageSection(id){
+ const target=$(id),body=$('drawer-body');if(!target||!$('usage-toc'))return;
+ setUsageSection(id);
+ body.scrollTop=Math.max(0,body.scrollTop+target.getBoundingClientRect().top-body.getBoundingClientRect().top-usageNavOffset());
+ usageJumpPosition={id,top:body.scrollTop};
+}
+function syncUsageSection(){
+ const body=$('drawer-body');if($('modal').hidden||!$('usage-toc')||!body.clientHeight)return;
+ // Keep the selected chapter when a jump is clamped by the end of the document.
+ if(usageJumpPosition&&Math.abs(body.scrollTop-usageJumpPosition.top)<1){setUsageSection(usageJumpPosition.id);return;}
+ usageJumpPosition=null;
+ const top=body.getBoundingClientRect().top+usageNavOffset()+2;
+ const sections=USAGE_SECTIONS.map(([id])=>$(id)).filter(Boolean);
+ const last=body.scrollTop>0&&body.scrollTop+body.clientHeight>=body.scrollHeight-2;
+ const current=last?sections.at(-1):sections.filter(section=>section.getBoundingClientRect().top<=top).at(-1)||sections[0];
+ if(current)setUsageSection(current.id);
+}
+function usageExplanation(v,t,navigation=false){
  const manual=v.rule?.kind==='manual',source=M.get(t.model).sources;
  const minimum20=M.get('seedance-2.0').sources.minima,minimum25=M.get('seedance-2.5').sources.minima;
  const override=manual?`<p class="usage-override">本次最低用量：${tokenText(v.rule.tokens)} Token（人工设置）<br>${esc(v.rule.note)}</p>`:v.partial?'<p class="usage-override">本规格最低用量待补齐。</p>':'';
- return `<div class="usage-explanation" id="usage-explanation">
+ const content=`<div class="usage-explanation" id="usage-explanation">
  ${usageCalculation(v,t)}
- <section class="usage-prices"><div class="usage-section-heading"><h3>Seedance 系列模型刊例价</h3><span>元 / 百万 Token</span></div>${usageRateTable(t)}</section>
- <section class="usage-dimensions"><div class="usage-section-heading"><h3 id="usage-dimensions-heading">画面比例与像素分辨率</h3><label class="dimension-display-toggle" for="usage-show-pixels"><span>显示总像素</span><input type="checkbox" role="switch" id="usage-show-pixels" aria-controls="usage-dimension-table"${showDimensionPixels?' checked':''}></label></div>${usageDimensionTable()}</section>
- <section class="usage-definition"><h3>估算 Token 用量</h3><p id="usage-estimate-description">${esc(USAGE_DESCRIPTIONS.estimate)}</p></section>
- <section class="usage-definition"><h3>最低 Token 用量</h3><p id="usage-minimum-description">${esc(USAGE_DESCRIPTIONS.minimum)}</p>${override}</section>
- <nav class="usage-source-links" aria-label="相关资料">
+ <section class="usage-prices" id="usage-prices"><div class="usage-section-heading"><h3>Seedance 系列模型刊例价</h3><span>元 / 百万 Token</span></div>${usageRateTable(t)}</section>
+ <section class="usage-dimensions" id="usage-dimensions"><div class="usage-section-heading"><h3 id="usage-dimensions-heading">画面比例与像素分辨率</h3><label class="dimension-display-toggle" for="usage-show-pixels"><span>显示总像素</span><input type="checkbox" role="switch" id="usage-show-pixels" aria-controls="usage-dimension-table"${showDimensionPixels?' checked':''}></label></div>${usageDimensionTable()}</section>
+ <section class="usage-definition" id="usage-estimate-definition"><h3>估算 Token 用量</h3><p id="usage-estimate-description">${esc(USAGE_DESCRIPTIONS.estimate)}</p></section>
+ <section class="usage-definition" id="usage-minimum-definition"><h3>最低 Token 用量</h3><p id="usage-minimum-description">${esc(USAGE_DESCRIPTIONS.minimum)}</p>${override}</section>
+ <nav class="usage-source-links" id="usage-sources" aria-label="相关资料">
  <div><a href="${esc(source.pricing.pageUrl)}" target="_blank" rel="noopener">模型价格 ↗</a><a href="${esc(source.dimensions.pageUrl)}" target="_blank" rel="noopener">分辨率说明 ↗</a></div>
  <div><a href="${esc(minimum20.calculatorUrl)}" target="_blank" rel="noopener">Seedance 2.0 / Fast 计算器 ↗</a><a href="${esc(minimum25.calculatorUrl)}" target="_blank" rel="noopener">Seedance 2.5 计算器 ↗</a></div>
  <div><a href="${esc(minimum20.url)}" target="_blank" rel="noopener">Seedance 2.0 / Fast 最低用量表 ↗</a><a href="${esc(minimum25.url)}" target="_blank" rel="noopener">Seedance 2.5 最低用量表 ↗</a></div>
  </nav>
  </div>`;
+ if(!navigation)return content;
+ return `<div class="usage-layout"><nav class="usage-toc" id="usage-toc" aria-label="用量说明目录">${USAGE_SECTIONS.map(([id,title])=>`<button type="button" data-usage-section="${id}" aria-controls="${id}"${id===activeUsageSection?' aria-current="location"':''}>${title}</button>`).join('')}</nav>${content}</div>`;
 }
-function renderUsagePanel(v,t){$('drawer-body').innerHTML=usageExplanation(v,t);}
-function openUsage(){if(!modelValid)return;openDrawer('usage','用量说明','',usageExplanation(quote(),state.task));}
+function renderUsagePanel(v,t){
+ const body=$('drawer-body'),position=body.scrollTop,navPosition=$('usage-toc')?.scrollLeft||0;
+ const tablePositions=[...body.querySelectorAll('.usage-table-scroll')].map(table=>table.scrollLeft);
+ body.innerHTML=usageExplanation(v,t,true);body.scrollTop=position;$('usage-toc').scrollLeft=navPosition;
+ body.querySelectorAll('.usage-table-scroll').forEach((table,i)=>{table.scrollLeft=tablePositions[i]||0;});
+}
+function openUsage(){if(!modelValid)return;openDrawer('usage','用量说明','',usageExplanation(quote(),state.task,true));}
 function renderQuote(){
  const v=quote(),c=v.calc;
  $('cost-badge').hidden=!v.partial&&v.rule?.kind!=='manual';$('cost-badge').textContent=coverage(v);$('cost-badge').className='badge '+(v.partial?'amber':'blue');renderUsage(v,state.task);
@@ -485,13 +524,13 @@ function openDetails(mode='theory',recordId='',contextTask=null){
  const view=chosen==='actual'?actualBreakdown(selected,p):theoryBreakdown(t,p);
  const tabs=`<div class="detail-switch" role="tablist" aria-label="计算展开口径"><button role="tab" aria-selected="${chosen==='theory'}" data-detail-mode="theory" class="${chosen==='theory'?'active':''}">参数估算明细</button><button role="tab" aria-selected="${chosen==='actual'}" data-detail-mode="actual" class="${chosen==='actual'?'active':''}">实测金额复算展开</button></div>`;
  const content=tabs+detailPlan(p,t.model||'seedance-2.0')+selector+view.html+detailBusinessMath(p)+`<div class="actions" style="margin-top:20px"><button class="btn" id="export-calculation">导出这份计算明细 ↓</button><button class="btn" id="close-only">关闭</button></div>`;
- detailContext.text=[`Reelay V9.5.11 · ${chosen==='actual'?'平台实测金额复算':'参数估算明细'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
+ detailContext.text=[`Reelay V9.5.12 · ${chosen==='actual'?'平台实测金额复算':'参数估算明细'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
  openDrawer('calculation','定价明细',label(t)+' / '+vinLabel(t)+' · 不改变主表输入',content,true);
 }
 let ruleContext=null;
 function openRules(ruleTask=state.task){
  ruleContext=clone(ruleTask);const t=ruleContext,v=quote(t),spec=M.get(t.model),m=v.rule;
- openDrawer('usage','用量说明',spec.label+' · 规则版本 '+spec.version,usageExplanation(v,t)+`<details class="record-notes"><summary>高级：人工门槛覆盖</summary><p>仅在有明确特殊规则时使用；不会改写官方来源。</p>${t.video?`<label class="fieldlabel" for="rule-min">最低 Token</label><input class="input" id="rule-min" value="${esc(m?.tokens||'')}"><label class="fieldlabel" for="rule-note">来源与适用范围</label><textarea class="input" id="rule-note">${esc(m?.kind==='manual'?m.note:'')}</textarea><div id="rule-error"></div><button class="btn" id="save-rule">保存人工覆盖</button><button class="btn" id="remove-rule">恢复官方规则</button>`:'无视频输入不应用最低用量。'}</details>`);
+ openDrawer('usage','用量说明',spec.label+' · 规则版本 '+spec.version,usageExplanation(v,t,true)+`<details class="record-notes"><summary>高级：人工门槛覆盖</summary><p>仅在有明确特殊规则时使用；不会改写官方来源。</p>${t.video?`<label class="fieldlabel" for="rule-min">最低 Token</label><input class="input" id="rule-min" value="${esc(m?.tokens||'')}"><label class="fieldlabel" for="rule-note">来源与适用范围</label><textarea class="input" id="rule-note">${esc(m?.kind==='manual'?m.note:'')}</textarea><div id="rule-error"></div><button class="btn" id="save-rule">保存人工覆盖</button><button class="btn" id="remove-rule">恢复官方规则</button>`:'无视频输入不应用最低用量。'}</details>`);
 }
 function openPlan(){openDrawer('plan','定价倍率','由充值方案与定价目标反算，也可手动指定。',`<div class="multiplier-settings">
 <div class="multiplier-method"><label for="plan-mode">计算方式</label><select class="input" id="plan-mode"><option value="ideal" ${state.plan.mode!=='manual'?'selected':''}>自动计算</option><option value="manual" ${state.plan.mode==='manual'?'selected':''}>手动指定</option></select></div>
@@ -546,11 +585,11 @@ function addTask(){const v=current();if(!v.x||!globalValid)return;if(state.tasks
 function openNewRecharge(){openDrawer('recharge','添加充值方案','不改变实测数据，也不执行实际充值。',`<div class="grid2"><div><label class="fieldlabel" for="r-pay">实付金额</label><input class="input" id="r-pay" inputmode="decimal" value="100"></div><div><label class="fieldlabel" for="r-total">到账总积分</label><input class="input" id="r-total" inputmode="decimal" value="1500"></div></div><div class="inline-error" id="r-error"></div><button class="btn primary" id="save-recharge">加入对比</button>`);}
 function download(name,text,type='text/plain;charset=utf-8'){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 const filename=()=>state.plan.company.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,50)||'Reelay方案';
-function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.5.11 · 视频成本与定价','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
+function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.5.12 · 视频成本与定价','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
 function exportJSON(){
  const procurementProfiles=Object.keys(PROCUREMENT_MODELS).map(model=>procurementInfo(model));
  const taskEstimates=state.tasks.map(row=>{const v=theory(row.params);return v.x?exportRow(row.title,v,v.x,row.qty):{model:row.params.model,...procurementInfo(row.params.model),scope:'规则缺项，未生成收费估算'};});
- download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.5.11',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
+ download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.5.12',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
 }
 function csvCell(x){let s=String(x??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
 function exportCSV(actual=false){const rows=actual?actualRows:tableRows;if(!rows.length)return toast('没有可导出记录。');const titles=actual?{scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',procurementRatio:'当前复算采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',record:'记录',params:'规格',coverage:'估算依据',theoryP:'刊例费用P',recordedP:'平台记录P',deltaP:'实测P减估算P',theoryC:'采购成本C',recordedC:'平台记录C',deltaC:'实测C减估算C',recordedN:'平台实际扣分_空白为未知',recalcN:'当前复算扣分_非历史',recalcCash:'当前复算金额',recalcProfit:'当前复算模型毛利',pay:'当前充值实付',total:'当前到账积分',M:'当前倍率',targetMode:'当前目标模式',usage:'API_completion_tokens_原记录',note:'备注'}:{scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',targetMode:'定价目标模式',targetMargin:'目标模型毛利率百分数_毛利模式',procurementRatio:'采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',profit:'每笔模型毛利',margin:'取整后测算模型毛利率百分数',scenario:'场景',coverage:'估算依据',ruleVersion:'规则版本',quantity:'数量_逐笔先取整',pay:'实付元',total:'到账积分',discount:'目标客户折扣',M:'定价倍率',P:'刊例费用P',C:'采购成本C',raw:'取整前积分',N:'每笔预计扣分_非实际',target:'目标金额',cash:'每笔折合金额',gap:'与目标差额'};const ks=Object.keys(titles),csv='\ufeff'+[ks.map(k=>csvCell(titles[k])).join(','),...rows.map(r=>ks.map(k=>csvCell(r[k])).join(','))].join('\r\n');download(filename()+(actual?'_实测对照':'_理论_'+state.tab)+'.csv',csv,'text/csv;charset=utf-8');}
@@ -562,6 +601,7 @@ for(const r of old.tasks||[]){if(validTask(r.task,false))n.tasks.push({id:String
 throw Error('仅支持本工具V9、V8或V7导出的方案JSON。');}
 function openReset(){openDrawer('reset','重置V9本地草稿？','不会删除旧版V7文件或旧版草稿，不影响真实后台。',`<p>将恢复默认企业条件、理论任务参数和原表4条独立实测记录。当前未导出的修改会丢失。</p><div class="actions"><button class="btn primary" id="confirm-reset">确认重置V9</button><button class="btn" id="close-only">取消</button></div>`);}
 document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset,id=b.id;
+if(d.usageSection){goToUsageSection(d.usageSection);return;}
 if(d.detailMode){openDetails(d.detailMode,detailContext.recordId,detailContext.task);return;}if(d.workspace){showWorkspace(d.workspace);return;}if(d.tab){state.tab=d.tab;render();return;}if(d.example){const preset=quickTasks(state.task.model)[d.example];if(preset)changeTask(clone(preset));return;}if(d.res){changeTask({res:d.res});return;}if(d.ratio){changeTask({ratio:d.ratio});return;}if(d.seconds){changeTask({seconds:d.seconds});return;}if(d.video){changeTask({video:d.video==='true'});return;}if(d.discount){state.plan.discount=d.discount;state.plan.targetMode='discount';render();return;}if(d.margin){state.plan.margin=d.margin;state.plan.targetMode='margin';render();return;}if(d.matrix){try{const t=JSON.parse(d.matrix);if(validTask(t)){state.task=t;showWorkspace('theory','model');document.querySelector('.work').scrollIntoView({behavior:'smooth',block:'start'});}}catch(_){}return;}if(d.observation){observationDetail(d.observation);return;}if(d.editObservation){observationEditor(d.editObservation);return;}if(d.deleteObservation){state.observations=state.observations.filter(o=>o.id!==d.deleteObservation);closeDrawer();render();toast('已删除实测记录，理论结果未变。');return;}if(d.loadTask){const r=state.tasks.find(t=>t.id===d.loadTask);if(r){state.task=clone(r.params);showWorkspace('theory','model');document.querySelector('.work').scrollIntoView({behavior:'smooth',block:'start'});}return;}if(d.deleteTask){state.tasks=state.tasks.filter(t=>t.id!==d.deleteTask);render();return;}
 if(!globalValid&&!(['actual-export','add-observation'].includes(id)&&validPlan(state.plan))&&['details','actual-calculation','show-formula','plan-settings','task-rule','open-rules','unit-check','economics-how','add-observation','table-export','actual-export','add-task'].includes(id)){toast('请先修正顶部定价或任务输入。');return;}
 switch(id){
@@ -609,6 +649,8 @@ if(id==='vin-slider'){if(state.task.video)changeTask({vin:el.value});return;}if(
  render();return;
 }if(id==='seconds'){state.task.seconds=el.value;render();return;}if(id==='unit-p'){unitPreview();return;}if(id==='plan-manual'){ $('plan-mode').value='manual';planPreview();return;}if(id==='plan-basis'){planPreview();return;}});
 document.addEventListener('change',e=>{const el=e.target,id=el.id;if(id==='model'){changeModel(el.value);return;}if(id==='total-mode'){if(!globalValid){el.value=state.plan.giftMode?'gift':'total';toast('请先修正定价或任务输入。');return;}const giftMode=el.value==='gift';if(giftMode&&cmp(sub(state.plan.total,mul(state.plan.pay,10)),0)<0){el.value=state.plan.giftMode?'gift':'total';toast('总积分小于基础积分，不能按附赠模式填写。');return;}state.plan.giftMode=giftMode;render();return;}if(id==='pricing-mode'){state.plan.mode=el.value;render();return;}if(id==='target-mode'){state.plan.targetMode=el.value;render();return;}if(id==='seconds'&&validTask(state.task)){state.task=normalizeTask(state.task);render();return;}if(id==='details-record'){openDetails('actual',el.value,detailContext.task);return;}if(['plan-mode','plan-limit-precision','plan-digits','plan-round'].includes(id)){planPreview();return;}if(id==='matrix-axis'){state.matrixAxis=el.value;render();return;}if(id==='matrix-metric'){state.matrixMetric=el.value;render();return;}if(id==='recharge-mode'){state.rechargeMode=el.value;if(el.value==='fixed')state.frozenM=pack(pricing().usedM);render();return;}if(el.dataset.qty){const t=state.tasks.find(r=>r.id===el.dataset.qty),v=el.value.trim();if(t&&/^\d+$/.test(v)&&+v>=1&&+v<=100000)t.qty=v;else toast('任务数量须为1～100000的整数。');render();}});
+$('drawer-body').addEventListener('scroll',syncUsageSection,{passive:true});
+window.addEventListener('resize',()=>{usageJumpPosition=null;syncUsageSection();},{passive:true});
 $('drawer-body').addEventListener('change',e=>{
  if(e.target.id!=='usage-show-pixels')return;
  showDimensionPixels=e.target.checked;

@@ -96,6 +96,7 @@
 @media print{.pricing-mode{display:none}.manual-m-control input{border:0;background:transparent}}
 
 .reference-controls{margin-top:10px;display:grid;grid-template-columns:max-content minmax(0,1fr) 46px;align-items:center;gap:8px}
+.reference-slot{display:flow-root;min-height:36px}
 .reference-controls>label{font-size:11px;color:var(--sub);white-space:nowrap}
 .reference-slider{--vin-accent:#879bc3;min-width:0;height:26px}
 .reference-slider::-webkit-slider-runnable-track{height:4px;background:linear-gradient(to right,var(--vin-accent) 0%,var(--vin-accent) var(--range-progress),#e4e9f2 var(--range-progress),#e4e9f2 100%)}
@@ -110,13 +111,17 @@
 .basis-note b{display:block;margin-bottom:3px}.basis-note small{display:block;margin-top:4px;font-size:10px;font-variant-numeric:tabular-nums}
 /* Compact usage inputs explain the existing list-price estimate. */
 .usage-summary{margin:0 0 13px}
-.usage-metrics{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin:0 0 10px}
+.usage-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:100px;gap:10px;margin:0 0 10px}.usage-metrics.is-single #token-estimate-metric{grid-column:1/-1}
 .usage-token{min-width:0;padding:10px 12px;border:1px solid transparent;border-radius:7px;background:#f7f8fa}.usage-metrics dt{display:flex;align-items:center;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--muted);margin-bottom:4px;line-height:1.6}.usage-metrics dd{margin:0;font:550 17px/1.5 Inter,"Segoe UI",Arial,sans-serif;color:var(--sub);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .usage-token.is-adopted{background:var(--tint);border-color:#dce5fb}.usage-adopted{padding:0 5px;border-radius:4px;background:#e1e9fc;color:var(--accent);font-size:9px;line-height:1.8;white-space:nowrap}.usage-rule-kind{font-size:9px;color:var(--amber);white-space:nowrap}
 .usage-help{font-size:11px}.usage-status{display:block;margin:0 0 10px;color:var(--amber);font-size:10px}.usage-status[hidden]{margin:0}
-.panel-bg.centered{align-items:center;justify-content:center;padding:24px}.panel-bg.centered .drawer{width:1100px;max-width:100%;height:auto;max-height:calc(100dvh - 48px);border-radius:14px;animation:usage-dialog-in .16s ease-out;overflow:hidden;box-shadow:0 18px 80px #18253b33}.panel-bg.centered .drawer-body{min-height:0;overflow-y:auto;overscroll-behavior:contain}.panel-bg.centered .drawer-header{flex-shrink:0}
+.panel-bg.centered{align-items:center;justify-content:center;padding:24px}.panel-bg.centered .drawer{width:1280px;max-width:100%;height:auto;max-height:calc(100dvh - 48px);border-radius:14px;animation:usage-dialog-in .16s ease-out;overflow:hidden;box-shadow:0 18px 80px #18253b33}.panel-bg.centered .drawer-body{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}.panel-bg.centered .drawer-header{flex-shrink:0}
 @keyframes usage-dialog-in{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
 .usage-explanation{font-size:12px;line-height:1.85;color:var(--sub);overflow-wrap:anywhere}.usage-explanation h3{font-size:13px;font-weight:600;color:var(--ink);margin:0 0 9px}.usage-explanation section+section{margin-top:22px}
+.usage-layout{display:grid;grid-template-columns:132px minmax(0,1fr);gap:28px;align-items:start}.usage-explanation{min-width:0}
+.usage-toc{position:sticky;top:0;display:flex;flex-direction:column;gap:4px;align-self:start;padding-right:16px;border-right:1px solid var(--line);background:var(--paper)}
+.usage-toc button{border:0;border-radius:6px;background:transparent;padding:8px 10px;text-align:left;font-size:12px;line-height:1.6;color:var(--sub);white-space:nowrap}.usage-toc button:hover{background:#f5f7fa}.usage-toc button[aria-current=location]{color:var(--accent);background:var(--tint);font-weight:550}
+@media(max-width:1099px){.usage-layout{grid-template-columns:minmax(0,1fr);gap:18px}.usage-toc{flex-direction:row;gap:4px;top:-1px;z-index:2;overflow-x:auto;max-width:100%;padding:0 0 10px;border-right:0;border-bottom:1px solid var(--line)}.usage-toc button{flex:none;font-size:11px;padding:7px 10px}}
 .usage-calculation-context{margin:0 0 12px;font-size:11px;color:var(--muted)}.usage-calculation-steps{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:8px;background:#fafbfc;overflow:hidden}.usage-calculation-steps>li{display:grid;grid-template-columns:130px minmax(0,1fr);gap:12px 18px;margin:0;padding:13px 16px}.usage-calculation-steps>li+li{border-top:1px solid var(--line)}.usage-calculation-steps h4{margin:0;font-size:12px;font-weight:550;color:var(--ink);line-height:1.8}.usage-calculation-steps p{margin:0}.usage-calculation-steps .usage-formula{font-size:11px;color:var(--muted)}.usage-calculation-steps .usage-substitution{margin-top:4px;font-size:13px;line-height:1.8;color:var(--ink);font-variant-numeric:tabular-nums}.usage-substitution strong{font-weight:600}.usage-choice{display:inline-block;margin-left:10px;font-size:11px;color:var(--sub);white-space:nowrap}.usage-calculation-steps .usage-calculation-note{margin-top:4px;font-size:11px;color:var(--muted)}@media(max-width:640px){.usage-calculation-steps>li{grid-template-columns:1fr;gap:5px;padding:12px}.usage-choice{margin-left:6px}}
 .usage-section-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px}.usage-section-heading>span{font-size:11px;color:var(--muted)}
 .dimension-display-toggle{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sub);cursor:pointer;white-space:nowrap}.dimension-display-toggle input{appearance:none;position:relative;width:30px;height:18px;margin:0;border:1px solid #cbd3df;border-radius:10px;background:#e3e7ee;cursor:pointer}.dimension-display-toggle input::before{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #18253b26}.dimension-display-toggle input:checked{background:var(--accent);border-color:var(--accent)}.dimension-display-toggle input:checked::before{transform:translateX(12px)}.dimension-display-toggle input:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
@@ -203,8 +208,9 @@
 .estimate-actions{display:flex;align-items:center;gap:8px}
 .result-section-title{font-size:12px;line-height:1.6;font-weight:600;color:var(--sub);margin:0}
 .generation-panel .usage-summary{margin:0}
-.generation-panel .usage-metrics{gap:8px;margin:0 0 8px}.generation-panel .usage-token{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px}
-.generation-panel .usage-metrics dt{min-width:0;margin:0}.generation-panel .usage-metrics dd{max-width:60%;flex-shrink:0;font-size:var(--usage-value-size);line-height:1.5;text-align:right}
+.generation-panel .usage-metrics{gap:8px;margin:0 0 8px}.generation-panel .usage-token{container-type:inline-size;display:grid;grid-template-rows:40px 34px;gap:4px;padding:10px 12px}
+.generation-panel .usage-metrics dt{min-width:0;margin:0;align-content:flex-start;align-items:center;gap:2px 5px;font-size:11px}.generation-panel .usage-metrics dt>span:first-child{flex-basis:100%;white-space:nowrap}
+.generation-panel .usage-metrics dd{min-width:0;max-width:100%;font-size:20px;font-size:clamp(14px,calc(100cqi / var(--token-chars,10) / .62),20px);line-height:27px;text-align:left;white-space:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;overflow-wrap:normal;font-variant-numeric:tabular-nums}
 .generation-panel .usage-status{margin:0 0 12px}
 .video-price{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;padding:10px 13px;border:1px solid transparent;border-radius:7px;background:#f7f8fa}
 .video-price-label{min-width:0;font-size:11px;line-height:1.6;color:var(--muted)}
@@ -255,7 +261,7 @@
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.11</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.12</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
 <section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
@@ -264,7 +270,7 @@
 <div id="globalError" class="notice red" role="alert" hidden></div>
 <div class="model-select-field"><label class="fieldlabel" for="model">生成模型</label><select id="model"></select></div>
 <div class="fields-layout">
-<div class="field" data-field="video"><div class="label">视频输入</div><div class="segs" id="video-options"><button data-video="false">无视频输入</button><button data-video="true">有视频输入</button></div><div class="reference-controls" data-field="vin" id="video-detail"><label for="vin-slider" id="vin-label">输入视频总时长</label><input class="duration-slider reference-slider" type="range" id="vin-slider" aria-labelledby="vin-label" min="2" max="15" step="1" value="2"><div class="vin-value"><input class="num" type="number" id="vin" aria-label="输入视频总时长（整秒）" inputmode="numeric" min="2" max="15" step="1" value="2"><span>秒</span></div></div></div>
+<div class="field" data-field="video"><div class="label">视频输入</div><div class="segs" id="video-options"><button data-video="false">无视频输入</button><button data-video="true">有视频输入</button></div><div class="reference-slot"><div class="reference-controls" data-field="vin" id="video-detail"><label for="vin-slider" id="vin-label">输入视频总时长</label><input class="duration-slider reference-slider" type="range" id="vin-slider" aria-labelledby="vin-label" min="2" max="15" step="1" value="2"><div class="vin-value"><input class="num" type="number" id="vin" aria-label="输入视频总时长（整秒）" inputmode="numeric" min="2" max="15" step="1" value="2"><span>秒</span></div></div></div></div>
 <div class="field" data-field="resolution"><div class="label">输出分辨率</div><div class="segs" id="res-options"></div></div>
 <div class="field" data-field="ratio"><div class="label">画面比例</div><div class="ratios" id="ratio-options"></div><div class="pixel-line"><span class="num" id="pixels"></span><span>24 fps</span></div></div>
 <div class="field" data-field="seconds"><div class="label slider-label"><label for="seconds">输出时长</label><output class="slider-value num" id="seconds-value" for="seconds">4 秒</output></div><div id="seconds-fixed"><input class="duration-slider" type="range" id="seconds" aria-label="输出秒数" min="4" max="15" step="1" value="4"><div class="slider-scale"><span>4 秒</span><span id="seconds-max-label">15 秒</span></div></div></div>
@@ -276,8 +282,8 @@
 <div class="estimate-heading"><h3 class="result-section-title" id="model-cost-title">用量与费用</h3><div class="estimate-actions"><span id="cost-badge" class="badge blue" hidden></span><button class="link usage-help" id="usage-help" aria-haspopup="dialog">用量说明 ⓘ</button></div></div>
 <div class="usage-summary" id="usage-summary">
 <dl class="usage-metrics" id="usage-metrics" aria-label="估算与最低 Token 用量">
-<div class="usage-token" id="token-estimate-metric"><dt title="按生成参数计算，尚未应用最低用量"><span id="token-estimate-label">估算 Token 用量</span><span class="usage-adopted" id="token-estimate-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-estimate">—</dd></div>
-<div class="usage-token" id="token-minimum-metric"><dt><span id="token-minimum-label">最低 Token 用量</span><span class="usage-rule-kind" id="token-minimum-kind" hidden></span><span class="usage-adopted" id="token-minimum-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-minimum">—</dd></div>
+<div class="usage-token" id="token-estimate-metric"><dt title="按生成参数计算，尚未应用最低用量"><span id="token-estimate-label">估算 Token 用量</span><span class="usage-adopted" id="token-estimate-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-estimate" tabindex="0">—</dd></div>
+<div class="usage-token" id="token-minimum-metric"><dt><span id="token-minimum-label">最低 Token 用量</span><span class="usage-rule-kind" id="token-minimum-kind" hidden></span><span class="usage-adopted" id="token-minimum-adopted" title="按此用量计算刊例费用" hidden>采用</span></dt><dd id="token-minimum" tabindex="0">—</dd></div>
 </dl>
 <div id="coverage-note" class="usage-status" hidden></div>
 </div>

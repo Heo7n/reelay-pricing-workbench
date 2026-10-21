@@ -453,9 +453,10 @@ test('task controls and compact input duration update live without changing pric
   const h=boot(t), doc=h.w.document;
   const fields=[...doc.querySelectorAll('.fields-layout > .field')];
   assert.deepEqual(fields.map(field=>field.dataset.field),['video','resolution','ratio','seconds']);
-  const videoDetail=doc.getElementById('video-detail');
+  const videoDetail=doc.getElementById('video-detail'),referenceSlot=videoDetail.closest('.reference-slot');
   assert.ok(fields[0].contains(videoDetail),'reference duration belongs inside the video-input field');
-  assert.equal(doc.getElementById('video-options').nextElementSibling,videoDetail,'reference duration appears immediately after the video-input choices');
+  assert.ok(referenceSlot,'input duration has a persistent layout slot');
+  assert.equal(doc.getElementById('video-options').nextElementSibling,referenceSlot,'the reserved duration slot follows the video-input choices');
   const ratios=[...fields[2].querySelectorAll('[data-ratio]')].map(button=>button.dataset.ratio);
   assert.deepEqual(ratios,['21:9','16:9','4:3','1:1','3:4','9:16']);
   const seconds=doc.getElementById('seconds'), vin=doc.getElementById('vin'), slider=doc.getElementById('vin-slider');
@@ -489,6 +490,8 @@ test('task controls and compact input duration update live without changing pric
   equal(h.api.pricing().usedM,'1.65');
   h.click('[data-video="false"]');
   assert.equal(doc.getElementById('video-detail').hidden,true);
+  assert.equal(referenceSlot.hidden,false,'only the input control is hidden, preserving its layout slot');
+  assert.equal(referenceSlot.contains(videoDetail),true);
   assert.equal(h.api.getState().task.video,false);
   equal(h.api.pricing().usedM,'1.65');
   assert.equal(doc.getElementById('auto-time'),null);
@@ -672,6 +675,7 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   };
   assert.equal(doc.getElementById('token-applied'),null);
   assert.equal(doc.querySelectorAll('.usage-token').length,2);
+  assert.equal(doc.getElementById('usage-metrics').classList.contains('is-single'),false);
   const explanation=()=>doc.getElementById('usage-explanation');
   assert.equal(doc.getElementById('usage-details'),null,'the inline disclosure is replaced by a dialog');
   assert.equal(doc.getElementById('modal').hidden,true);
@@ -703,6 +707,7 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   h.click('[data-video="false"]');
   assert.equal(shown('token-rate'),'51.00');assert.equal(shown('token-minimum'),'不适用');
   assert.equal(doc.getElementById('token-minimum-metric').hidden,true);
+  assert.equal(doc.getElementById('usage-metrics').classList.contains('is-single'),true,'the visible estimate occupies the shared row when no minimum applies');
   assert.equal(shown('token-estimate-label'),'估算 Token 用量');
   assert.equal(shown('token-estimate'),'243,000');assert.equal(adopted('estimate'),'243,000');
   assert.equal(doc.querySelectorAll('#usage-price-table [aria-current="true"]').length,1);
@@ -714,6 +719,7 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   assert.ok(fractional,'there are official mappings with fractional token estimates');
   h.update(s=>{s.task=fractional;});
   assert.equal(doc.getElementById('token-minimum-metric').hidden,false);
+  assert.equal(doc.getElementById('usage-metrics').classList.contains('is-single'),false);
   assert.equal(shown('token-estimate-label'),'估算 Token 用量');
   equal(shown('token-estimate').replaceAll(',',''),h.api.current().calc.tokens);
   equal(adopted().replaceAll(',',''),h.api.current().calc.billedTokens);
@@ -892,6 +898,110 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   h.click('#close-drawer');
   const vin=doc.getElementById('vin');vin.focus();vin.value='';vin.dispatchEvent(new h.w.Event('input',{bubbles:true}));
   assert.equal(help.disabled,true);vin.blur();h.good();assert.equal(help.disabled,false);
+});
+
+test('usage navigation addresses every section and scrolls within the dialog without changing pricing', t => {
+  const h=boot(t),doc=h.w.document,before=JSON.stringify(h.api.getState());
+  h.click('#usage-help');
+  const body=doc.getElementById('drawer-body'),layout=body.querySelector('.usage-layout'),toc=body.querySelector('nav.usage-toc');
+  assert.ok(layout?.contains(toc),'the usage dialog includes its own navigation');
+  assert.ok(layout.contains(doc.getElementById('usage-explanation')));
+  const ids=['usage-calculation','usage-prices','usage-dimensions','usage-estimate-definition','usage-minimum-definition','usage-sources'];
+  const buttons=[...toc.querySelectorAll('button[data-usage-section]')];
+  assert.deepEqual(buttons.map(button=>button.dataset.usageSection),ids);
+  const current=()=>[...toc.querySelectorAll('[aria-current="location"]')];
+  assert.equal(current().length,1);assert.equal(current()[0],buttons[0]);
+  let pageScrolls=0;
+  h.w.scrollTo=()=>{pageScrolls++;};
+  h.w.HTMLElement.prototype.scrollIntoView=()=>{pageScrolls++;};
+  doc.documentElement.scrollTop=123;
+  // Supply geometry because JSDOM has no layout. Navigation must move the modal
+  // scroller, rather than scrolling the underlying document to an anchor.
+  body.getBoundingClientRect=()=>({top:100,bottom:900,left:0,right:1000,width:1000,height:800});
+  for(const [i,id] of ids.entries()){
+    const target=doc.getElementById(id);
+    assert.ok(target,'navigation target '+id+' exists');
+    assert.ok(doc.getElementById('usage-explanation').contains(target));
+    Object.defineProperty(target,'offsetTop',{configurable:true,value:(i+1)*300});
+    target.getBoundingClientRect=()=>({top:100+(i+1)*300-body.scrollTop,bottom:200+(i+1)*300-body.scrollTop,left:0,right:800,width:800,height:100});
+    if(i===0)continue;
+    body.scrollTop=10;
+    h.click('[data-usage-section="'+id+'"]');
+    assert.equal(current().length,1);assert.equal(current()[0].dataset.usageSection,id);
+    assert.ok(body.scrollTop>10,'navigation moves the dialog to '+id);
+    assert.equal(doc.documentElement.scrollTop,123,'the underlying page keeps its position');
+  }
+  Object.defineProperty(body,'clientHeight',{configurable:true,value:500});
+  Object.defineProperty(body,'scrollHeight',{configurable:true,value:2300});
+  for(const [position,id] of [[900,'usage-dimensions'],[1500,'usage-minimum-definition'],[1800,'usage-sources']]){
+    body.scrollTop=position;body.dispatchEvent(new h.w.Event('scroll'));
+    assert.equal(current().length,1);assert.equal(current()[0].dataset.usageSection,id,'the selected title follows manual scrolling');
+  }
+  // Simulate the narrow-screen row navigation, whose sticky height must not
+  // cover the destination heading. JSDOM does not evaluate viewport layouts.
+  toc.style.flexDirection='row';
+  toc.getBoundingClientRect=()=>({top:100,bottom:148,left:0,right:1000,width:1000,height:48});
+  h.click('[data-usage-section="usage-dimensions"]');
+  assert.ok(doc.getElementById('usage-dimensions').getBoundingClientRect().top>=148,'the destination clears the sticky navigation');
+  body.dispatchEvent(new h.w.Event('scroll'));
+  assert.equal(current()[0].dataset.usageSection,'usage-dimensions','scroll synchronization preserves the clicked heading on narrow screens');
+  assert.equal(pageScrolls,0,'navigation does not invoke page-level scrolling');
+  assert.equal(JSON.stringify(h.api.getState()),before,'reading and navigating usage help never changes pricing or task state');
+});
+
+test('usage navigation survives live recalculation and resets only when the dialog is reopened', t => {
+  const h=boot(t),doc=h.w.document;
+  h.click('#usage-help');
+  const body=doc.getElementById('drawer-body');
+  const active=()=>doc.querySelector('.usage-toc [aria-current="location"]')?.dataset.usageSection;
+  h.click('[data-usage-section="usage-dimensions"]');
+  body.scrollTop=728;
+  doc.querySelector('.usage-toc').scrollLeft=170;
+  doc.getElementById('usage-dimension-table').parentElement.scrollLeft=260;
+  h.input('seconds','9');
+  assert.equal(active(),'usage-dimensions');assert.equal(body.scrollTop,728,'task recalculation preserves the reading position');
+  assert.equal(doc.querySelector('.usage-toc').scrollLeft,170,'recalculation preserves the narrow-screen navigation position');
+  assert.equal(doc.getElementById('usage-dimension-table').parentElement.scrollLeft,260,'recalculation preserves the wide mapping table position');
+  assert.match(doc.getElementById('usage-calculation-context').textContent,/9/,'preserving navigation does not freeze the calculation');
+  h.input('purchase-discount','10');
+  assert.equal(active(),'usage-dimensions');assert.equal(body.scrollTop,728,'pricing recalculation also preserves the reading position');
+  h.click('#usage-show-pixels');
+  assert.equal(active(),'usage-dimensions');assert.equal(body.scrollTop,728);
+  h.click('[data-video="false"]');
+  assert.equal(doc.getElementById('token-minimum-metric').hidden,true);
+  assert.equal(doc.querySelectorAll('.usage-token.is-adopted').length,1);
+  assert.equal(doc.querySelector('.usage-token.is-adopted').id,'token-estimate-metric');
+  assert.equal(active(),'usage-dimensions');assert.equal(body.scrollTop,728);
+  h.click('#close-drawer');h.click('#usage-help');
+  assert.equal(active(),'usage-calculation');assert.equal(body.scrollTop,0,'a new visit starts at the calculation');
+  h.click('#close-drawer');h.click('#show-formula');
+  assert.equal(doc.querySelector('.usage-toc'),null,'platform calculation details do not inherit the usage navigation');
+});
+
+test('usage navigation retains a clicked lower heading when its scroll position is clamped at the bottom', t => {
+  const h=boot(t),doc=h.w.document;
+  h.click('#usage-help');
+  const body=doc.getElementById('drawer-body');
+  const active=()=>doc.querySelector('.usage-toc [aria-current="location"]')?.dataset.usageSection;
+  let scrollPosition=0;
+  Object.defineProperties(body,{
+    clientHeight:{configurable:true,value:800},
+    scrollHeight:{configurable:true,value:1800},
+    scrollTop:{configurable:true,get:()=>scrollPosition,set:value=>{scrollPosition=Math.min(1000,Math.max(0,Number(value)));}}
+  });
+  body.getBoundingClientRect=()=>({top:100,bottom:900,left:0,right:1000,width:1000,height:800});
+  const offsets={'usage-calculation':0,'usage-prices':300,'usage-dimensions':800,'usage-estimate-definition':1300,'usage-minimum-definition':1450,'usage-sources':1600};
+  for(const [id,offset] of Object.entries(offsets))doc.getElementById(id).getBoundingClientRect=()=>({top:100+offset-scrollPosition,bottom:200+offset-scrollPosition,left:0,right:800,width:800,height:100});
+  for(const id of ['usage-estimate-definition','usage-minimum-definition']){
+    h.click('[data-usage-section="'+id+'"]');
+    assert.equal(body.scrollTop,1000,'the browser cannot scroll this heading to the top');
+    body.dispatchEvent(new h.w.Event('scroll'));
+    assert.equal(active(),id,'scroll synchronization preserves the explicitly selected lower heading');
+  }
+  body.scrollTop=650;body.dispatchEvent(new h.w.Event('scroll'));
+  assert.equal(active(),'usage-prices','a later user scroll releases the explicit navigation selection');
+  body.scrollTop=1000;body.dispatchEvent(new h.w.Event('scroll'));
+  assert.equal(active(),'usage-sources','normal scrolling to the bottom selects the last section');
 });
 
 test('usage dimension table matches captured official mappings without ranking highlights', t => {
