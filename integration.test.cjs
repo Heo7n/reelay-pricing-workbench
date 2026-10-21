@@ -781,7 +781,8 @@ test('usage calculation leads the explanation and substitutes each model specifi
     assert.equal(section.querySelectorAll('#usage-calculation-accuracy').length,1);
     assert.equal(doc.getElementById('usage-calculation-accuracy').textContent,'Token 用量为估算值，实际以 API 返回的 usage.completion_tokens 为准。');
     const fee=section.querySelector('[data-step="fee"]');
-    assert.match(fee.textContent,/计费用量.*刊例单价/);
+    assert.match(fee.textContent,/计费 Token 用量.*刊例单价/);
+    assert.equal(billed.querySelector('h4').textContent,'计费 Token 用量');
     assert.match(clean(fee),/÷1000000/,'the per-million price is converted once');
     assert.ok(clean(fee).includes(entry.rate),'the selected model rate appears in the substitution');
     assert.equal(doc.getElementById('usage-calc-fee').textContent,entry.fee);
@@ -797,6 +798,7 @@ test('usage calculation compares exact minima and follows threshold changes whil
   h.click('#usage-help');
   const billed=()=>doc.querySelector('#usage-calculation [data-step="billed"]');
   const chosen=()=>doc.querySelector('#usage-calculation .usage-choice').textContent;
+  assert.equal(billed().querySelector('h4').textContent,'计费 Token 用量');
   assert.match(billed().textContent,/max/i);
   assert.match(billed().textContent,/有视频输入|输入包含视频/,'minimum usage is scoped to video input');
   assert.match(billed().textContent,/查表/,'official minima come from the current specification lookup');
@@ -1076,118 +1078,146 @@ test('usage dimension table matches captured official mappings without ranking h
   assert.equal(JSON.stringify(h.api.getState()),before,'display preferences do not alter quotes or exported pricing state');
 });
 
-test('quick options open as a grouped nonmodal popover and close without changing pricing', t => {
-  const h=boot(t),doc=h.w.document,toggle=doc.getElementById('quick-toggle'),popup=doc.getElementById('quick-popover');
+test('quick options use a compact attached region and close access immediately without changing pricing', t => {
+  const h=boot(t),doc=h.w.document,toggle=doc.getElementById('quick-toggle'),drawer=doc.getElementById('quick-drawer'),content=doc.getElementById('quick-content');
   const before=JSON.stringify(h.api.getState());
-  const closed=()=>{assert.equal(popup.hidden,true);assert.equal(toggle.getAttribute('aria-expanded'),'false');};
-  closed();
-  assert.equal(toggle.getAttribute('aria-controls'),popup.id);assert.equal(toggle.getAttribute('aria-haspopup'),'dialog');
-  assert.equal(popup.getAttribute('role'),'dialog');assert.equal(popup.getAttribute('aria-modal'),'false');
-  const groups=[...popup.querySelectorAll('section.quick-group')];
-  assert.deepEqual(groups.map(group=>doc.getElementById(group.getAttribute('aria-labelledby')).textContent),['无视频输入','有视频输入']);
+  const closed=()=>{assert.equal(toggle.getAttribute('aria-expanded'),'false');assert.equal(drawer.hasAttribute('inert'),true);assert.equal(drawer.getAttribute('aria-hidden'),'true');};
+  const transition=(target=content,propertyName='transform')=>{const event=new h.w.Event('transitionend',{bubbles:true});Object.defineProperty(event,'propertyName',{value:propertyName});target.dispatchEvent(event);h.good();};
+  const finish=()=>{transition();closed();assert.equal(drawer.hidden,true);assert.equal(drawer.style.height,'0px');};
+  closed();assert.equal(drawer.hidden,true);
+  assert.equal(toggle.getAttribute('aria-controls'),drawer.id);assert.equal(toggle.hasAttribute('aria-haspopup'),false);
+  assert.equal(drawer.getAttribute('role'),'region');assert.equal(drawer.getAttribute('aria-labelledby'),'quick-title');assert.equal(drawer.hasAttribute('aria-modal'),false);
+  for(const id of ['quick-popover','quick-model','quick-close'])assert.equal(doc.getElementById(id),null);
+  assert.equal(drawer.querySelector('h3'),null,'the trigger title is not repeated inside the drawer');
+  assert.deepEqual([...drawer.querySelectorAll('.quick-matrix-head>span')].map(el=>el.textContent),['','最低用量','最高用量']);
+  const groups=[...drawer.querySelectorAll('section.quick-group')];
+  assert.deepEqual(groups.map(group=>doc.getElementById(group.getAttribute('aria-labelledby')).textContent),['无视频','有视频']);
   assert.deepEqual(groups.map(group=>[...group.querySelectorAll('[data-example]')].map(button=>button.dataset.example)),[['none-min','none-max'],['video-min','video-max']]);
+  for(const group of groups)assert.equal(group.querySelectorAll(':scope>button[data-example]').length,2,'each input mode owns its two matrix cells');
   h.click('#quick-toggle');
-  assert.equal(popup.hidden,false);assert.equal(toggle.getAttribute('aria-expanded'),'true');
-  assert.equal(doc.activeElement,popup.querySelector('[data-example][aria-pressed="true"]'),'opening focuses the current preset');
-  doc.getElementById('quick-popover-title').dispatchEvent(new h.w.Event('pointerdown',{bubbles:true}));
+  assert.equal(drawer.hidden,false);assert.equal(toggle.getAttribute('aria-expanded'),'true');assert.equal(drawer.hasAttribute('inert'),false);assert.equal(drawer.getAttribute('aria-hidden'),'false');
+  assert.equal(doc.activeElement,drawer.querySelector('[data-example][aria-pressed="true"]'),'opening focuses the current preset');
+  doc.getElementById('quick-video-title').dispatchEvent(new h.w.Event('pointerdown',{bubbles:true}));
   doc.activeElement.dispatchEvent(new h.w.FocusEvent('focusout',{bubbles:true,relatedTarget:null}));
-  h.click('#quick-popover-title');
-  assert.equal(popup.hidden,false,'clicking a nonfocusable heading inside the popover must not dismiss it on a null-relatedTarget blur');
-  h.click('#quick-close');closed();assert.equal(doc.activeElement,toggle);
-  h.click('#quick-toggle');h.click('#quick-toggle');closed();
+  h.click('#quick-video-title');
+  assert.equal(toggle.getAttribute('aria-expanded'),'true','an internal nonfocusable heading does not dismiss the drawer');
+  const openHeight=drawer.style.height;
+  h.click('#quick-toggle');closed();assert.equal(doc.activeElement,toggle);
+  assert.equal(drawer.hidden,false,'the clipping shell stays present during the slide-back animation');
+  assert.equal(drawer.style.height,openHeight,'closing does not combine height collapse with content translation');
+  h.click('[data-example="none-max"]');assert.equal(JSON.stringify(h.api.getState()),before,'a preset is not actionable during the closing animation');
+  transition(drawer,'transform');assert.equal(drawer.hidden,false,'the clipping shell does not finish the content transition');
+  transition(content,'opacity');assert.equal(drawer.hidden,false,'unrelated transitions do not end closing');
+  transition(content.querySelector('button'),'transform');assert.equal(drawer.hidden,false,'a descendant transition does not end closing');
+  finish();
   h.click('#quick-toggle');
   doc.activeElement.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));h.good();
-  closed();assert.equal(doc.activeElement,toggle);
+  closed();assert.equal(doc.activeElement,toggle);finish();
   h.click('#quick-toggle');
-  h.click('body');closed();
-  h.click('#quick-toggle');doc.body.dispatchEvent(new h.w.Event('pointerdown',{bubbles:true}));h.good();closed();
-  h.click('#quick-toggle');toggle.focus();assert.equal(popup.hidden,false,'focus can return to the trigger without dismissing the popover');
-  doc.getElementById('pay').focus();h.good();closed();
-  assert.equal(doc.activeElement,doc.getElementById('pay'),'leaving the popover does not steal focus back');
+  h.click('body');closed();finish();
+  h.click('#quick-toggle');doc.body.dispatchEvent(new h.w.Event('pointerdown',{bubbles:true}));h.good();closed();finish();
+  h.click('#quick-toggle');toggle.focus();assert.equal(toggle.getAttribute('aria-expanded'),'true','focus can return to the trigger without dismissing the drawer');
+  doc.getElementById('pay').focus();h.good();closed();finish();
+  assert.equal(doc.activeElement,doc.getElementById('pay'),'leaving the drawer does not steal focus back');
   assert.equal(JSON.stringify(h.api.getState()),before,'opening and dismissal do not change task or financial state');
   const pricing=JSON.stringify(h.api.getState().plan);
   h.click('#quick-toggle');h.click('[data-example="none-max"]');
-  closed();assert.equal(doc.activeElement,toggle);assert.equal(h.api.getState().task.video,false);
+  closed();assert.equal(doc.activeElement,toggle);assert.equal(h.api.getState().task.video,false);finish();
   assert.equal(JSON.stringify(h.api.getState().plan),pricing,'applying a task preset does not alter pricing');
-  h.click('#quick-toggle');assert.equal(doc.activeElement,popup.querySelector('[data-example="none-max"]'));
+  h.click('#quick-toggle');assert.equal(doc.activeElement,drawer.querySelector('[data-example="none-max"]'));
 });
 
 test('quick options refresh model-specific descriptions and focus the first option when no preset matches', t => {
-  const h=boot(t),doc=h.w.document,popup=doc.getElementById('quick-popover');
+  const h=boot(t),doc=h.w.document,drawer=doc.getElementById('quick-drawer');
   h.input('seconds','9');h.click('#quick-toggle');
-  assert.equal(popup.querySelector('[data-example][aria-pressed="true"]'),null);
-  assert.equal(doc.activeElement,popup.querySelector('[data-example]'));
-  h.click('#quick-close');
+  assert.equal(drawer.querySelector('[data-example][aria-pressed="true"]'),null);
+  assert.equal(doc.activeElement,drawer.querySelector('[data-example]'));
+  h.click('#quick-toggle');
   for(const [model,label,maxSeconds,res] of [['seedance-2.5','Seedance 2.5','30','1080p'],['seedance-2.0-fast','Seedance 2.0 Fast','15','720p']]){
     h.input('model',model,'change');h.click('#quick-toggle');
-    assert.equal(doc.getElementById('quick-model').textContent,label);
-    const highest=popup.querySelector('[data-example="video-max"]');
-    assert.match(highest.textContent,new RegExp(maxSeconds));assert.ok(highest.textContent.includes(res));
+    const highest=drawer.querySelector('[data-example="video-max"]');
+    assert.ok(highest.getAttribute('aria-label').includes(label),'the accessible name retains model identity');
+    assert.match(highest.getAttribute('aria-label'),/有视频输入，最高用量/);
+    assert.match(highest.querySelector(':scope>span').textContent,new RegExp(res+' · '));
+    assert.deepEqual([...highest.querySelectorAll('small>span')].map(el=>el.textContent),['输出 '+maxSeconds+' 秒','输入 '+maxSeconds+' 秒']);
     const pricing=JSON.stringify(h.api.getState().plan);
     h.click('[data-example="video-max"]');
     const task=h.api.getState().task;
     assert.equal(task.model,model);assert.equal(task.seconds,maxSeconds);assert.equal(task.vin,maxSeconds);assert.equal(task.res,res);
-    assert.equal(popup.hidden,true);assert.equal(doc.activeElement.id,'quick-toggle');
+    assert.equal(drawer.getAttribute('aria-hidden'),'true');assert.equal(drawer.hasAttribute('inert'),true);assert.equal(doc.activeElement.id,'quick-toggle');
     assert.equal(JSON.stringify(h.api.getState().plan),pricing);
   }
 });
 
-test('quick options float above the trigger and fit below when the available space is smaller', t => {
-  const h=boot(t),doc=h.w.document,toggle=doc.getElementById('quick-toggle'),popup=doc.getElementById('quick-popover');
-  let viewportWidth=1280,viewportHeight=800,anchor={top:600,bottom:632,left:40,right:400,width:360,height:32};
-  Object.defineProperties(h.w,{innerWidth:{configurable:true,get:()=>viewportWidth},innerHeight:{configurable:true,get:()=>viewportHeight}});
-  Object.defineProperties(doc.documentElement,{clientWidth:{configurable:true,get:()=>viewportWidth},clientHeight:{configurable:true,get:()=>viewportHeight}});
+test('quick drawer stays attached to its trigger and limits its internal height to available space', t => {
+  const h=boot(t),doc=h.w.document,toggle=doc.getElementById('quick-toggle'),drawer=doc.getElementById('quick-drawer'),content=doc.getElementById('quick-content');
+  let viewportHeight=800,anchor={top:600,bottom:632,left:40,right:400,width:360,height:32};
+  Object.defineProperty(h.w,'innerHeight',{configurable:true,get:()=>viewportHeight});
   toggle.getBoundingClientRect=()=>anchor;
-  popup.getBoundingClientRect=()=>({top:0,bottom:260,left:0,right:360,width:360,height:260});
-  Object.defineProperties(popup,{offsetHeight:{configurable:true,value:260},scrollHeight:{configurable:true,value:260},offsetWidth:{configurable:true,value:360}});
-  const bounds=()=>{
-    assert.equal(h.w.getComputedStyle(popup).position,'fixed','the popover does not change the generation panel height');
-    const left=parseFloat(popup.style.left),top=parseFloat(popup.style.top),width=parseFloat(popup.style.width);
-    assert.ok(Number.isFinite(left)&&Number.isFinite(top)&&Number.isFinite(width));
-    assert.ok(left>=0&&left+width<=viewportWidth,'the popover stays within the horizontal viewport');
-    return {top,width};
-  };
+  Object.defineProperty(content,'scrollHeight',{configurable:true,value:280});
   h.click('#quick-toggle');
-  assert.ok(bounds().top+260<=anchor.top,'with enough room the popover opens upward');
-  h.click('#quick-close');
-  viewportWidth=320;viewportHeight=350;anchor={top:20,bottom:52,left:250,right:310,width:60,height:32};
+  assert.equal(h.w.getComputedStyle(drawer).position,'absolute');assert.equal(h.w.getComputedStyle(toggle.closest('.quick-config')).position,'relative');
+  assert.equal(h.w.getComputedStyle(drawer).left,'0px');assert.equal(h.w.getComputedStyle(drawer).right,'0px');
+  for(const property of ['left','top','width'])assert.equal(drawer.style[property],'','placement stays connected to the parent rather than storing viewport coordinates');
+  assert.equal(drawer.dataset.placement,'above');assert.equal(parseFloat(drawer.style.height),240);assert.equal(parseFloat(content.style.maxHeight),240);
+  assert.ok(anchor.top-parseFloat(drawer.style.height)>=0,'the upward drawer remains inside the viewport');
   h.click('#quick-toggle');
-  const below=bounds();
-  assert.ok(below.top>=anchor.bottom,'an anchor near the viewport top opens downward');
-  assert.ok(below.top+260<=viewportHeight,'the downward placement also remains visible');
-  h.click('#quick-close');
-  // 190 px above is not enough for 280 px of content; 500 px below is.
-  viewportWidth=1280;viewportHeight=762;anchor={top:210,bottom:242,left:40,right:400,width:360,height:32};
-  popup.getBoundingClientRect=()=>({top:0,bottom:280,left:0,right:360,width:360,height:280});
-  Object.defineProperty(popup,'scrollHeight',{configurable:true,value:280});
+  viewportHeight=350;anchor={top:20,bottom:52,left:250,right:310,width:60,height:32};
   h.click('#quick-toggle');
-  assert.ok(bounds().top>=anchor.bottom,'prefer full visibility below over unnecessarily limiting an upward popover');
-  assert.ok(parseFloat(popup.style.maxHeight)>=280,'the complete content fits without internal scrolling');
+  assert.equal(drawer.dataset.placement,'below');assert.ok(anchor.bottom+parseFloat(drawer.style.height)<=viewportHeight);
+  h.click('#quick-toggle');
+  // 190 px above would clip more content; 500 px below allows the full 240 px limit.
+  viewportHeight=738;anchor={top:198,bottom:230,left:40,right:400,width:360,height:32};
+  h.click('#quick-toggle');
+  assert.equal(drawer.dataset.placement,'below');assert.equal(parseFloat(drawer.style.height),240);
+  viewportHeight=260;anchor={top:140,bottom:172,left:40,right:400,width:360,height:32};
+  h.w.dispatchEvent(new h.w.Event('resize'));h.good();
+  assert.equal(drawer.dataset.placement,'above');assert.ok(parseFloat(content.style.maxHeight)<=132,'resize caps the scroller at the available space');
+  assert.ok(parseFloat(drawer.style.height)<=132);
 });
 
-test('a height-limited quick popover reveals its focused preset using only its own scroller', t => {
-  const h=boot(t),doc=h.w.document,toggle=doc.getElementById('quick-toggle'),popup=doc.getElementById('quick-popover');
+test('a height-limited quick drawer reveals its focused preset using only the content scroller', t => {
+  const h=boot(t),doc=h.w.document,toggle=doc.getElementById('quick-toggle'),drawer=doc.getElementById('quick-drawer'),content=doc.getElementById('quick-content');
   h.click('#quick-toggle');h.click('[data-example="video-max"]');
-  const selected=popup.querySelector('[data-example="video-max"]');
+  const selected=drawer.querySelector('[data-example="video-max"]');
   Object.defineProperties(h.w,{innerHeight:{configurable:true,value:260},innerWidth:{configurable:true,value:1280}});
   toggle.getBoundingClientRect=()=>({top:140,bottom:172,left:40,right:400,width:360,height:32});
   let scrollPosition=0;
-  const panelHeight=()=>Math.min(280,parseFloat(popup.style.maxHeight)||280);
-  Object.defineProperties(popup,{
-    clientHeight:{configurable:true,get:panelHeight},scrollHeight:{configurable:true,value:280},
-    scrollTop:{configurable:true,get:()=>scrollPosition,set:value=>{scrollPosition=Math.max(0,Math.min(280-panelHeight(),Number(value)));}}
+  const contentHeight=()=>Math.min(280,parseFloat(content.style.maxHeight)||280);
+  Object.defineProperties(content,{
+    clientHeight:{configurable:true,get:contentHeight},scrollHeight:{configurable:true,value:280},
+    scrollTop:{configurable:true,get:()=>scrollPosition,set:value=>{scrollPosition=Math.max(0,Math.min(280-contentHeight(),Number(value)));}}
   });
-  popup.getBoundingClientRect=()=>{const top=parseFloat(popup.style.top)||0,height=panelHeight();return {top,bottom:top+height,left:40,right:400,width:360,height};};
-  selected.getBoundingClientRect=()=>{const top=popup.getBoundingClientRect().top+220-scrollPosition;return {top,bottom:top+40,left:50,right:390,width:340,height:40};};
+  content.getBoundingClientRect=()=>{const height=contentHeight(),top=140-height;return {top,bottom:top+height,left:40,right:400,width:360,height};};
+  selected.getBoundingClientRect=()=>{const top=content.getBoundingClientRect().top+220-scrollPosition;return {top,bottom:top+40,left:50,right:390,width:340,height:40};};
   let pageScrolls=0;
   h.w.scrollTo=()=>{pageScrolls++;};h.w.HTMLElement.prototype.scrollIntoView=()=>{pageScrolls++;};
   doc.documentElement.scrollTop=37;
   h.click('#quick-toggle');
-  assert.equal(doc.activeElement,selected);assert.ok(popup.clientHeight<popup.scrollHeight);
-  assert.ok(popup.scrollTop>0,'opening reveals the active option even though focus uses preventScroll');
-  const panel=popup.getBoundingClientRect(),option=selected.getBoundingClientRect();
+  assert.equal(doc.activeElement,selected);assert.ok(content.clientHeight<content.scrollHeight);
+  assert.ok(content.scrollTop>0,'opening reveals the active option even though focus uses preventScroll');
+  assert.equal(drawer.scrollTop,0,'the outer animation shell is not scrolled');
+  const panel=content.getBoundingClientRect(),option=selected.getBoundingClientRect();
   assert.ok(option.top>=panel.top&&option.bottom<=panel.bottom,'the focused preset is fully visible');
-  assert.equal(doc.documentElement.scrollTop,37);assert.equal(pageScrolls,0,'only the popover scrolls');
+  assert.equal(doc.documentElement.scrollTop,37);assert.equal(pageScrolls,0,'only the drawer content scrolls');
+});
+
+test('quick drawer closing fallback is cancelled on reopen and reduced motion finishes immediately', async t => {
+  const h=boot(t),doc=h.w.document,toggle=doc.getElementById('quick-toggle'),drawer=doc.getElementById('quick-drawer');
+  const before=JSON.stringify(h.api.getState());
+  const wait=()=>new Promise(resolve=>h.w.setTimeout(resolve,300));
+  h.click('#quick-toggle');h.click('#quick-toggle');
+  assert.equal(toggle.getAttribute('aria-expanded'),'false');assert.equal(drawer.hidden,false);
+  await wait();h.good();assert.equal(drawer.hidden,true);assert.equal(drawer.style.height,'0px');
+  h.click('#quick-toggle');h.click('#quick-toggle');h.click('#quick-toggle');
+  await wait();h.good();
+  assert.equal(toggle.getAttribute('aria-expanded'),'true');assert.equal(drawer.hidden,false);assert.equal(drawer.hasAttribute('inert'),false);
+  assert.ok(parseFloat(drawer.style.height)>0,'the previous close timer cannot collapse a reopened drawer');
+  h.w.matchMedia=query=>({matches:query==='(prefers-reduced-motion: reduce)'});
+  h.click('#quick-toggle');
+  assert.equal(toggle.getAttribute('aria-expanded'),'false');assert.equal(drawer.hidden,true);assert.equal(drawer.style.height,'0px');
+  assert.equal(drawer.hasAttribute('inert'),true);assert.equal(drawer.getAttribute('aria-hidden'),'true');
+  assert.equal(JSON.stringify(h.api.getState()),before,'animation timing never changes task or platform data');
 });
 
 test('four quick configurations are true official token extrema over all supported specifications', t => {
@@ -1282,7 +1312,7 @@ test('architecture: one workbench groups generation and its estimate on the left
   for(const id of ['procurement-equation','points-equation','cash-equation','cash-gap'])assert.ok(pricingDetail.contains(doc.getElementById(id)),id+' is available in the calculation details');
   for(const pair of resultPairs)assert.equal(pair.closest('details'),null,'paired results remain visible without opening details');
   assert.equal(doc.getElementById('quick-toggle').closest('[hidden]'),null,'the quick-options trigger is always available');
-  assert.equal(doc.getElementById('quick-popover').hidden,true,'quick options stay collapsed until requested');
+  assert.equal(doc.getElementById('quick-drawer').hidden,true,'quick options stay collapsed until requested');
   assert.equal(doc.getElementById('platform-comparison').open,false);
   const estimate=h.api.quote().calc;
   h.click('#open-actual');assert.equal(actual.hidden,false);assert.equal(workbench.hidden,true);

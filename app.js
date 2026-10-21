@@ -221,47 +221,68 @@ function renderComposer(){
  renderSlider('vin-slider',t.vin);$('vin-slider').disabled=!t.video;
  $('video-detail').hidden=!t.video;$('vin').disabled=!t.video;
  document.querySelectorAll('[data-video]').forEach(b=>{b.classList.toggle('active',(b.dataset.video==='true')===t.video);b.setAttribute('aria-pressed',String((b.dataset.video==='true')===t.video));});
- $('quick-model').textContent=spec.label;
  document.querySelectorAll('[data-example]').forEach(b=>{
   const preset=quickTasks(spec.id)[b.dataset.example];b.disabled=!preset;
-  if(!preset){b.classList.remove('active');b.setAttribute('aria-pressed','false');b.querySelector('small').textContent='规则待补齐';return;}
+  if(!preset){b.classList.remove('active');b.setAttribute('aria-pressed','false');b.querySelector('span').textContent='—';b.querySelector('small').textContent='规则待补齐';return;}
   const active=key(t)===key(preset);b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));
-  b.querySelector('small').textContent=`${preset.res==='4k'?'4K':preset.res} · ${preset.ratio}\n输出 ${preset.seconds} 秒${preset.video?' · 输入 '+preset.vin+' 秒':''}`;
+  b.querySelector('span').textContent=`${preset.res==='4k'?'4K':preset.res} · ${preset.ratio}`;
+  b.querySelector('small').innerHTML=`<span>输出 ${preset.seconds} 秒</span>${preset.video?'<span>输入 '+preset.vin+' 秒</span>':''}`;
   b.setAttribute('aria-label',`${preset.video?'有':'无'}视频输入，${b.dataset.example.endsWith('min')?'最低':'最高'}用量，${label(preset)}${preset.video?'，输入 '+preset.vin+' 秒':''}`);
  });
  $('pixels').textContent=spec.dims[t.res][t.ratio].join(' × ')+' 像素';
 }
 
+let quickCloseTimer=null;
+const quickIsOpen=()=>$('quick-toggle').getAttribute('aria-expanded')==='true';
+function finishQuickClose(){
+ if(quickIsOpen())return;
+ $('quick-drawer').hidden=true;$('quick-drawer').style.height='0px';$('quick-toggle').closest('.quick-config').classList.remove('is-visible');
+ clearTimeout(quickCloseTimer);quickCloseTimer=null;
+}
 function closeQuickOptions(restoreFocus=false){
- const panel=$('quick-popover');if(panel.hidden)return;
- panel.hidden=true;$('quick-toggle').setAttribute('aria-expanded','false');
- if(restoreFocus)$('quick-toggle').focus({preventScroll:true});
+ const panel=$('quick-drawer'),toggle=$('quick-toggle');if(!quickIsOpen())return;
+ toggle.setAttribute('aria-expanded','false');
+ if(restoreFocus||panel.contains(document.activeElement))toggle.focus({preventScroll:true});
+ panel.setAttribute('inert','');panel.setAttribute('aria-hidden','true');
+ toggle.closest('.quick-config').classList.remove('is-open');
+ clearTimeout(quickCloseTimer);
+ if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)finishQuickClose();
+ else quickCloseTimer=setTimeout(finishQuickClose,260);
 }
 function revealQuickOption(option=document.activeElement){
- const panel=$('quick-popover');if(panel.hidden||!panel.contains(option)||!panel.clientHeight)return;
- const bounds=panel.getBoundingClientRect(),item=option.getBoundingClientRect();if(!item.height)return;
- if(item.top<bounds.top+8)panel.scrollTop+=item.top-bounds.top-8;
- else if(item.bottom>bounds.bottom-8)panel.scrollTop+=item.bottom-bounds.bottom+8;
+ const content=$('quick-content');if(!quickIsOpen()||!content.contains(option)||!content.clientHeight)return;
+ const bounds=content.getBoundingClientRect(),item=option.getBoundingClientRect();if(!item.height)return;
+ if(item.top<bounds.top+6)content.scrollTop+=item.top-bounds.top-6;
+ else if(item.bottom>bounds.bottom-6)content.scrollTop+=item.bottom-bounds.bottom+6;
 }
 function positionQuickOptions(){
- const panel=$('quick-popover');if(panel.hidden)return;
- const anchor=$('quick-toggle').getBoundingClientRect(),gutter=12,gap=8;
- const viewportWidth=window.innerWidth,viewportHeight=window.innerHeight;
+ if(!quickIsOpen())return;
+ const panel=$('quick-drawer'),content=$('quick-content'),toggle=$('quick-toggle');
+ const anchor=toggle.getBoundingClientRect(),gutter=8,viewportHeight=window.innerHeight;
  if(anchor.height>0&&(anchor.bottom<=0||anchor.top>=viewportHeight)){closeQuickOptions();return;}
- const width=Math.max(0,Math.min(anchor.width||320,viewportWidth-gutter*2));
- panel.style.width=width+'px';panel.style.left=Math.max(gutter,Math.min(anchor.left,viewportWidth-gutter-width))+'px';
- const preferred=Math.min(panel.scrollHeight||panel.getBoundingClientRect().height||280,360);
- const above=Math.max(0,anchor.top-gap-gutter),below=Math.max(0,viewportHeight-anchor.bottom-gap-gutter);
+ // The drawer stays attached to the trigger; only its opening direction and height vary.
+ const preferred=content.scrollHeight?content.scrollHeight+1:160;
+ const above=Math.max(0,anchor.top-gutter),below=Math.max(0,viewportHeight-anchor.bottom-gutter);
  const upward=above>=preferred||above>=below,available=upward?above:below;
- const limit=Math.min(360,available);panel.style.maxHeight=limit+'px';
- const height=Math.min(panel.getBoundingClientRect().height||preferred,limit);
- panel.style.top=Math.max(gutter,Math.min(upward?anchor.top-gap-height:anchor.bottom+gap,viewportHeight-gutter-height))+'px';
- panel.dataset.placement=upward?'above':'below';
+ if(!available){closeQuickOptions();return;}
+ const limit=Math.min(240,available);
+ content.style.maxHeight=limit+'px';panel.style.height=Math.min(preferred,limit)+'px';
+ panel.dataset.placement=upward?'above':'below';toggle.closest('.quick-config').classList.toggle('is-below',!upward);
  revealQuickOption();
 }
 function openQuickOptions(){
- const panel=$('quick-popover');panel.hidden=false;$('quick-toggle').setAttribute('aria-expanded','true');positionQuickOptions();
- if(!panel.hidden){const option=panel.querySelector('[data-example].active:not(:disabled)')||panel.querySelector('[data-example]:not(:disabled)')||$('quick-close');option.focus({preventScroll:true});revealQuickOption(option);}
+ const panel=$('quick-drawer'),toggle=$('quick-toggle');
+ clearTimeout(quickCloseTimer);quickCloseTimer=null;
+ panel.hidden=false;panel.removeAttribute('inert');panel.setAttribute('aria-hidden','false');
+ // Clip the full-height tray while its content slides out from the trigger edge.
+ toggle.setAttribute('aria-expanded','true');positionQuickOptions();
+ if(!quickIsOpen())return;
+ void panel.offsetHeight;
+ toggle.closest('.quick-config').classList.add('is-visible','is-open');
+ if(quickIsOpen()){
+  const option=panel.querySelector('[data-example].active:not(:disabled)')||panel.querySelector('[data-example]:not(:disabled)')||toggle;
+  option.focus({preventScroll:true});revealQuickOption(option);
+ }
 }
 function tokenText(value,digits=12){return num(value,digits).split('.').map((part,i)=>i?part:part.replace(/\B(?=(\d{3})+(?!\d))/g,',')).join('.');}
 function renderUsage(v,t){
@@ -300,18 +321,18 @@ function usageCalculation(v,t){
   `(${value(t.video?t.vin:'0')} + ${value(t.seconds)}) × ${value(c.wh[0])} × ${value(c.wh[1])} × ${value(model.fps)} ÷ 1,024 = <strong id="usage-calc-estimate">${value(c.tokens)}</strong> Token`);
  let billed;
  if(v.partial){
-  billed=step('billed','计费用量','max(估算 Token 用量, 最低 Token 用量)',
-   '<strong id="usage-calc-billed">待补齐</strong>','当前规格的最低 Token 用量待补齐，暂不能确定计费用量。');
+  billed=step('billed','计费 Token 用量','max(估算 Token 用量, 最低 Token 用量)',
+   '<strong id="usage-calc-billed">待补齐</strong>','当前规格的最低 Token 用量待补齐，暂不能确定计费 Token 用量。');
  }else if(t.video){
   const useMinimum=cmp(c.tokens,c.minimum)<0;
-  billed=step('billed','计费用量','max(估算 Token 用量, 最低 Token 用量)',
+  billed=step('billed','计费 Token 用量','max(估算 Token 用量, 最低 Token 用量)',
    `max(${value(c.tokens)}, ${value(c.minimum)}) = <strong id="usage-calc-billed">${value(c.billedTokens)}</strong> Token <span class="usage-choice">采用${useMinimum?'最低':'估算'} Token 用量</span>`,
    v.rule?.kind==='manual'?`<span class="usage-override">最低 Token 用量由人工设置。<br>${esc(v.rule.note)}</span>`:'有视频输入时适用最低用量，按模型、分辨率、画面比例和输出时长查表。');
  }else{
-  billed=step('billed','计费用量','无视频输入，不应用最低 Token 用量',
+  billed=step('billed','计费 Token 用量','无视频输入，不应用最低 Token 用量',
    `<strong id="usage-calc-billed">${value(c.billedTokens)}</strong> Token <span class="usage-choice">采用估算 Token 用量</span>`);
  }
- const feeFormula='计费用量 × 刊例单价（元 / 百万 Token）÷ 1,000,000';
+ const feeFormula='计费 Token 用量 × 刊例单价（元 / 百万 Token）÷ 1,000,000';
  const fee=v.partial?step('fee','估算视频费用',feeFormula,'<strong id="usage-calc-fee">—</strong> 元/个'):
   step('fee','估算视频费用',feeFormula,
    `${value(c.billedTokens)} × ${value(c.rate)} ÷ 1,000,000 ${cmp(c.P,fixed(c.P,6))===0?'=':'≈'} <strong id="usage-calc-fee">${fixed(c.P,6)}</strong> 元/个`);
@@ -557,7 +578,7 @@ function openDetails(mode='theory',recordId='',contextTask=null){
  const view=chosen==='actual'?actualBreakdown(selected,p):theoryBreakdown(t,p);
  const tabs=`<div class="detail-switch" role="tablist" aria-label="计算展开口径"><button role="tab" aria-selected="${chosen==='theory'}" data-detail-mode="theory" class="${chosen==='theory'?'active':''}">参数估算明细</button><button role="tab" aria-selected="${chosen==='actual'}" data-detail-mode="actual" class="${chosen==='actual'?'active':''}">实测金额复算展开</button></div>`;
  const content=tabs+detailPlan(p,t.model||'seedance-2.0')+selector+view.html+detailBusinessMath(p)+`<div class="actions" style="margin-top:20px"><button class="btn" id="export-calculation">导出这份计算明细 ↓</button><button class="btn" id="close-only">关闭</button></div>`;
- detailContext.text=[`Reelay V9.5.14 · ${chosen==='actual'?'平台实测金额复算':'参数估算明细'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
+ detailContext.text=[`Reelay V9.5.15 · ${chosen==='actual'?'平台实测金额复算':'参数估算明细'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
  openDrawer('calculation','定价明细',label(t)+' / '+vinLabel(t)+' · 不改变主表输入',content,true);
 }
 let ruleContext=null;
@@ -618,11 +639,11 @@ function addTask(){const v=current();if(!v.x||!globalValid)return;if(state.tasks
 function openNewRecharge(){openDrawer('recharge','添加充值方案','不改变实测数据，也不执行实际充值。',`<div class="grid2"><div><label class="fieldlabel" for="r-pay">实付金额</label><input class="input" id="r-pay" inputmode="decimal" value="100"></div><div><label class="fieldlabel" for="r-total">到账总积分</label><input class="input" id="r-total" inputmode="decimal" value="1500"></div></div><div class="inline-error" id="r-error"></div><button class="btn primary" id="save-recharge">加入对比</button>`);}
 function download(name,text,type='text/plain;charset=utf-8'){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 const filename=()=>state.plan.company.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,50)||'Reelay方案';
-function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.5.14 · 视频成本与定价','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
+function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.5.15 · 视频成本与定价','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
 function exportJSON(){
  const procurementProfiles=Object.keys(PROCUREMENT_MODELS).map(model=>procurementInfo(model));
  const taskEstimates=state.tasks.map(row=>{const v=theory(row.params);return v.x?exportRow(row.title,v,v.x,row.qty):{model:row.params.model,...procurementInfo(row.params.model),scope:'规则缺项，未生成收费估算'};});
- download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.5.14',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
+ download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.5.15',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
 }
 function csvCell(x){let s=String(x??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
 function exportCSV(actual=false){const rows=actual?actualRows:tableRows;if(!rows.length)return toast('没有可导出记录。');const titles=actual?{scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',procurementRatio:'当前复算采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',record:'记录',params:'规格',coverage:'估算依据',theoryP:'刊例费用P',recordedP:'平台记录P',deltaP:'实测P减估算P',theoryC:'采购成本C',recordedC:'平台记录C',deltaC:'实测C减估算C',recordedN:'平台实际扣分_空白为未知',recalcN:'当前复算扣分_非历史',recalcCash:'当前复算金额',recalcProfit:'当前复算模型毛利',pay:'当前充值实付',total:'当前到账积分',M:'当前倍率',targetMode:'当前目标模式',usage:'API_completion_tokens_原记录',note:'备注'}:{scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',targetMode:'定价目标模式',targetMargin:'目标模型毛利率百分数_毛利模式',procurementRatio:'采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',profit:'每笔模型毛利',margin:'取整后测算模型毛利率百分数',scenario:'场景',coverage:'估算依据',ruleVersion:'规则版本',quantity:'数量_逐笔先取整',pay:'实付元',total:'到账积分',discount:'目标客户折扣',M:'定价倍率',P:'刊例费用P',C:'采购成本C',raw:'取整前积分',N:'每笔预计扣分_非实际',target:'目标金额',cash:'每笔折合金额',gap:'与目标差额'};const ks=Object.keys(titles),csv='\ufeff'+[ks.map(k=>csvCell(titles[k])).join(','),...rows.map(r=>ks.map(k=>csvCell(r[k])).join(','))].join('\r\n');download(filename()+(actual?'_实测对照':'_理论_'+state.tab)+'.csv',csv,'text/csv;charset=utf-8');}
@@ -634,14 +655,13 @@ for(const r of old.tasks||[]){if(validTask(r.task,false))n.tasks.push({id:String
 throw Error('仅支持本工具V9、V8或V7导出的方案JSON。');}
 function openReset(){openDrawer('reset','重置V9本地草稿？','不会删除旧版V7文件或旧版草稿，不影响真实后台。',`<p>将恢复默认企业条件、理论任务参数和原表4条独立实测记录。当前未导出的修改会丢失。</p><div class="actions"><button class="btn primary" id="confirm-reset">确认重置V9</button><button class="btn" id="close-only">取消</button></div>`);}
 document.addEventListener('click',async e=>{
- if(!$('quick-popover').hidden&&!$('quick-popover').contains(e.target)&&!$('quick-toggle').contains(e.target))closeQuickOptions();
+ if(quickIsOpen()&&!$('quick-drawer').contains(e.target)&&!$('quick-toggle').contains(e.target))closeQuickOptions();
  const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset,id=b.id;
 if(d.usageSection){goToUsageSection(d.usageSection);return;}
-if(d.detailMode){openDetails(d.detailMode,detailContext.recordId,detailContext.task);return;}if(d.workspace){showWorkspace(d.workspace);return;}if(d.tab){state.tab=d.tab;render();return;}if(d.example){if($('quick-popover').hidden)return;const preset=quickTasks(state.task.model)[d.example];if(preset){closeQuickOptions(true);changeTask(clone(preset));}return;}if(d.res){changeTask({res:d.res});return;}if(d.ratio){changeTask({ratio:d.ratio});return;}if(d.seconds){changeTask({seconds:d.seconds});return;}if(d.video){changeTask({video:d.video==='true'});return;}if(d.discount){state.plan.discount=d.discount;state.plan.targetMode='discount';render();return;}if(d.margin){state.plan.margin=d.margin;state.plan.targetMode='margin';render();return;}if(d.matrix){try{const t=JSON.parse(d.matrix);if(validTask(t)){state.task=t;showWorkspace('theory','model');document.querySelector('.work').scrollIntoView({behavior:'smooth',block:'start'});}}catch(_){}return;}if(d.observation){observationDetail(d.observation);return;}if(d.editObservation){observationEditor(d.editObservation);return;}if(d.deleteObservation){state.observations=state.observations.filter(o=>o.id!==d.deleteObservation);closeDrawer();render();toast('已删除实测记录，理论结果未变。');return;}if(d.loadTask){const r=state.tasks.find(t=>t.id===d.loadTask);if(r){state.task=clone(r.params);showWorkspace('theory','model');document.querySelector('.work').scrollIntoView({behavior:'smooth',block:'start'});}return;}if(d.deleteTask){state.tasks=state.tasks.filter(t=>t.id!==d.deleteTask);render();return;}
+if(d.detailMode){openDetails(d.detailMode,detailContext.recordId,detailContext.task);return;}if(d.workspace){showWorkspace(d.workspace);return;}if(d.tab){state.tab=d.tab;render();return;}if(d.example){if(!quickIsOpen())return;const preset=quickTasks(state.task.model)[d.example];if(preset){closeQuickOptions(true);changeTask(clone(preset));}return;}if(d.res){changeTask({res:d.res});return;}if(d.ratio){changeTask({ratio:d.ratio});return;}if(d.seconds){changeTask({seconds:d.seconds});return;}if(d.video){changeTask({video:d.video==='true'});return;}if(d.discount){state.plan.discount=d.discount;state.plan.targetMode='discount';render();return;}if(d.margin){state.plan.margin=d.margin;state.plan.targetMode='margin';render();return;}if(d.matrix){try{const t=JSON.parse(d.matrix);if(validTask(t)){state.task=t;showWorkspace('theory','model');document.querySelector('.work').scrollIntoView({behavior:'smooth',block:'start'});}}catch(_){}return;}if(d.observation){observationDetail(d.observation);return;}if(d.editObservation){observationEditor(d.editObservation);return;}if(d.deleteObservation){state.observations=state.observations.filter(o=>o.id!==d.deleteObservation);closeDrawer();render();toast('已删除实测记录，理论结果未变。');return;}if(d.loadTask){const r=state.tasks.find(t=>t.id===d.loadTask);if(r){state.task=clone(r.params);showWorkspace('theory','model');document.querySelector('.work').scrollIntoView({behavior:'smooth',block:'start'});}return;}if(d.deleteTask){state.tasks=state.tasks.filter(t=>t.id!==d.deleteTask);render();return;}
 if(!globalValid&&!(['actual-export','add-observation'].includes(id)&&validPlan(state.plan))&&['details','actual-calculation','show-formula','plan-settings','task-rule','open-rules','unit-check','economics-how','add-observation','table-export','actual-export','add-task'].includes(id)){toast('请先修正顶部定价或任务输入。');return;}
 switch(id){
-case'quick-toggle':if($('quick-popover').hidden)openQuickOptions();else closeQuickOptions(true);break;
-case'quick-close':closeQuickOptions(true);break;
+case'quick-toggle':if(quickIsOpen())closeQuickOptions(true);else openQuickOptions();break;
 case'economics-how':openEconomics();break;
 case'export-rules':download('Reelay_V9_规则来源.json',JSON.stringify({version:R.VERSION,sources:R.sources,rules:state.rules},null,2),'application/json');break;
 case'close-drawer':case'close-only':closeDrawer();break;
@@ -704,14 +724,15 @@ $('vin').addEventListener('blur',()=>{
  try{state.task.vin=wholeInputSeconds($('vin').value);}catch(_){state.task.vin=vinEditStart;}
  $('vin').value=state.task.vin;render();
 });
-document.addEventListener('pointerdown',e=>{if(!$('quick-popover').hidden&&!$('quick-popover').contains(e.target)&&!$('quick-toggle').contains(e.target))closeQuickOptions();});
-document.addEventListener('focusin',e=>{if(!$('quick-popover').hidden&&!$('quick-popover').contains(e.target)&&!$('quick-toggle').contains(e.target))closeQuickOptions();});
+document.addEventListener('pointerdown',e=>{if(quickIsOpen()&&!$('quick-drawer').contains(e.target)&&!$('quick-toggle').contains(e.target))closeQuickOptions();});
+document.addEventListener('focusin',e=>{if(quickIsOpen()&&!$('quick-drawer').contains(e.target)&&!$('quick-toggle').contains(e.target))closeQuickOptions();});
+$('quick-content').addEventListener('transitionend',e=>{if(e.target!==$('quick-content')||e.propertyName!=='transform')return;if(quickIsOpen())revealQuickOption();else finishQuickClose();});
 window.addEventListener('resize',positionQuickOptions,{passive:true});
-window.addEventListener('scroll',e=>{if(e.target instanceof Element&&$('quick-popover').contains(e.target))return;positionQuickOptions();},{capture:true,passive:true});
+window.addEventListener('scroll',e=>{if(e.target instanceof Element&&$('quick-drawer').contains(e.target))return;positionQuickOptions();},{capture:true,passive:true});
 $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeDrawer();});
 document.addEventListener('keydown',e=>{
  if(e.target===$('quick-toggle')&&['ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();openQuickOptions();return;}
- if(!$('quick-popover').hidden&&e.key==='Escape'){e.preventDefault();closeQuickOptions(true);return;}
+ if(quickIsOpen()&&e.key==='Escape'){e.preventDefault();closeQuickOptions(true);return;}
  if($('modal').hidden)return;if(e.key==='Escape'){e.preventDefault();closeDrawer();}if(e.key==='Tab'){const els=[...$('drawer').querySelectorAll('button,input,select,textarea,a[href],summary')].filter(x=>!x.disabled&&x.getClientRects().length);if(!els.length)return;const first=els[0],last=els.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
 $('file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>3e6)throw Error('文件超过3MB，请检查是否为方案JSON。');const loaded=migrate(JSON.parse(await f.text()));state=loaded.value;closeDrawer();render();toast(loaded.note);}catch(err){toast('导入失败：'+err.message);}finally{e.target.value='';}});
 
