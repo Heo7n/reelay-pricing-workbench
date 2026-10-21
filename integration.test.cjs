@@ -467,7 +467,7 @@ test('task controls and compact input duration update live without changing pric
   assert.equal(videoSwitch.closest('label').classList.contains('video-toggle'),true);
   assert.equal(videoSwitch.closest('label').parentElement,videoControl);assert.equal(videoBody.parentElement,videoControl);
   assert.ok(videoBody.contains(videoDetail));assert.ok(videoBody.contains(doc.getElementById('video-off-label')));
-  assert.equal(doc.getElementById('video-off-label').textContent,'未使用');
+  assert.equal(doc.getElementById('video-off-label').textContent,'无视频输入');
   assert.equal(doc.querySelector('.video-mode, #video-options, [data-video]'),null,'the native switch replaces the old segmented buttons');
   assert.equal(doc.querySelector('.reference-slot'),null,'there is no separate spacer beneath the mode control');
   const ratios=[...fields[2].querySelectorAll('[data-ratio]')].map(button=>button.dataset.ratio);
