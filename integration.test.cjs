@@ -560,7 +560,7 @@ test('explicit video choices synchronize task, presets, models and saved drafts 
   assert.equal(restored.getElementById('vin-slider').disabled,true);assert.equal(restored.getElementById('vin').disabled,true);
   reloaded.setVideo(true);
   assert.equal(restored.getElementById('video-detail').hidden,false);assert.equal(restored.getElementById('video-detail').hasAttribute('inert'),false);
-  assert.deepEqual([...restored.querySelectorAll('[data-video]')].map(button=>button.textContent),['无','有']);
+  assert.deepEqual([...restored.querySelectorAll('[data-video]')].map(button=>button.textContent),['无视频输入','有视频输入']);
   assert.equal(reloaded.api.getState().task.vin,'2');
 });
 
@@ -583,20 +583,24 @@ test('video input headings and surrounding whitespace never change the selected 
   }
 });
 
-test('video duration becomes inaccessible immediately and restores full choice labels only after its own grid transition', t => {
+test('video duration becomes inaccessible immediately while choice text stays stable across transitions', t => {
   const h=boot(t),doc=h.w.document,control=doc.getElementById('video-input-control'),detail=doc.getElementById('video-detail');
+  const labelNodes=[...doc.querySelectorAll('#video-options .video-choice-text')];
+  const labelMutations=new h.w.MutationObserver(()=>{});
+  labelMutations.observe(doc.getElementById('video-options'),{childList:true,characterData:true,subtree:true});
+  t.after(()=>labelMutations.disconnect());
   const labels=()=>[...doc.querySelectorAll('#video-options button')].map(button=>button.textContent);
   const transition=(target,propertyName)=>{const event=new h.w.Event('transitionend',{bubbles:true});Object.defineProperty(event,'propertyName',{value:propertyName});target.dispatchEvent(event);h.good();};
   const pricing=JSON.stringify(h.api.getState().plan);
   h.input('vin-slider','9');doc.getElementById('vin').focus();
-  assert.deepEqual(labels(),['无','有']);
+  assert.deepEqual(labels(),['无视频输入','有视频输入']);
   h.setVideo(false);
   assert.equal(control.classList.contains('is-video'),false);assert.equal(control.classList.contains('is-closing'),true);
   assert.equal(detail.hidden,false,'the duration shell remains available for the closing animation');
   assert.equal(detail.getAttribute('aria-hidden'),'true');assert.equal(detail.hasAttribute('inert'),true);
   assert.equal(doc.getElementById('vin-slider').disabled,true);assert.equal(doc.getElementById('vin').disabled,true);
   assert.equal(doc.activeElement,doc.querySelector('[data-video="false"]'),'focus leaves the now-inert duration control');
-  assert.deepEqual(labels(),['无','有'],'full labels wait for enough room after closing');
+  assert.deepEqual(labels(),['无视频输入','有视频输入'],'the same text remains in place while CSS expands its suffix');
   assert.equal(h.api.getState().task.vin,'2');
   transition(detail,'grid-template-columns');assert.equal(detail.hidden,false,'a descendant transition cannot finish the container animation');
   transition(control,'opacity');assert.equal(detail.hidden,false,'unrelated transitions do not finish closing');
@@ -605,8 +609,10 @@ test('video duration becomes inaccessible immediately and restores full choice l
   h.setVideo(true);
   assert.equal(control.classList.contains('is-video'),true);assert.equal(control.classList.contains('is-closing'),false);
   assert.equal(detail.hidden,false);assert.equal(detail.hasAttribute('inert'),false);assert.notEqual(detail.getAttribute('aria-hidden'),'true');
-  assert.equal(doc.getElementById('vin-slider').disabled,false);assert.equal(doc.getElementById('vin').disabled,false);assert.deepEqual(labels(),['无','有']);
+  assert.equal(doc.getElementById('vin-slider').disabled,false);assert.equal(doc.getElementById('vin').disabled,false);assert.deepEqual(labels(),['无视频输入','有视频输入']);
   transition(control,'grid-template-columns');assert.equal(detail.hidden,false,'opening transition completion cannot hide the active duration');
+  assert.deepEqual([...doc.querySelectorAll('#video-options .video-choice-text')],labelNodes,'label nodes are preserved through both transitions');
+  assert.deepEqual(labelMutations.takeRecords(),[],'neither render nor animation completion replaces or rewrites button text');
   assert.equal(JSON.stringify(h.api.getState().plan),pricing);
 });
 
@@ -621,7 +627,7 @@ test('video closing fallback survives repeated selection, cancels on reopening a
   h.setVideo(true);h.input('vin-slider','8');h.setVideo(false);h.setVideo(true);
   await wait(300);h.good();
   assert.equal(h.api.getState().task.video,true);assert.equal(h.api.getState().task.vin,'2');
-  assert.equal(detail.hidden,false);assert.equal(detail.hasAttribute('inert'),false);assert.equal(control.classList.contains('is-closing'),false);assert.deepEqual(labels(),['无','有']);
+  assert.equal(detail.hidden,false);assert.equal(detail.hasAttribute('inert'),false);assert.equal(control.classList.contains('is-closing'),false);assert.deepEqual(labels(),['无视频输入','有视频输入']);
   h.w.matchMedia=query=>({matches:query==='(prefers-reduced-motion: reduce)'});
   h.setVideo(false);
   assert.equal(detail.hidden,true);assert.equal(detail.hasAttribute('inert'),true);assert.equal(control.classList.contains('is-closing'),false);
