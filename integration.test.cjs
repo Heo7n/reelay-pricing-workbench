@@ -453,10 +453,15 @@ test('task controls and compact input duration update live without changing pric
   const h=boot(t), doc=h.w.document;
   const fields=[...doc.querySelectorAll('.fields-layout > .field')];
   assert.deepEqual(fields.map(field=>field.dataset.field),['video','resolution','ratio','seconds']);
-  const videoDetail=doc.getElementById('video-detail'),referenceSlot=videoDetail.closest('.reference-slot');
-  assert.ok(fields[0].contains(videoDetail),'reference duration belongs inside the video-input field');
-  assert.ok(referenceSlot,'input duration has a persistent layout slot');
-  assert.equal(doc.getElementById('video-options').nextElementSibling,referenceSlot,'the reserved duration slot follows the video-input choices');
+  const videoDetail=doc.getElementById('video-detail'),videoMode=fields[0].querySelector('.video-mode'),videoOptions=doc.getElementById('video-options');
+  assert.equal(fields[0].classList.contains('video-input-field'),true);
+  assert.equal(videoMode.parentElement,fields[0]);assert.equal(videoDetail.parentElement,fields[0],'video mode and duration are peer controls in one field');
+  assert.equal(videoMode.nextElementSibling,videoDetail);
+  assert.ok(videoMode.contains(videoOptions));assert.ok(videoMode.contains(doc.getElementById('video-input-label')));
+  assert.equal(doc.getElementById('video-input-label').textContent,'视频输入');
+  assert.equal(videoOptions.getAttribute('role'),'group');assert.equal(videoOptions.getAttribute('aria-labelledby'),'video-input-label');
+  assert.deepEqual([...videoOptions.querySelectorAll('button')].map(button=>[button.textContent,button.getAttribute('aria-label')]),[['无','无视频输入'],['有','有视频输入']]);
+  assert.equal(doc.querySelector('.reference-slot'),null,'there is no separate spacer beneath the mode control');
   const ratios=[...fields[2].querySelectorAll('[data-ratio]')].map(button=>button.dataset.ratio);
   assert.deepEqual(ratios,['21:9','16:9','4:3','1:1','3:4','9:16']);
   const seconds=doc.getElementById('seconds'), vin=doc.getElementById('vin'), slider=doc.getElementById('vin-slider');
@@ -467,6 +472,8 @@ test('task controls and compact input duration update live without changing pric
   assert.equal(slider.type,'range');
   assert.equal(slider.min,'2'); assert.equal(slider.max,'15'); assert.equal(slider.step,'1');
   assert.equal(doc.getElementById('vin-label').htmlFor,'vin-slider');
+  assert.equal(doc.getElementById('vin-label').textContent,'输入视频总时长');
+  assert.ok(videoDetail.querySelector('.reference-inputs').contains(slider));assert.ok(videoDetail.querySelector('.reference-inputs').contains(vin));
   assert.equal(slider.nextElementSibling.contains(vin),true);
   assert.equal(doc.getElementById('vin-scrubber'),null);
   assert.equal(doc.getElementById('vin-editor'),null);
@@ -490,8 +497,10 @@ test('task controls and compact input duration update live without changing pric
   equal(h.api.pricing().usedM,'1.65');
   h.click('[data-video="false"]');
   assert.equal(doc.getElementById('video-detail').hidden,true);
-  assert.equal(referenceSlot.hidden,false,'only the input control is hidden, preserving its layout slot');
-  assert.equal(referenceSlot.contains(videoDetail),true);
+  assert.equal(videoMode.hidden,false,'the video-input selector stays available when duration is hidden');
+  assert.equal(slider.disabled,true);assert.equal(vin.disabled,true);
+  assert.equal(videoOptions.querySelector('[data-video="false"]').getAttribute('aria-pressed'),'true');
+  assert.equal(videoOptions.querySelector('[data-video="true"]').getAttribute('aria-pressed'),'false');
   assert.equal(h.api.getState().task.video,false);
   equal(h.api.pricing().usedM,'1.65');
   assert.equal(doc.getElementById('auto-time'),null);
@@ -674,6 +683,12 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
     if(expected)assert.equal(chosen[0].id,'token-'+expected+'-metric');
     return chosen[0].querySelector('dd').textContent;
   };
+  const neutral=()=>{
+    assert.equal(doc.getElementById('token-estimate-metric').hidden,false);
+    assert.equal(doc.getElementById('token-minimum-metric').hidden,true);
+    assert.equal(doc.querySelectorAll('.usage-token.is-adopted').length,0,'a single no-video estimate needs no chosen-state highlight');
+    assert.equal(doc.querySelectorAll('.usage-adopted:not([hidden])').length,0,'no-video summaries show no adoption label');
+  };
   assert.equal(doc.getElementById('token-applied'),null);
   assert.equal(doc.querySelectorAll('.usage-token').length,2);
   assert.equal(doc.getElementById('usage-metrics').classList.contains('is-single'),false);
@@ -710,8 +725,13 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   assert.equal(doc.getElementById('token-minimum-metric').hidden,true);
   assert.equal(doc.getElementById('usage-metrics').classList.contains('is-single'),true,'the visible estimate occupies the shared row when no minimum applies');
   assert.equal(shown('token-estimate-label'),'估算 Token 用量');
-  assert.equal(shown('token-estimate'),'243,000');assert.equal(adopted('estimate'),'243,000');
+  assert.equal(shown('token-estimate'),'243,000');neutral();
+  assert.match(explanation().querySelector('.usage-choice').textContent,/采用估算 Token 用量/,'the explanation still identifies the value used in calculation');
   assert.equal(doc.querySelectorAll('#usage-price-table [aria-current="true"]').length,1);
+  h.click('[data-video="true"]');
+  assert.equal(adopted('minimum'),'437,400','re-enabling input video restores minimum comparison');
+  h.click('[data-video="false"]');neutral();
+  assert.equal(shown('token-estimate'),'243,000','both former base and minimum highlights clear when video is disabled');
   let fractional;
   for(const res of Object.keys(E.DIMS))for(const ratio of Object.keys(E.DIMS[res])){
     const task={res,ratio,seconds:'5',video:true,vin:'2'};
@@ -774,6 +794,9 @@ test('usage calculation leads the explanation and substitutes each model specifi
     assert.match(clean(estimate),new RegExp('\\(0\\+'+entry.seconds+'\\)'),'no-video estimates substitute zero input seconds');
     assert.equal(doc.getElementById('usage-calc-estimate').textContent,entry.tokens);
     assert.equal(doc.getElementById('usage-calc-billed').textContent,entry.tokens);
+    assert.equal(doc.getElementById('token-minimum-metric').hidden,true);
+    assert.equal(doc.querySelectorAll('.usage-token.is-adopted').length,0,entry.label+' has a neutral no-video summary');
+    assert.equal(doc.querySelectorAll('.usage-adopted:not([hidden])').length,0);
     assert.match(section.querySelector('.usage-choice').textContent,/采用估算 Token 用量/);
     const billed=section.querySelector('[data-step="billed"]');
     assert.match(billed.textContent,/无视频输入.*不应用最低 Token 用量/);
@@ -999,8 +1022,8 @@ test('usage navigation survives live recalculation and resets only when the dial
   assert.equal(active(),'usage-dimensions');assert.equal(body.scrollTop,728);
   h.click('[data-video="false"]');
   assert.equal(doc.getElementById('token-minimum-metric').hidden,true);
-  assert.equal(doc.querySelectorAll('.usage-token.is-adopted').length,1);
-  assert.equal(doc.querySelector('.usage-token.is-adopted').id,'token-estimate-metric');
+  assert.equal(doc.querySelectorAll('.usage-token.is-adopted').length,0);
+  assert.equal(doc.querySelectorAll('.usage-adopted:not([hidden])').length,0);
   assert.equal(active(),'usage-dimensions');assert.equal(body.scrollTop,728);
   h.click('#close-drawer');h.click('#usage-help');
   assert.equal(active(),'usage-calculation');assert.equal(body.scrollTop,0,'a new visit starts at the calculation');
