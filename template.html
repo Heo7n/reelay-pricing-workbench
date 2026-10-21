@@ -101,7 +101,7 @@
 .video-toggle input:checked+.video-toggle-track{background:var(--accent);border-color:var(--accent)}.video-toggle input:checked+.video-toggle-track:after{transform:translateX(14px)}
 .video-toggle input:focus-visible+.video-toggle-track{outline:2px solid var(--accent);outline-offset:3px}
 .video-input-body{min-width:0;border-left:1px solid var(--line);padding:0 6px}
-.video-off-label{display:flex;align-items:center;height:34px;margin:0;font-size:12px;color:var(--muted);cursor:pointer}
+.video-off-label{display:flex;align-items:center;height:34px;margin:0;font-size:12px;color:var(--muted)}
 .reference-controls{display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:center;gap:6px;min-width:0}
 .reference-controls>label{font-size:11px;font-weight:400;color:var(--sub);white-space:nowrap}
 .reference-inputs{display:grid;grid-template-columns:minmax(0,1fr) 40px;align-items:center;gap:6px;height:34px;min-width:0}
@@ -280,7 +280,7 @@
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.21</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.22</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
 <section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
@@ -290,11 +290,11 @@
 <div class="model-select-field"><label class="fieldlabel" for="model">生成模型</label><select id="model"></select></div>
 <div class="fields-layout">
 <div class="field video-input-field" data-field="video">
-<label class="label" id="video-input-label" for="video-enabled">视频输入</label>
+<div class="label" id="video-input-label">视频输入</div>
 <div class="video-input-control">
 <label class="video-toggle"><input type="checkbox" id="video-enabled" role="switch" aria-labelledby="video-input-label" aria-controls="video-detail"><span class="video-toggle-track" aria-hidden="true"></span></label>
 <div class="video-input-body">
-<label class="video-off-label" id="video-off-label" for="video-enabled">无视频输入</label>
+<span class="video-off-label" id="video-off-label">无视频输入</span>
 <div class="reference-controls" data-field="vin" id="video-detail" hidden><label for="vin-slider" id="vin-label">总时长</label><div class="reference-inputs"><input class="duration-slider reference-slider" type="range" id="vin-slider" aria-label="输入视频总时长" min="2" max="15" step="1" value="2" disabled><div class="vin-value"><input class="num" type="number" id="vin" aria-label="输入视频总时长（整秒）" inputmode="numeric" min="2" max="15" step="1" value="2" disabled><span>秒</span></div></div></div>
 </div>
 </div>

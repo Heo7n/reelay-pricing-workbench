@@ -460,7 +460,8 @@ test('task controls and compact input duration update live without changing pric
   assert.deepEqual(fields.map(field=>field.dataset.field),['video','resolution','ratio','seconds']);
   const videoDetail=doc.getElementById('video-detail'),videoSwitch=doc.getElementById('video-enabled'),videoTitle=doc.getElementById('video-input-label'),videoControl=fields[0].querySelector('.video-input-control'),videoBody=fields[0].querySelector('.video-input-body');
   assert.equal(fields[0].classList.contains('video-input-field'),true);
-  assert.equal(videoTitle.tagName,'LABEL');assert.equal(videoTitle.textContent,'视频输入');assert.equal(videoTitle.htmlFor,'video-enabled');assert.equal(videoTitle.control,videoSwitch);
+  assert.equal(videoTitle.textContent,'视频输入');
+  assert.deepEqual([...videoSwitch.labels],[videoSwitch.closest('label.video-toggle')],'only the bounded switch area activates the native input');
   assert.equal(videoTitle.nextElementSibling,videoControl);
   assert.equal(videoSwitch.type,'checkbox');assert.equal(videoSwitch.getAttribute('role'),'switch');
   assert.equal(videoSwitch.getAttribute('aria-labelledby'),'video-input-label');assert.equal(videoSwitch.getAttribute('aria-controls'),'video-detail');
@@ -532,7 +533,7 @@ test('video input uses native switch activation and synchronizes task, presets, 
   let changes=0;control.addEventListener('change',()=>changes++);
   const pricing=JSON.stringify(h.api.getState().plan);
   state(true);
-  h.click('#video-input-label');state(false);assert.equal(changes,1,'the title activates the native checkbox once');
+  h.click('#video-enabled');state(false);assert.equal(changes,1,'the native checkbox activates once');
   h.click('label.video-toggle');state(true);assert.equal(changes,2,'the switch label does not double-toggle through event delegation');
   h.click('#vin-slider');h.input('vin-slider','5');
   h.click('#vin');h.input('vin','7.2');
@@ -559,6 +560,27 @@ test('video input uses native switch activation and synchronizes task, presets, 
   reloaded.setVideo(true);
   assert.equal(restored.getElementById('video-off-label').hidden,true);assert.equal(restored.getElementById('video-detail').hidden,false);
   assert.equal(reloaded.api.getState().task.vin,'2');
+});
+
+test('video input text and surrounding whitespace never toggle the switch', t => {
+  const h=boot(t),doc=h.w.document,control=doc.getElementById('video-enabled');
+  for(const enabled of [false,true]){
+    h.setVideo(enabled);
+    const before=JSON.stringify(h.api.getState().task);
+    const passive=['#video-input-label','.video-input-field','.video-input-control','.video-input-body'];
+    if(!enabled)passive.push('#video-off-label');
+    else passive.push('#video-detail','#vin-label','#vin-slider','#vin');
+    for(const selector of passive){
+      h.click(selector);
+      assert.equal(control.checked,enabled,selector+' must not toggle video input');
+      assert.equal(JSON.stringify(h.api.getState().task),before,selector+' must not change task parameters');
+    }
+    control.focus();
+    assert.equal(doc.activeElement,control,'native switch remains keyboard focusable');
+    h.click('label.video-toggle');
+    assert.equal(control.checked,!enabled,'the full left switch area still toggles');
+    assert.equal(doc.getElementById('video-detail').hidden,enabled);
+  }
 });
 
 test('compact reference slider and number stay synchronized across edits, presets and saved state', t => {
