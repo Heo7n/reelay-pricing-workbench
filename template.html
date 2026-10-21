@@ -93,21 +93,18 @@
 @media print{.pricing-mode{display:none}.manual-m-control input{border:0;background:transparent}}
 
 .generation-panel .video-input-field>.label{display:block;margin:0 0 8px;line-height:20px}
-.video-input-control{display:grid;grid-template-columns:56px minmax(0,1fr);align-items:center;height:38px;border:1px solid var(--line);border-radius:7px;background:#fff}
-.video-toggle{position:relative;display:flex;align-items:center;justify-content:center;height:36px;border-radius:6px 0 0 6px;cursor:pointer;transition:background .15s}.video-toggle:hover{background:#f0f4ff}
-.video-toggle input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
-.video-toggle-track{position:relative;display:block;width:34px;height:20px;border:1px solid #a6afbc;border-radius:99px;background:#b8c0cc;pointer-events:none;transition:background .15s,border-color .15s}
-.video-toggle-track:after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #20304026;transition:transform .15s}
-.video-toggle input:checked+.video-toggle-track{background:var(--accent);border-color:var(--accent)}.video-toggle input:checked+.video-toggle-track:after{transform:translateX(14px)}
-.video-toggle input:focus-visible+.video-toggle-track{outline:2px solid var(--accent);outline-offset:3px}
-.video-input-body{min-width:0;border-left:1px solid var(--line);padding:0 6px}
-.video-off-label{display:flex;align-items:center;height:34px;margin:0;font-size:12px;color:var(--muted)}
-.reference-controls{display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:center;gap:6px;min-width:0}
+.video-input-control{display:grid;grid-template-columns:minmax(96px,1fr) minmax(0,0fr);align-items:center;height:38px;transition:grid-template-columns .22s cubic-bezier(.2,.7,.2,1)}
+.video-input-control.is-video{grid-template-columns:minmax(96px,.3fr) minmax(0,.7fr)}
+.video-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-width:0;height:38px}
+.generation-panel .video-options button{min-width:0;height:38px;padding:0 6px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--sub);font-size:12px;white-space:nowrap}
+.generation-panel .video-options button:hover{border-color:#b4c4e8;background:#f8faff}.generation-panel .video-options button[aria-pressed=true]{border-color:#c7d5f6;background:var(--tint);color:var(--accent);font-weight:600}
+.video-duration{min-width:0;height:38px;overflow:hidden;opacity:0;transition:opacity .18s ease}.is-video>.video-duration{opacity:1}.video-duration[aria-hidden=true]{pointer-events:none}
+.reference-controls{display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:center;gap:6px;min-width:0;height:38px;padding-left:10px}
 .reference-controls>label{font-size:11px;font-weight:400;color:var(--sub);white-space:nowrap}
 .reference-inputs{display:grid;grid-template-columns:minmax(0,1fr) 40px;align-items:center;gap:6px;height:34px;min-width:0}
 .reference-slider{--vin-accent:#879bc3;min-width:0;height:34px}
-@container generation-fields (max-width:239px){.reference-controls{grid-template-columns:minmax(0,1fr)}.reference-controls>label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}
-@media(prefers-reduced-motion:reduce){.video-toggle,.video-toggle-track,.video-toggle-track:after{transition:none}}
+@container generation-fields (max-width:299px){.reference-controls{grid-template-columns:minmax(0,1fr) 40px;grid-template-rows:12px 22px;align-content:center;gap:0 6px}.reference-controls>label{grid-column:1;grid-row:1;font-size:10px;line-height:12px}.reference-inputs{display:contents}.reference-slider{grid-column:1;grid-row:2;height:22px}.reference-controls .vin-value{grid-column:2;grid-row:1/3}}
+@media(prefers-reduced-motion:reduce){.video-input-control,.video-duration{transition:none}}
 .reference-slider::-webkit-slider-runnable-track{height:4px;background:linear-gradient(to right,var(--vin-accent) 0%,var(--vin-accent) var(--range-progress),#e4e9f2 var(--range-progress),#e4e9f2 100%)}
 .reference-slider::-webkit-slider-thumb{width:12px;height:12px;margin-top:-4px;border:2px solid var(--vin-accent);box-shadow:0 1px 3px #26334718}
 .reference-slider::-moz-range-track{height:4px}.reference-slider::-moz-range-progress{height:4px;background:var(--vin-accent)}
@@ -280,7 +277,7 @@
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.22</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.23</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
 <section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
@@ -291,11 +288,10 @@
 <div class="fields-layout">
 <div class="field video-input-field" data-field="video">
 <div class="label" id="video-input-label">视频输入</div>
-<div class="video-input-control">
-<label class="video-toggle"><input type="checkbox" id="video-enabled" role="switch" aria-labelledby="video-input-label" aria-controls="video-detail"><span class="video-toggle-track" aria-hidden="true"></span></label>
-<div class="video-input-body">
-<span class="video-off-label" id="video-off-label">无视频输入</span>
-<div class="reference-controls" data-field="vin" id="video-detail" hidden><label for="vin-slider" id="vin-label">总时长</label><div class="reference-inputs"><input class="duration-slider reference-slider" type="range" id="vin-slider" aria-label="输入视频总时长" min="2" max="15" step="1" value="2" disabled><div class="vin-value"><input class="num" type="number" id="vin" aria-label="输入视频总时长（整秒）" inputmode="numeric" min="2" max="15" step="1" value="2" disabled><span>秒</span></div></div></div>
+<div class="video-input-control" id="video-input-control">
+<div class="video-options" id="video-options" role="group" aria-labelledby="video-input-label"><button type="button" data-video="false" aria-label="无视频输入" aria-pressed="true" aria-controls="video-detail">无视频输入</button><button type="button" data-video="true" aria-label="有视频输入" aria-pressed="false" aria-controls="video-detail">有视频输入</button></div>
+<div class="video-duration" id="video-detail" aria-hidden="true" inert hidden>
+<div class="reference-controls" data-field="vin"><label for="vin-slider" id="vin-label">总时长</label><div class="reference-inputs"><input class="duration-slider reference-slider" type="range" id="vin-slider" aria-label="输入视频总时长" min="2" max="15" step="1" value="2" disabled><div class="vin-value"><input class="num" type="number" id="vin" aria-label="输入视频总时长（整秒）" inputmode="numeric" min="2" max="15" step="1" value="2" disabled><span>秒</span></div></div></div>
 </div>
 </div>
 </div>

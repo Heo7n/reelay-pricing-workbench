@@ -41,9 +41,9 @@ function boot(t, storedEntries = []) {
   };
   const click = selector => {const el=w.document.querySelector(selector); assert.ok(el,selector+' exists'); el.click(); good();};
   const setVideo = enabled => {
-    const el=w.document.getElementById('video-enabled');assert.ok(el,'the native video switch exists');
-    if(el.checked!==enabled)el.click();
-    good();assert.equal(el.checked,enabled);assert.equal(api.getState().task.video,enabled);
+    const el=w.document.querySelector('[data-video="'+enabled+'"]');assert.ok(el,'the requested video-input button exists');
+    el.click();good();assert.equal(el.getAttribute('aria-pressed'),'true');assert.equal(api.getState().task.video,enabled);
+    assert.equal(w.document.querySelector('[data-video="'+!enabled+'"]').getAttribute('aria-pressed'),'false');
   };
   good();
   return {w,api,downloads,good,update,input,click,setVideo};
@@ -458,18 +458,15 @@ test('task controls and compact input duration update live without changing pric
   const h=boot(t), doc=h.w.document;
   const fields=[...doc.querySelectorAll('.fields-layout > .field')];
   assert.deepEqual(fields.map(field=>field.dataset.field),['video','resolution','ratio','seconds']);
-  const videoDetail=doc.getElementById('video-detail'),videoSwitch=doc.getElementById('video-enabled'),videoTitle=doc.getElementById('video-input-label'),videoControl=fields[0].querySelector('.video-input-control'),videoBody=fields[0].querySelector('.video-input-body');
+  const videoDetail=doc.getElementById('video-detail'),videoTitle=doc.getElementById('video-input-label'),videoControl=doc.getElementById('video-input-control'),videoOptions=doc.getElementById('video-options');
   assert.equal(fields[0].classList.contains('video-input-field'),true);
   assert.equal(videoTitle.textContent,'视频输入');
-  assert.deepEqual([...videoSwitch.labels],[videoSwitch.closest('label.video-toggle')],'only the bounded switch area activates the native input');
   assert.equal(videoTitle.nextElementSibling,videoControl);
-  assert.equal(videoSwitch.type,'checkbox');assert.equal(videoSwitch.getAttribute('role'),'switch');
-  assert.equal(videoSwitch.getAttribute('aria-labelledby'),'video-input-label');assert.equal(videoSwitch.getAttribute('aria-controls'),'video-detail');
-  assert.equal(videoSwitch.closest('label').classList.contains('video-toggle'),true);
-  assert.equal(videoSwitch.closest('label').parentElement,videoControl);assert.equal(videoBody.parentElement,videoControl);
-  assert.ok(videoBody.contains(videoDetail));assert.ok(videoBody.contains(doc.getElementById('video-off-label')));
-  assert.equal(doc.getElementById('video-off-label').textContent,'无视频输入');
-  assert.equal(doc.querySelector('.video-mode, #video-options, [data-video]'),null,'the native switch replaces the old segmented buttons');
+  assert.equal(videoOptions.getAttribute('role'),'group');assert.equal(videoOptions.getAttribute('aria-labelledby'),'video-input-label');
+  assert.equal(videoOptions.parentElement,videoControl);assert.equal(videoDetail.parentElement,videoControl);
+  assert.ok(videoDetail.querySelector('.reference-controls'));
+  assert.deepEqual([...videoOptions.querySelectorAll('button')].map(button=>[button.type,button.getAttribute('aria-label')]),[['button','无视频输入'],['button','有视频输入']]);
+  assert.equal(doc.querySelector('#video-enabled, #video-off-label, label.video-toggle'),null,'explicit mode buttons replace the switch');
   assert.equal(doc.querySelector('.reference-slot'),null,'there is no separate spacer beneath the mode control');
   const ratios=[...fields[2].querySelectorAll('[data-ratio]')].map(button=>button.dataset.ratio);
   assert.deepEqual(ratios,['21:9','16:9','4:3','1:1','3:4','9:16']);
@@ -506,9 +503,8 @@ test('task controls and compact input duration update live without changing pric
   assert.equal(vin.value,'15');
   equal(h.api.pricing().usedM,'1.65');
   h.setVideo(false);
-  assert.equal(doc.getElementById('video-detail').hidden,true);
-  assert.equal(videoSwitch.disabled,false,'the video switch stays available when duration is disabled');
-  assert.equal(doc.getElementById('video-off-label').hidden,false);
+  assert.equal(videoDetail.getAttribute('aria-hidden'),'true');assert.equal(videoDetail.hasAttribute('inert'),true);
+  assert.ok([...videoOptions.querySelectorAll('button')].every(button=>!button.disabled),'video-input choices remain available while duration is disabled');
   assert.equal(slider.disabled,true);assert.equal(vin.disabled,true);
   assert.equal(h.api.getState().task.video,false);
   equal(h.api.pricing().usedM,'1.65');
@@ -523,25 +519,30 @@ test('task controls and compact input duration update live without changing pric
   equal(h.api.pricing().usedM,'1.65');
 });
 
-test('video input uses native switch activation and synchronizes task, presets, models and saved drafts', t => {
-  const h=boot(t),doc=h.w.document,control=doc.getElementById('video-enabled'),slider=doc.getElementById('vin-slider'),duration=doc.getElementById('vin');
+test('explicit video choices synchronize task, presets, models and saved drafts without resetting an unchanged mode', t => {
+  const h=boot(t),doc=h.w.document,control=doc.getElementById('video-input-control'),detail=doc.getElementById('video-detail'),slider=doc.getElementById('vin-slider'),duration=doc.getElementById('vin');
   const state=enabled=>{
-    assert.equal(control.checked,enabled);assert.equal(h.api.getState().task.video,enabled);assert.equal(control.disabled,false);
-    assert.equal(doc.getElementById('video-detail').hidden,!enabled);assert.equal(doc.getElementById('video-off-label').hidden,enabled);
+    assert.equal(h.api.getState().task.video,enabled);assert.equal(control.classList.contains('is-video'),enabled);
+    for(const value of [false,true]){
+      const button=doc.querySelector('[data-video="'+value+'"]');assert.equal(button.disabled,false);assert.equal(button.getAttribute('aria-pressed'),String(value===enabled));
+      assert.equal(button.getAttribute('aria-label'),value?'有视频输入':'无视频输入');
+    }
+    assert.equal(detail.hasAttribute('inert'),!enabled);assert.equal(detail.getAttribute('aria-hidden')==='true',!enabled);
+    if(enabled)assert.equal(detail.hidden,false);
     assert.equal(slider.disabled,!enabled);assert.equal(duration.disabled,!enabled);
   };
-  let changes=0;control.addEventListener('change',()=>changes++);
   const pricing=JSON.stringify(h.api.getState().plan);
   state(true);
-  h.click('#video-enabled');state(false);assert.equal(changes,1,'the native checkbox activates once');
-  h.click('label.video-toggle');state(true);assert.equal(changes,2,'the switch label does not double-toggle through event delegation');
+  h.setVideo(false);state(false);h.setVideo(true);state(true);
   h.click('#vin-slider');h.input('vin-slider','5');
   h.click('#vin');h.input('vin','7.2');
-  h.click('#video-detail');h.click('.video-input-control');
-  state(true);assert.equal(changes,2,'duration inputs and surrounding whitespace do not activate the switch');
+  h.click('#video-detail');h.click('#video-input-control');
+  state(true);
   assert.equal(h.api.getState().task.vin,'8','duration still rounds upward independently of input mode');
-  control.checked=false;control.dispatchEvent(new h.w.Event('change',{bubbles:true}));h.good();
-  state(false);assert.equal(changes,3);assert.equal(h.api.getState().task.vin,'2','native change applies the existing no-video normalization');
+  const task=JSON.stringify(h.api.getState().task);
+  h.setVideo(true);state(true);assert.equal(control.classList.contains('is-closing'),false);
+  assert.equal(JSON.stringify(h.api.getState().task),task,'reselecting the active mode preserves duration and task settings');
+  h.setVideo(false);state(false);assert.equal(h.api.getState().task.vin,'2','disabling video retains the existing duration normalization');
   assert.equal(JSON.stringify(h.api.getState().plan),pricing,'video-input edits leave platform pricing unchanged');
   h.input('model','seedance-2.5','change');state(false);
   h.click('#quick-toggle');h.click('[data-example="video-max"]');state(true);
@@ -552,35 +553,79 @@ test('video input uses native switch activation and synchronizes task, presets, 
   assert.equal(duration.value,'2');
   const saved=h.w.localStorage.getItem('reelay_pricing_v9_official');
   const reloaded=boot(t,[['reelay_pricing_v9_official',saved]]),restored=reloaded.w.document;
-  assert.equal(restored.getElementById('video-enabled').checked,false);
-  assert.equal(restored.getElementById('video-enabled').disabled,false);
-  assert.equal(restored.getElementById('video-off-label').hidden,false);
+  assert.equal(restored.querySelector('[data-video="false"]').getAttribute('aria-pressed'),'true');
+  assert.ok([...restored.querySelectorAll('[data-video]')].every(button=>!button.disabled));
+  assert.deepEqual([...restored.querySelectorAll('[data-video]')].map(button=>button.textContent),['无视频输入','有视频输入']);
   assert.equal(restored.getElementById('video-detail').hidden,true);
   assert.equal(restored.getElementById('vin-slider').disabled,true);assert.equal(restored.getElementById('vin').disabled,true);
   reloaded.setVideo(true);
-  assert.equal(restored.getElementById('video-off-label').hidden,true);assert.equal(restored.getElementById('video-detail').hidden,false);
+  assert.equal(restored.getElementById('video-detail').hidden,false);assert.equal(restored.getElementById('video-detail').hasAttribute('inert'),false);
+  assert.deepEqual([...restored.querySelectorAll('[data-video]')].map(button=>button.textContent),['无','有']);
   assert.equal(reloaded.api.getState().task.vin,'2');
 });
 
-test('video input text and surrounding whitespace never toggle the switch', t => {
-  const h=boot(t),doc=h.w.document,control=doc.getElementById('video-enabled');
+test('video input headings and surrounding whitespace never change the selected mode', t => {
+  const h=boot(t),doc=h.w.document;
   for(const enabled of [false,true]){
     h.setVideo(enabled);
     const before=JSON.stringify(h.api.getState().task);
-    const passive=['#video-input-label','.video-input-field','.video-input-control','.video-input-body'];
-    if(!enabled)passive.push('#video-off-label');
-    else passive.push('#video-detail','#vin-label','#vin-slider','#vin');
+    const passive=['#video-input-label','.video-input-field','#video-input-control','#video-options'];
+    if(enabled)passive.push('#video-detail','.reference-controls','#vin-label','#vin-slider','#vin');
     for(const selector of passive){
       h.click(selector);
-      assert.equal(control.checked,enabled,selector+' must not toggle video input');
+      assert.equal(doc.querySelector('[data-video="'+enabled+'"]').getAttribute('aria-pressed'),'true',selector+' must not toggle video input');
       assert.equal(JSON.stringify(h.api.getState().task),before,selector+' must not change task parameters');
     }
-    control.focus();
-    assert.equal(doc.activeElement,control,'native switch remains keyboard focusable');
-    h.click('label.video-toggle');
-    assert.equal(control.checked,!enabled,'the full left switch area still toggles');
-    assert.equal(doc.getElementById('video-detail').hidden,enabled);
+    const next=doc.querySelector('[data-video="'+!enabled+'"]');next.focus();
+    assert.equal(doc.activeElement,next,'the explicit mode buttons remain keyboard focusable');
+    h.setVideo(!enabled);
+    assert.equal(doc.getElementById('video-detail').getAttribute('aria-hidden')==='true',enabled);
   }
+});
+
+test('video duration becomes inaccessible immediately and restores full choice labels only after its own grid transition', t => {
+  const h=boot(t),doc=h.w.document,control=doc.getElementById('video-input-control'),detail=doc.getElementById('video-detail');
+  const labels=()=>[...doc.querySelectorAll('#video-options button')].map(button=>button.textContent);
+  const transition=(target,propertyName)=>{const event=new h.w.Event('transitionend',{bubbles:true});Object.defineProperty(event,'propertyName',{value:propertyName});target.dispatchEvent(event);h.good();};
+  const pricing=JSON.stringify(h.api.getState().plan);
+  h.input('vin-slider','9');doc.getElementById('vin').focus();
+  assert.deepEqual(labels(),['无','有']);
+  h.setVideo(false);
+  assert.equal(control.classList.contains('is-video'),false);assert.equal(control.classList.contains('is-closing'),true);
+  assert.equal(detail.hidden,false,'the duration shell remains available for the closing animation');
+  assert.equal(detail.getAttribute('aria-hidden'),'true');assert.equal(detail.hasAttribute('inert'),true);
+  assert.equal(doc.getElementById('vin-slider').disabled,true);assert.equal(doc.getElementById('vin').disabled,true);
+  assert.equal(doc.activeElement,doc.querySelector('[data-video="false"]'),'focus leaves the now-inert duration control');
+  assert.deepEqual(labels(),['无','有'],'full labels wait for enough room after closing');
+  assert.equal(h.api.getState().task.vin,'2');
+  transition(detail,'grid-template-columns');assert.equal(detail.hidden,false,'a descendant transition cannot finish the container animation');
+  transition(control,'opacity');assert.equal(detail.hidden,false,'unrelated transitions do not finish closing');
+  transition(control,'grid-template-columns');
+  assert.equal(detail.hidden,true);assert.equal(control.classList.contains('is-closing'),false);assert.deepEqual(labels(),['无视频输入','有视频输入']);
+  h.setVideo(true);
+  assert.equal(control.classList.contains('is-video'),true);assert.equal(control.classList.contains('is-closing'),false);
+  assert.equal(detail.hidden,false);assert.equal(detail.hasAttribute('inert'),false);assert.notEqual(detail.getAttribute('aria-hidden'),'true');
+  assert.equal(doc.getElementById('vin-slider').disabled,false);assert.equal(doc.getElementById('vin').disabled,false);assert.deepEqual(labels(),['无','有']);
+  transition(control,'grid-template-columns');assert.equal(detail.hidden,false,'opening transition completion cannot hide the active duration');
+  assert.equal(JSON.stringify(h.api.getState().plan),pricing);
+});
+
+test('video closing fallback survives repeated selection, cancels on reopening and honors reduced motion', async t => {
+  const h=boot(t),doc=h.w.document,control=doc.getElementById('video-input-control'),detail=doc.getElementById('video-detail');
+  const wait=ms=>new Promise(resolve=>h.w.setTimeout(resolve,ms));
+  const labels=()=>[...doc.querySelectorAll('#video-options button')].map(button=>button.textContent);
+  h.setVideo(false);assert.equal(detail.hidden,false);
+  await wait(120);h.setVideo(false);await wait(170);h.good();
+  assert.equal(detail.hidden,true,'reselecting no video does not restart the 260 ms fallback');
+  assert.equal(control.classList.contains('is-closing'),false);assert.deepEqual(labels(),['无视频输入','有视频输入']);
+  h.setVideo(true);h.input('vin-slider','8');h.setVideo(false);h.setVideo(true);
+  await wait(300);h.good();
+  assert.equal(h.api.getState().task.video,true);assert.equal(h.api.getState().task.vin,'2');
+  assert.equal(detail.hidden,false);assert.equal(detail.hasAttribute('inert'),false);assert.equal(control.classList.contains('is-closing'),false);assert.deepEqual(labels(),['无','有']);
+  h.w.matchMedia=query=>({matches:query==='(prefers-reduced-motion: reduce)'});
+  h.setVideo(false);
+  assert.equal(detail.hidden,true);assert.equal(detail.hasAttribute('inert'),true);assert.equal(control.classList.contains('is-closing'),false);
+  assert.deepEqual(labels(),['无视频输入','有视频输入']);
 });
 
 test('compact reference slider and number stay synchronized across edits, presets and saved state', t => {
@@ -588,7 +633,7 @@ test('compact reference slider and number stay synchronized across edits, preset
   const key=key=>{input.dispatchEvent(new h.w.KeyboardEvent('keydown',{key,bubbles:true,cancelable:true}));h.good();};
   const value=expected=>{
     assert.equal(h.api.getState().task.vin,String(expected));
-    assert.equal(doc.getElementById('video-enabled').checked,h.api.getState().task.video,'presets and duration edits keep the switch in sync');
+    assert.equal(doc.querySelector('[data-video="'+h.api.getState().task.video+'"]').getAttribute('aria-pressed'),'true','presets and duration edits keep the selected mode in sync');
     assert.equal(input.value,String(expected));assert.equal(slider.value,String(expected));
     assert.equal(slider.getAttribute('aria-valuetext'),expected+' 秒');
     const task=h.api.getState().task;
@@ -611,7 +656,7 @@ test('compact reference slider and number stay synchronized across edits, preset
   h.click('#quick-toggle');h.click('[data-example="video-min"]');value(2);
   assert.equal(slider.style.getPropertyValue('--range-progress'),'0%');
   h.setVideo(false);
-  assert.equal(doc.getElementById('video-detail').hidden,true);
+  assert.equal(doc.getElementById('video-detail').getAttribute('aria-hidden'),'true');assert.equal(doc.getElementById('video-detail').hasAttribute('inert'),true);
   assert.equal(slider.disabled,true);assert.equal(input.disabled,true);
   h.setVideo(true);
   assert.equal(doc.getElementById('video-detail').hidden,false);
@@ -619,8 +664,7 @@ test('compact reference slider and number stay synchronized across edits, preset
   h.input('vin-slider','13');value(13);
   const saved=h.w.localStorage.getItem('reelay_pricing_v9_official');
   const reloaded=boot(t,[['reelay_pricing_v9_official',saved]]);
-  assert.equal(reloaded.w.document.getElementById('video-enabled').checked,true);
-  assert.equal(reloaded.w.document.getElementById('video-off-label').hidden,true);
+  assert.equal(reloaded.w.document.querySelector('[data-video="true"]').getAttribute('aria-pressed'),'true');
   assert.equal(reloaded.w.document.getElementById('video-detail').hidden,false);
   assert.equal(reloaded.w.document.getElementById('vin-slider').value,'13');
   assert.equal(reloaded.w.document.getElementById('vin').value,'13');
