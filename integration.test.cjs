@@ -40,8 +40,13 @@ function boot(t, storedEntries = []) {
     el.value=value; el.dispatchEvent(new w.Event(event,{bubbles:true})); good();
   };
   const click = selector => {const el=w.document.querySelector(selector); assert.ok(el,selector+' exists'); el.click(); good();};
+  const setVideo = enabled => {
+    const el=w.document.getElementById('video-enabled');assert.ok(el,'the native video switch exists');
+    if(el.checked!==enabled)el.click();
+    good();assert.equal(el.checked,enabled);assert.equal(api.getState().task.video,enabled);
+  };
   good();
-  return {w,api,downloads,good,update,input,click};
+  return {w,api,downloads,good,update,input,click,setVideo};
 }
 
 test('all 192 historical Oct19 display values remain consistent with the newly verified lookup', () => {
@@ -453,14 +458,17 @@ test('task controls and compact input duration update live without changing pric
   const h=boot(t), doc=h.w.document;
   const fields=[...doc.querySelectorAll('.fields-layout > .field')];
   assert.deepEqual(fields.map(field=>field.dataset.field),['video','resolution','ratio','seconds']);
-  const videoDetail=doc.getElementById('video-detail'),videoMode=fields[0].querySelector('.video-mode'),videoOptions=doc.getElementById('video-options');
+  const videoDetail=doc.getElementById('video-detail'),videoSwitch=doc.getElementById('video-enabled'),videoTitle=doc.getElementById('video-input-label'),videoControl=fields[0].querySelector('.video-input-control'),videoBody=fields[0].querySelector('.video-input-body');
   assert.equal(fields[0].classList.contains('video-input-field'),true);
-  assert.equal(videoMode.parentElement,fields[0]);assert.equal(videoDetail.parentElement,fields[0],'video mode and duration are peer controls in one field');
-  assert.equal(videoMode.nextElementSibling,videoDetail);
-  assert.ok(videoMode.contains(videoOptions));assert.ok(videoMode.contains(doc.getElementById('video-input-label')));
-  assert.equal(doc.getElementById('video-input-label').textContent,'视频输入');
-  assert.equal(videoOptions.getAttribute('role'),'group');assert.equal(videoOptions.getAttribute('aria-labelledby'),'video-input-label');
-  assert.deepEqual([...videoOptions.querySelectorAll('button')].map(button=>[button.textContent,button.getAttribute('aria-label')]),[['无','无视频输入'],['有','有视频输入']]);
+  assert.equal(videoTitle.tagName,'LABEL');assert.equal(videoTitle.textContent,'视频输入');assert.equal(videoTitle.htmlFor,'video-enabled');assert.equal(videoTitle.control,videoSwitch);
+  assert.equal(videoTitle.nextElementSibling,videoControl);
+  assert.equal(videoSwitch.type,'checkbox');assert.equal(videoSwitch.getAttribute('role'),'switch');
+  assert.equal(videoSwitch.getAttribute('aria-labelledby'),'video-input-label');assert.equal(videoSwitch.getAttribute('aria-controls'),'video-detail');
+  assert.equal(videoSwitch.closest('label').classList.contains('video-toggle'),true);
+  assert.equal(videoSwitch.closest('label').parentElement,videoControl);assert.equal(videoBody.parentElement,videoControl);
+  assert.ok(videoBody.contains(videoDetail));assert.ok(videoBody.contains(doc.getElementById('video-off-label')));
+  assert.equal(doc.getElementById('video-off-label').textContent,'未使用');
+  assert.equal(doc.querySelector('.video-mode, #video-options, [data-video]'),null,'the native switch replaces the old segmented buttons');
   assert.equal(doc.querySelector('.reference-slot'),null,'there is no separate spacer beneath the mode control');
   const ratios=[...fields[2].querySelectorAll('[data-ratio]')].map(button=>button.dataset.ratio);
   assert.deepEqual(ratios,['21:9','16:9','4:3','1:1','3:4','9:16']);
@@ -472,14 +480,15 @@ test('task controls and compact input duration update live without changing pric
   assert.equal(slider.type,'range');
   assert.equal(slider.min,'2'); assert.equal(slider.max,'15'); assert.equal(slider.step,'1');
   assert.equal(doc.getElementById('vin-label').htmlFor,'vin-slider');
-  assert.equal(doc.getElementById('vin-label').textContent,'输入视频总时长');
-  assert.ok(videoDetail.querySelector('.reference-inputs').contains(slider));assert.ok(videoDetail.querySelector('.reference-inputs').contains(vin));
+  assert.equal(doc.getElementById('vin-label').textContent,'总时长');
+  assert.equal(slider.getAttribute('aria-label'),'输入视频总时长');
+  assert.ok(videoDetail.contains(slider));assert.ok(videoDetail.contains(vin));
   assert.equal(slider.nextElementSibling.contains(vin),true);
   assert.equal(doc.getElementById('vin-scrubber'),null);
   assert.equal(doc.getElementById('vin-editor'),null);
   h.input('pricing-mode','manual','change');
   h.input('manual-m','1.65');
-  h.click('[data-video="true"]');
+  h.setVideo(true);
   assert.equal(doc.getElementById('video-detail').hidden,false);
   h.input('seconds','9');
   vin.focus();
@@ -495,12 +504,11 @@ test('task controls and compact input duration update live without changing pric
   equal(h.api.getState().task.vin,'15');
   assert.equal(vin.value,'15');
   equal(h.api.pricing().usedM,'1.65');
-  h.click('[data-video="false"]');
+  h.setVideo(false);
   assert.equal(doc.getElementById('video-detail').hidden,true);
-  assert.equal(videoMode.hidden,false,'the video-input selector stays available when duration is hidden');
+  assert.equal(videoSwitch.disabled,false,'the video switch stays available when duration is disabled');
+  assert.equal(doc.getElementById('video-off-label').hidden,false);
   assert.equal(slider.disabled,true);assert.equal(vin.disabled,true);
-  assert.equal(videoOptions.querySelector('[data-video="false"]').getAttribute('aria-pressed'),'true');
-  assert.equal(videoOptions.querySelector('[data-video="true"]').getAttribute('aria-pressed'),'false');
   assert.equal(h.api.getState().task.video,false);
   equal(h.api.pricing().usedM,'1.65');
   assert.equal(doc.getElementById('auto-time'),null);
@@ -514,11 +522,51 @@ test('task controls and compact input duration update live without changing pric
   equal(h.api.pricing().usedM,'1.65');
 });
 
+test('video input uses native switch activation and synchronizes task, presets, models and saved drafts', t => {
+  const h=boot(t),doc=h.w.document,control=doc.getElementById('video-enabled'),slider=doc.getElementById('vin-slider'),duration=doc.getElementById('vin');
+  const state=enabled=>{
+    assert.equal(control.checked,enabled);assert.equal(h.api.getState().task.video,enabled);assert.equal(control.disabled,false);
+    assert.equal(doc.getElementById('video-detail').hidden,!enabled);assert.equal(doc.getElementById('video-off-label').hidden,enabled);
+    assert.equal(slider.disabled,!enabled);assert.equal(duration.disabled,!enabled);
+  };
+  let changes=0;control.addEventListener('change',()=>changes++);
+  const pricing=JSON.stringify(h.api.getState().plan);
+  state(true);
+  h.click('#video-input-label');state(false);assert.equal(changes,1,'the title activates the native checkbox once');
+  h.click('label.video-toggle');state(true);assert.equal(changes,2,'the switch label does not double-toggle through event delegation');
+  h.click('#vin-slider');h.input('vin-slider','5');
+  h.click('#vin');h.input('vin','7.2');
+  h.click('#video-detail');h.click('.video-input-control');
+  state(true);assert.equal(changes,2,'duration inputs and surrounding whitespace do not activate the switch');
+  assert.equal(h.api.getState().task.vin,'8','duration still rounds upward independently of input mode');
+  control.checked=false;control.dispatchEvent(new h.w.Event('change',{bubbles:true}));h.good();
+  state(false);assert.equal(changes,3);assert.equal(h.api.getState().task.vin,'2','native change applies the existing no-video normalization');
+  assert.equal(JSON.stringify(h.api.getState().plan),pricing,'video-input edits leave platform pricing unchanged');
+  h.input('model','seedance-2.5','change');state(false);
+  h.click('#quick-toggle');h.click('[data-example="video-max"]');state(true);
+  assert.equal(duration.value,'30');assert.equal(slider.max,'30');
+  h.input('model','seedance-2.0-fast','change');state(true);
+  assert.equal(duration.value,'15');assert.equal(slider.max,'15');
+  h.click('#quick-toggle');h.click('[data-example="none-min"]');state(false);
+  assert.equal(duration.value,'2');
+  const saved=h.w.localStorage.getItem('reelay_pricing_v9_official');
+  const reloaded=boot(t,[['reelay_pricing_v9_official',saved]]),restored=reloaded.w.document;
+  assert.equal(restored.getElementById('video-enabled').checked,false);
+  assert.equal(restored.getElementById('video-enabled').disabled,false);
+  assert.equal(restored.getElementById('video-off-label').hidden,false);
+  assert.equal(restored.getElementById('video-detail').hidden,true);
+  assert.equal(restored.getElementById('vin-slider').disabled,true);assert.equal(restored.getElementById('vin').disabled,true);
+  reloaded.setVideo(true);
+  assert.equal(restored.getElementById('video-off-label').hidden,true);assert.equal(restored.getElementById('video-detail').hidden,false);
+  assert.equal(reloaded.api.getState().task.vin,'2');
+});
+
 test('compact reference slider and number stay synchronized across edits, presets and saved state', t => {
   const h=boot(t),doc=h.w.document,slider=doc.getElementById('vin-slider'),input=doc.getElementById('vin');
   const key=key=>{input.dispatchEvent(new h.w.KeyboardEvent('keydown',{key,bubbles:true,cancelable:true}));h.good();};
   const value=expected=>{
     assert.equal(h.api.getState().task.vin,String(expected));
+    assert.equal(doc.getElementById('video-enabled').checked,h.api.getState().task.video,'presets and duration edits keep the switch in sync');
     assert.equal(input.value,String(expected));assert.equal(slider.value,String(expected));
     assert.equal(slider.getAttribute('aria-valuetext'),expected+' 秒');
     const task=h.api.getState().task;
@@ -540,15 +588,18 @@ test('compact reference slider and number stay synchronized across edits, preset
   assert.equal(slider.style.getPropertyValue('--range-progress'),'100%');
   h.click('#quick-toggle');h.click('[data-example="video-min"]');value(2);
   assert.equal(slider.style.getPropertyValue('--range-progress'),'0%');
-  h.click('[data-video="false"]');
+  h.setVideo(false);
   assert.equal(doc.getElementById('video-detail').hidden,true);
   assert.equal(slider.disabled,true);assert.equal(input.disabled,true);
-  h.click('[data-video="true"]');
+  h.setVideo(true);
   assert.equal(doc.getElementById('video-detail').hidden,false);
   assert.equal(slider.disabled,false);assert.equal(input.disabled,false);value(2);
   h.input('vin-slider','13');value(13);
   const saved=h.w.localStorage.getItem('reelay_pricing_v9_official');
   const reloaded=boot(t,[['reelay_pricing_v9_official',saved]]);
+  assert.equal(reloaded.w.document.getElementById('video-enabled').checked,true);
+  assert.equal(reloaded.w.document.getElementById('video-off-label').hidden,true);
+  assert.equal(reloaded.w.document.getElementById('video-detail').hidden,false);
   assert.equal(reloaded.w.document.getElementById('vin-slider').value,'13');
   assert.equal(reloaded.w.document.getElementById('vin').value,'13');
   equal(reloaded.api.pricing().usedM,'1.65');
@@ -648,7 +699,7 @@ test('minimum usage is indicated by the adopted label without a repeated notice'
   h.input('vin','4');
   equal(h.api.current().calc.tokens,'76800');
   assert.equal(note.hidden,true,'usage above the threshold needs no minimum-usage notice');
-  h.click('[data-video="false"]');
+  h.setVideo(false);
   assert.equal(note.hidden,true);
   h.update(s=>{
     s.task={res:'480p',ratio:'1:1',seconds:'4',video:true,vin:'4'};
@@ -720,7 +771,7 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   h.input('vin-slider','5');
   assert.equal(shown('token-estimate'),'486,000');assert.equal(adopted('estimate'),'486,000');
   assert.equal(doc.getElementById('coverage-note').hidden,true);
-  h.click('[data-video="false"]');
+  h.setVideo(false);
   assert.equal(shown('token-rate'),'51.00');assert.equal(shown('token-minimum'),'不适用');
   assert.equal(doc.getElementById('token-minimum-metric').hidden,true);
   assert.equal(doc.getElementById('usage-metrics').classList.contains('is-single'),true,'the visible estimate occupies the shared row when no minimum applies');
@@ -728,9 +779,9 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   assert.equal(shown('token-estimate'),'243,000');neutral();
   assert.match(explanation().querySelector('.usage-choice').textContent,/采用估算 Token 用量/,'the explanation still identifies the value used in calculation');
   assert.equal(doc.querySelectorAll('#usage-price-table [aria-current="true"]').length,1);
-  h.click('[data-video="true"]');
+  h.setVideo(true);
   assert.equal(adopted('minimum'),'437,400','re-enabling input video restores minimum comparison');
-  h.click('[data-video="false"]');neutral();
+  h.setVideo(false);neutral();
   assert.equal(shown('token-estimate'),'243,000','both former base and minimum highlights clear when video is disabled');
   let fractional;
   for(const res of Object.keys(E.DIMS))for(const ratio of Object.keys(E.DIMS[res])){
@@ -1020,7 +1071,7 @@ test('usage navigation survives live recalculation and resets only when the dial
   assert.equal(active(),'usage-dimensions');assert.equal(body.scrollTop,728,'pricing recalculation also preserves the reading position');
   h.click('#usage-show-pixels');
   assert.equal(active(),'usage-dimensions');assert.equal(body.scrollTop,728);
-  h.click('[data-video="false"]');
+  h.setVideo(false);
   assert.equal(doc.getElementById('token-minimum-metric').hidden,true);
   assert.equal(doc.querySelectorAll('.usage-token.is-adopted').length,0);
   assert.equal(doc.querySelectorAll('.usage-adopted:not([hidden])').length,0);
@@ -1506,7 +1557,7 @@ test('models: selecting 2.5 uses its 30-second limit and exact 480p pixel map', 
   assert.deepEqual([...doc.getElementById('model').options].map(option=>option.value).sort(),
     ['seedance-2.0','seedance-2.0-fast','seedance-2.5'].sort());
   h.input('model','seedance-2.5','change');
-  h.click('[data-video="false"]');h.click('[data-ratio="16:9"]');h.click('[data-res="480p"]');
+  h.setVideo(false);h.click('[data-ratio="16:9"]');h.click('[data-res="480p"]');
   assert.equal(doc.getElementById('seconds').max,'30');
   assert.equal(doc.getElementById('vin-slider').max,'30');
   assert.match(doc.getElementById('seconds-max-label').textContent,/30/);

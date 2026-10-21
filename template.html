@@ -92,15 +92,22 @@
 @media(max-width:900px){.fields-layout{display:block}}
 @media print{.pricing-mode{display:none}.manual-m-control input{border:0;background:transparent}}
 
-.video-input-field{display:grid;grid-template-columns:80px minmax(0,1fr);column-gap:16px;align-items:start}.video-mode,.reference-controls{min-width:0}
-.generation-panel .video-input-field .label{display:block;margin:0 0 8px;line-height:20px}
-.generation-panel .video-choice{height:34px;gap:2px;padding:2px;border:1px solid var(--line);border-radius:7px;background:#f7f8fa}
-.generation-panel .video-input-field .video-choice button{min-width:0;border:0;border-radius:4px;padding:0;background:transparent;font-size:12px;line-height:1.4}
-.generation-panel .video-input-field .video-choice button.active{background:#fff;color:var(--accent);box-shadow:0 1px 3px #2030401a;font-weight:600}
-.generation-panel .video-input-field .reference-controls>label{font-size:11px;font-weight:400;color:var(--muted);white-space:nowrap}
-.reference-inputs{display:grid;grid-template-columns:minmax(0,1fr) 46px;align-items:center;gap:8px;height:34px}
+.generation-panel .video-input-field>.label{display:block;margin:0 0 8px;line-height:20px}
+.video-input-control{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;height:38px;border:1px solid var(--line);border-radius:7px;background:#fff}
+.video-toggle{position:relative;display:flex;align-items:center;justify-content:center;height:36px;cursor:pointer}
+.video-toggle input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.video-toggle-track{position:relative;display:block;width:30px;height:18px;border:1px solid #a6afbc;border-radius:99px;background:#b8c0cc;pointer-events:none;transition:background .15s,border-color .15s}
+.video-toggle-track:after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #20304026;transition:transform .15s}
+.video-toggle input:checked+.video-toggle-track{background:var(--accent);border-color:var(--accent)}.video-toggle input:checked+.video-toggle-track:after{transform:translateX(12px)}
+.video-toggle input:focus-visible+.video-toggle-track{outline:2px solid var(--accent);outline-offset:3px}
+.video-input-body{min-width:0;border-left:1px solid var(--line);padding:0 8px}
+.video-off-label{display:flex;align-items:center;height:34px;margin:0;font-size:12px;color:var(--muted);cursor:pointer}
+.reference-controls{display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:center;gap:8px;min-width:0}
+.reference-controls>label{font-size:11px;font-weight:400;color:var(--sub);white-space:nowrap}
+.reference-inputs{display:grid;grid-template-columns:minmax(0,1fr) 40px;align-items:center;gap:8px;height:34px;min-width:0}
 .reference-slider{--vin-accent:#879bc3;min-width:0;height:34px}
-@container generation-fields (max-width:239px){.video-input-field{grid-template-columns:minmax(0,1fr);row-gap:10px}.video-mode{width:80px}}
+@container generation-fields (max-width:239px){.reference-controls{grid-template-columns:minmax(0,1fr)}.reference-controls>label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}
+@media(prefers-reduced-motion:reduce){.video-toggle-track,.video-toggle-track:after{transition:none}}
 .reference-slider::-webkit-slider-runnable-track{height:4px;background:linear-gradient(to right,var(--vin-accent) 0%,var(--vin-accent) var(--range-progress),#e4e9f2 var(--range-progress),#e4e9f2 100%)}
 .reference-slider::-webkit-slider-thumb{width:12px;height:12px;margin-top:-4px;border:2px solid var(--vin-accent);box-shadow:0 1px 3px #26334718}
 .reference-slider::-moz-range-track{height:4px}.reference-slider::-moz-range-progress{height:4px;background:var(--vin-accent)}
@@ -273,7 +280,7 @@
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.19</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.20</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
 <section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
@@ -283,8 +290,14 @@
 <div class="model-select-field"><label class="fieldlabel" for="model">生成模型</label><select id="model"></select></div>
 <div class="fields-layout">
 <div class="field video-input-field" data-field="video">
-<div class="video-mode"><div class="label" id="video-input-label">视频输入</div><div class="segs video-choice" id="video-options" role="group" aria-labelledby="video-input-label"><button type="button" data-video="false" aria-label="无视频输入">无</button><button type="button" data-video="true" aria-label="有视频输入">有</button></div></div>
-<div class="reference-controls" data-field="vin" id="video-detail"><label class="label" for="vin-slider" id="vin-label">输入视频总时长</label><div class="reference-inputs"><input class="duration-slider reference-slider" type="range" id="vin-slider" aria-labelledby="vin-label" min="2" max="15" step="1" value="2"><div class="vin-value"><input class="num" type="number" id="vin" aria-label="输入视频总时长（整秒）" inputmode="numeric" min="2" max="15" step="1" value="2"><span>秒</span></div></div></div>
+<label class="label" id="video-input-label" for="video-enabled">视频输入</label>
+<div class="video-input-control">
+<label class="video-toggle"><input type="checkbox" id="video-enabled" role="switch" aria-labelledby="video-input-label" aria-controls="video-detail"><span class="video-toggle-track" aria-hidden="true"></span></label>
+<div class="video-input-body">
+<label class="video-off-label" id="video-off-label" for="video-enabled">未使用</label>
+<div class="reference-controls" data-field="vin" id="video-detail" hidden><label for="vin-slider" id="vin-label">总时长</label><div class="reference-inputs"><input class="duration-slider reference-slider" type="range" id="vin-slider" aria-label="输入视频总时长" min="2" max="15" step="1" value="2" disabled><div class="vin-value"><input class="num" type="number" id="vin" aria-label="输入视频总时长（整秒）" inputmode="numeric" min="2" max="15" step="1" value="2" disabled><span>秒</span></div></div></div>
+</div>
+</div>
 </div>
 <div class="field" data-field="resolution"><div class="label">输出分辨率</div><div class="segs" id="res-options"></div></div>
 <div class="field" data-field="ratio"><div class="label">画面比例</div><div class="ratios" id="ratio-options"></div><div class="pixel-line"><span class="num" id="pixels"></span><span>24 fps</span></div></div>
