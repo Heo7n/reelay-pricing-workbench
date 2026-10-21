@@ -157,7 +157,7 @@ function persist(){
  saved.plan.procurementModel=state.task.model;saved.plan.q=saved.plan.procurementByModel[state.task.model];
  try{localStorage.setItem(KEY,JSON.stringify(saved));$('storage-status').innerHTML='<i class="live-dot"></i>'+ (platformValid?'本地草稿已保存':'模型草稿已保存 · 平台保留上次有效方案');}catch(_){$('storage-status').textContent='浏览器未保存草稿，请导出方案留存。';}
 }
-function openDrawer(name,title,subtitle,html,wide=false){lastFocus=document.activeElement;drawerName=name;$('drawer-title').textContent=title;$('drawer-sub').textContent=subtitle;$('drawer-sub').hidden=!subtitle;$('drawer-body').innerHTML=html;$('drawer-footer').hidden=true;$('drawer').classList.toggle('wide',wide);$('modal').classList.toggle('centered',name==='usage');$('modal').hidden=false;document.body.classList.add('modal-open');if(name==='usage'){usageJumpPosition=null;setUsageSection('usage-calculation');$('drawer-body').scrollTop=0;}$('close-drawer').focus();}
+function openDrawer(name,title,subtitle,html,wide=false){closeQuickOptions();lastFocus=document.activeElement;drawerName=name;$('drawer-title').textContent=title;$('drawer-sub').textContent=subtitle;$('drawer-sub').hidden=!subtitle;$('drawer-body').innerHTML=html;$('drawer-footer').hidden=true;$('drawer').classList.toggle('wide',wide);$('modal').classList.toggle('centered',name==='usage');$('modal').hidden=false;document.body.classList.add('modal-open');if(name==='usage'){usageJumpPosition=null;setUsageSection('usage-calculation');$('drawer-body').scrollTop=0;}$('close-drawer').focus();}
 function closeDrawer(){if($('modal').hidden)return;$('modal').hidden=true;document.body.classList.remove('modal-open');drawerName='';if(lastFocus?.isConnected)lastFocus.focus();}
 function table(headers,rows,cls=''){return'<table class="'+cls+'"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>';}
 const td=(s,cls='number')=>'<td class="'+cls+'">'+s+'</td>',minus=(a,b)=>{const d=sub(a,b);return(cmp(d,0)>0?'+':'')+num(d,10);};
@@ -221,10 +221,48 @@ function renderComposer(){
  renderSlider('vin-slider',t.vin);$('vin-slider').disabled=!t.video;
  $('video-detail').hidden=!t.video;$('vin').disabled=!t.video;
  document.querySelectorAll('[data-video]').forEach(b=>{b.classList.toggle('active',(b.dataset.video==='true')===t.video);b.setAttribute('aria-pressed',String((b.dataset.video==='true')===t.video));});
- document.querySelectorAll('[data-example]').forEach(b=>{const preset=quickTasks(spec.id)[b.dataset.example];b.disabled=!preset;if(!preset){b.querySelector('small').textContent='规则待补齐';return;}const active=key(t)===key(preset);b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));b.querySelector('small').textContent=label(preset)+(preset.video?' · 输入'+preset.vin+'秒':'');});
+ $('quick-model').textContent=spec.label;
+ document.querySelectorAll('[data-example]').forEach(b=>{
+  const preset=quickTasks(spec.id)[b.dataset.example];b.disabled=!preset;
+  if(!preset){b.classList.remove('active');b.setAttribute('aria-pressed','false');b.querySelector('small').textContent='规则待补齐';return;}
+  const active=key(t)===key(preset);b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));
+  b.querySelector('small').textContent=`${preset.res==='4k'?'4K':preset.res} · ${preset.ratio}\n输出 ${preset.seconds} 秒${preset.video?' · 输入 '+preset.vin+' 秒':''}`;
+  b.setAttribute('aria-label',`${preset.video?'有':'无'}视频输入，${b.dataset.example.endsWith('min')?'最低':'最高'}用量，${label(preset)}${preset.video?'，输入 '+preset.vin+' 秒':''}`);
+ });
  $('pixels').textContent=spec.dims[t.res][t.ratio].join(' × ')+' 像素';
 }
 
+function closeQuickOptions(restoreFocus=false){
+ const panel=$('quick-popover');if(panel.hidden)return;
+ panel.hidden=true;$('quick-toggle').setAttribute('aria-expanded','false');
+ if(restoreFocus)$('quick-toggle').focus({preventScroll:true});
+}
+function revealQuickOption(option=document.activeElement){
+ const panel=$('quick-popover');if(panel.hidden||!panel.contains(option)||!panel.clientHeight)return;
+ const bounds=panel.getBoundingClientRect(),item=option.getBoundingClientRect();if(!item.height)return;
+ if(item.top<bounds.top+8)panel.scrollTop+=item.top-bounds.top-8;
+ else if(item.bottom>bounds.bottom-8)panel.scrollTop+=item.bottom-bounds.bottom+8;
+}
+function positionQuickOptions(){
+ const panel=$('quick-popover');if(panel.hidden)return;
+ const anchor=$('quick-toggle').getBoundingClientRect(),gutter=12,gap=8;
+ const viewportWidth=window.innerWidth,viewportHeight=window.innerHeight;
+ if(anchor.height>0&&(anchor.bottom<=0||anchor.top>=viewportHeight)){closeQuickOptions();return;}
+ const width=Math.max(0,Math.min(anchor.width||320,viewportWidth-gutter*2));
+ panel.style.width=width+'px';panel.style.left=Math.max(gutter,Math.min(anchor.left,viewportWidth-gutter-width))+'px';
+ const preferred=Math.min(panel.scrollHeight||panel.getBoundingClientRect().height||280,360);
+ const above=Math.max(0,anchor.top-gap-gutter),below=Math.max(0,viewportHeight-anchor.bottom-gap-gutter);
+ const upward=above>=preferred||above>=below,available=upward?above:below;
+ const limit=Math.min(360,available);panel.style.maxHeight=limit+'px';
+ const height=Math.min(panel.getBoundingClientRect().height||preferred,limit);
+ panel.style.top=Math.max(gutter,Math.min(upward?anchor.top-gap-height:anchor.bottom+gap,viewportHeight-gutter-height))+'px';
+ panel.dataset.placement=upward?'above':'below';
+ revealQuickOption();
+}
+function openQuickOptions(){
+ const panel=$('quick-popover');panel.hidden=false;$('quick-toggle').setAttribute('aria-expanded','true');positionQuickOptions();
+ if(!panel.hidden){const option=panel.querySelector('[data-example].active:not(:disabled)')||panel.querySelector('[data-example]:not(:disabled)')||$('quick-close');option.focus({preventScroll:true});revealQuickOption(option);}
+}
 function tokenText(value,digits=12){return num(value,digits).split('.').map((part,i)=>i?part:part.replace(/\B(?=(\d{3})+(?!\d))/g,',')).join('.');}
 function renderUsage(v,t){
  const c=v.calc,rule=v.rule,manual=rule?.kind==='manual',hasMinimum=t.video&&!!rule;
@@ -453,7 +491,7 @@ function render(){
   if(!validPlan(state.plan))for(const id of ['multiplier','break-even-m','per-yuan','per-point','plan-principle'])$(id).textContent='—';
  }
  if(validPlan(state.plan)){try{renderActual();}catch(e){$('actual-table').innerHTML='<div class="empty">'+esc(e.message)+'</div>';actualRows=[];}}
- globalValid=modelValid&&platformValid;persist();
+ globalValid=modelValid&&platformValid;positionQuickOptions();persist();
 }
 function changeTask(patch){state.task={...state.task,...patch};if(validTask(state.task))state.task=normalizeTask(state.task);render();}
 function changeModel(model){
@@ -524,7 +562,7 @@ function openDetails(mode='theory',recordId='',contextTask=null){
  const view=chosen==='actual'?actualBreakdown(selected,p):theoryBreakdown(t,p);
  const tabs=`<div class="detail-switch" role="tablist" aria-label="计算展开口径"><button role="tab" aria-selected="${chosen==='theory'}" data-detail-mode="theory" class="${chosen==='theory'?'active':''}">参数估算明细</button><button role="tab" aria-selected="${chosen==='actual'}" data-detail-mode="actual" class="${chosen==='actual'?'active':''}">实测金额复算展开</button></div>`;
  const content=tabs+detailPlan(p,t.model||'seedance-2.0')+selector+view.html+detailBusinessMath(p)+`<div class="actions" style="margin-top:20px"><button class="btn" id="export-calculation">导出这份计算明细 ↓</button><button class="btn" id="close-only">关闭</button></div>`;
- detailContext.text=[`Reelay V9.5.12 · ${chosen==='actual'?'平台实测金额复算':'参数估算明细'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
+ detailContext.text=[`Reelay V9.5.13 · ${chosen==='actual'?'平台实测金额复算':'参数估算明细'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
  openDrawer('calculation','定价明细',label(t)+' / '+vinLabel(t)+' · 不改变主表输入',content,true);
 }
 let ruleContext=null;
@@ -585,11 +623,11 @@ function addTask(){const v=current();if(!v.x||!globalValid)return;if(state.tasks
 function openNewRecharge(){openDrawer('recharge','添加充值方案','不改变实测数据，也不执行实际充值。',`<div class="grid2"><div><label class="fieldlabel" for="r-pay">实付金额</label><input class="input" id="r-pay" inputmode="decimal" value="100"></div><div><label class="fieldlabel" for="r-total">到账总积分</label><input class="input" id="r-total" inputmode="decimal" value="1500"></div></div><div class="inline-error" id="r-error"></div><button class="btn primary" id="save-recharge">加入对比</button>`);}
 function download(name,text,type='text/plain;charset=utf-8'){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 const filename=()=>state.plan.company.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,50)||'Reelay方案';
-function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.5.12 · 视频成本与定价','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
+function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.5.13 · 视频成本与定价','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
 function exportJSON(){
  const procurementProfiles=Object.keys(PROCUREMENT_MODELS).map(model=>procurementInfo(model));
  const taskEstimates=state.tasks.map(row=>{const v=theory(row.params);return v.x?exportRow(row.title,v,v.x,row.qty):{model:row.params.model,...procurementInfo(row.params.model),scope:'规则缺项，未生成收费估算'};});
- download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.5.12',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
+ download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.5.13',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
 }
 function csvCell(x){let s=String(x??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
 function exportCSV(actual=false){const rows=actual?actualRows:tableRows;if(!rows.length)return toast('没有可导出记录。');const titles=actual?{scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',procurementRatio:'当前复算采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',record:'记录',params:'规格',coverage:'估算依据',theoryP:'刊例费用P',recordedP:'平台记录P',deltaP:'实测P减估算P',theoryC:'采购成本C',recordedC:'平台记录C',deltaC:'实测C减估算C',recordedN:'平台实际扣分_空白为未知',recalcN:'当前复算扣分_非历史',recalcCash:'当前复算金额',recalcProfit:'当前复算模型毛利',pay:'当前充值实付',total:'当前到账积分',M:'当前倍率',targetMode:'当前目标模式',usage:'API_completion_tokens_原记录',note:'备注'}:{scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',targetMode:'定价目标模式',targetMargin:'目标模型毛利率百分数_毛利模式',procurementRatio:'采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',profit:'每笔模型毛利',margin:'取整后测算模型毛利率百分数',scenario:'场景',coverage:'估算依据',ruleVersion:'规则版本',quantity:'数量_逐笔先取整',pay:'实付元',total:'到账积分',discount:'目标客户折扣',M:'定价倍率',P:'刊例费用P',C:'采购成本C',raw:'取整前积分',N:'每笔预计扣分_非实际',target:'目标金额',cash:'每笔折合金额',gap:'与目标差额'};const ks=Object.keys(titles),csv='\ufeff'+[ks.map(k=>csvCell(titles[k])).join(','),...rows.map(r=>ks.map(k=>csvCell(r[k])).join(','))].join('\r\n');download(filename()+(actual?'_实测对照':'_理论_'+state.tab)+'.csv',csv,'text/csv;charset=utf-8');}
@@ -600,11 +638,15 @@ if(payload?.format==='reelay.pricing.v7'&&payload.state){const old=payload.state
 for(const r of old.tasks||[]){if(validTask(r.task,false))n.tasks.push({id:String(r.id||uid()),params:clone(r.task),qty:String(r.qty||1),title:label(r.task)+' / '+vinLabel(r.task)});}if(!validState(n))throw Error('旧版方案含无法安全迁移的参数。请保留原文件，并手动录入充值条件。');return{value:upgradeState(n),note:'已导入方案。'+fixedTaskNotice(old.task)};}
 throw Error('仅支持本工具V9、V8或V7导出的方案JSON。');}
 function openReset(){openDrawer('reset','重置V9本地草稿？','不会删除旧版V7文件或旧版草稿，不影响真实后台。',`<p>将恢复默认企业条件、理论任务参数和原表4条独立实测记录。当前未导出的修改会丢失。</p><div class="actions"><button class="btn primary" id="confirm-reset">确认重置V9</button><button class="btn" id="close-only">取消</button></div>`);}
-document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset,id=b.id;
+document.addEventListener('click',async e=>{
+ if(!$('quick-popover').hidden&&!$('quick-popover').contains(e.target)&&!$('quick-toggle').contains(e.target))closeQuickOptions();
+ const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset,id=b.id;
 if(d.usageSection){goToUsageSection(d.usageSection);return;}
-if(d.detailMode){openDetails(d.detailMode,detailContext.recordId,detailContext.task);return;}if(d.workspace){showWorkspace(d.workspace);return;}if(d.tab){state.tab=d.tab;render();return;}if(d.example){const preset=quickTasks(state.task.model)[d.example];if(preset)changeTask(clone(preset));return;}if(d.res){changeTask({res:d.res});return;}if(d.ratio){changeTask({ratio:d.ratio});return;}if(d.seconds){changeTask({seconds:d.seconds});return;}if(d.video){changeTask({video:d.video==='true'});return;}if(d.discount){state.plan.discount=d.discount;state.plan.targetMode='discount';render();return;}if(d.margin){state.plan.margin=d.margin;state.plan.targetMode='margin';render();return;}if(d.matrix){try{const t=JSON.parse(d.matrix);if(validTask(t)){state.task=t;showWorkspace('theory','model');document.querySelector('.work').scrollIntoView({behavior:'smooth',block:'start'});}}catch(_){}return;}if(d.observation){observationDetail(d.observation);return;}if(d.editObservation){observationEditor(d.editObservation);return;}if(d.deleteObservation){state.observations=state.observations.filter(o=>o.id!==d.deleteObservation);closeDrawer();render();toast('已删除实测记录，理论结果未变。');return;}if(d.loadTask){const r=state.tasks.find(t=>t.id===d.loadTask);if(r){state.task=clone(r.params);showWorkspace('theory','model');document.querySelector('.work').scrollIntoView({behavior:'smooth',block:'start'});}return;}if(d.deleteTask){state.tasks=state.tasks.filter(t=>t.id!==d.deleteTask);render();return;}
+if(d.detailMode){openDetails(d.detailMode,detailContext.recordId,detailContext.task);return;}if(d.workspace){showWorkspace(d.workspace);return;}if(d.tab){state.tab=d.tab;render();return;}if(d.example){if($('quick-popover').hidden)return;const preset=quickTasks(state.task.model)[d.example];if(preset){closeQuickOptions(true);changeTask(clone(preset));}return;}if(d.res){changeTask({res:d.res});return;}if(d.ratio){changeTask({ratio:d.ratio});return;}if(d.seconds){changeTask({seconds:d.seconds});return;}if(d.video){changeTask({video:d.video==='true'});return;}if(d.discount){state.plan.discount=d.discount;state.plan.targetMode='discount';render();return;}if(d.margin){state.plan.margin=d.margin;state.plan.targetMode='margin';render();return;}if(d.matrix){try{const t=JSON.parse(d.matrix);if(validTask(t)){state.task=t;showWorkspace('theory','model');document.querySelector('.work').scrollIntoView({behavior:'smooth',block:'start'});}}catch(_){}return;}if(d.observation){observationDetail(d.observation);return;}if(d.editObservation){observationEditor(d.editObservation);return;}if(d.deleteObservation){state.observations=state.observations.filter(o=>o.id!==d.deleteObservation);closeDrawer();render();toast('已删除实测记录，理论结果未变。');return;}if(d.loadTask){const r=state.tasks.find(t=>t.id===d.loadTask);if(r){state.task=clone(r.params);showWorkspace('theory','model');document.querySelector('.work').scrollIntoView({behavior:'smooth',block:'start'});}return;}if(d.deleteTask){state.tasks=state.tasks.filter(t=>t.id!==d.deleteTask);render();return;}
 if(!globalValid&&!(['actual-export','add-observation'].includes(id)&&validPlan(state.plan))&&['details','actual-calculation','show-formula','plan-settings','task-rule','open-rules','unit-check','economics-how','add-observation','table-export','actual-export','add-task'].includes(id)){toast('请先修正顶部定价或任务输入。');return;}
 switch(id){
+case'quick-toggle':if($('quick-popover').hidden)openQuickOptions();else closeQuickOptions(true);break;
+case'quick-close':closeQuickOptions(true);break;
 case'economics-how':openEconomics();break;
 case'export-rules':download('Reelay_V9_规则来源.json',JSON.stringify({version:R.VERSION,sources:R.sources,rules:state.rules},null,2),'application/json');break;
 case'close-drawer':case'close-only':closeDrawer();break;
@@ -667,8 +709,15 @@ $('vin').addEventListener('blur',()=>{
  try{state.task.vin=wholeInputSeconds($('vin').value);}catch(_){state.task.vin=vinEditStart;}
  $('vin').value=state.task.vin;render();
 });
+document.addEventListener('pointerdown',e=>{if(!$('quick-popover').hidden&&!$('quick-popover').contains(e.target)&&!$('quick-toggle').contains(e.target))closeQuickOptions();});
+document.addEventListener('focusin',e=>{if(!$('quick-popover').hidden&&!$('quick-popover').contains(e.target)&&!$('quick-toggle').contains(e.target))closeQuickOptions();});
+window.addEventListener('resize',positionQuickOptions,{passive:true});
+window.addEventListener('scroll',e=>{if(e.target instanceof Element&&$('quick-popover').contains(e.target))return;positionQuickOptions();},{capture:true,passive:true});
 $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeDrawer();});
-document.addEventListener('keydown',e=>{if($('modal').hidden)return;if(e.key==='Escape'){e.preventDefault();closeDrawer();}if(e.key==='Tab'){const els=[...$('drawer').querySelectorAll('button,input,select,textarea,a[href],summary')].filter(x=>!x.disabled&&x.getClientRects().length);if(!els.length)return;const first=els[0],last=els.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
+document.addEventListener('keydown',e=>{
+ if(e.target===$('quick-toggle')&&['ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();openQuickOptions();return;}
+ if(!$('quick-popover').hidden&&e.key==='Escape'){e.preventDefault();closeQuickOptions(true);return;}
+ if($('modal').hidden)return;if(e.key==='Escape'){e.preventDefault();closeDrawer();}if(e.key==='Tab'){const els=[...$('drawer').querySelectorAll('button,input,select,textarea,a[href],summary')].filter(x=>!x.disabled&&x.getClientRects().length);if(!els.length)return;const first=els[0],last=els.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
 $('file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>3e6)throw Error('文件超过3MB，请检查是否为方案JSON。');const loaded=migrate(JSON.parse(await f.text()));state=loaded.value;closeDrawer();render();toast(loaded.note);}catch(err){toast('导入失败：'+err.message);}finally{e.target.value='';}});
 
 function targetLabel(p){if(p.targetAvailable===false)return '参考目标未设置或无效';return p.targetMode==='margin'?'采购成本 ÷ (1 − 目标毛利率)':'刊例费用 × '+num(mul(p.d,10),6)+'折';}

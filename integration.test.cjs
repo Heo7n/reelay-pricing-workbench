@@ -527,9 +527,9 @@ test('compact reference slider and number stay synchronized across edits, preset
   input.focus();input.value='';input.dispatchEvent(new h.w.Event('input',{bubbles:true}));
   assert.equal(doc.getElementById('globalError').hidden,false);
   input.blur();h.good();value(10);
-  h.click('[data-example="video-max"]');value(15);
+  h.click('#quick-toggle');h.click('[data-example="video-max"]');value(15);
   assert.equal(slider.style.getPropertyValue('--range-progress'),'100%');
-  h.click('[data-example="video-min"]');value(2);
+  h.click('#quick-toggle');h.click('[data-example="video-min"]');value(2);
   assert.equal(slider.style.getPropertyValue('--range-progress'),'0%');
   h.click('[data-video="false"]');
   assert.equal(doc.getElementById('video-detail').hidden,true);
@@ -670,6 +670,7 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
     assert.equal(chosen.length,1,'exactly one value is used for a complete estimate');
     assert.equal(doc.querySelectorAll('.usage-adopted:not([hidden])').length,1,'a text label accompanies the color');
     assert.equal(chosen[0].querySelector('.usage-adopted').hidden,false);
+    assert.ok(chosen[0].querySelector('dt').contains(chosen[0].querySelector('.usage-adopted')),'the adopted label stays with the title, separate from the value');
     if(expected)assert.equal(chosen[0].id,'token-'+expected+'-metric');
     return chosen[0].querySelector('dd').textContent;
   };
@@ -1048,6 +1049,120 @@ test('usage dimension table matches captured official mappings without ranking h
   assert.equal(JSON.stringify(h.api.getState()),before,'display preferences do not alter quotes or exported pricing state');
 });
 
+test('quick options open as a grouped nonmodal popover and close without changing pricing', t => {
+  const h=boot(t),doc=h.w.document,toggle=doc.getElementById('quick-toggle'),popup=doc.getElementById('quick-popover');
+  const before=JSON.stringify(h.api.getState());
+  const closed=()=>{assert.equal(popup.hidden,true);assert.equal(toggle.getAttribute('aria-expanded'),'false');};
+  closed();
+  assert.equal(toggle.getAttribute('aria-controls'),popup.id);assert.equal(toggle.getAttribute('aria-haspopup'),'dialog');
+  assert.equal(popup.getAttribute('role'),'dialog');assert.equal(popup.getAttribute('aria-modal'),'false');
+  const groups=[...popup.querySelectorAll('section.quick-group')];
+  assert.deepEqual(groups.map(group=>doc.getElementById(group.getAttribute('aria-labelledby')).textContent),['无视频输入','有视频输入']);
+  assert.deepEqual(groups.map(group=>[...group.querySelectorAll('[data-example]')].map(button=>button.dataset.example)),[['none-min','none-max'],['video-min','video-max']]);
+  h.click('#quick-toggle');
+  assert.equal(popup.hidden,false);assert.equal(toggle.getAttribute('aria-expanded'),'true');
+  assert.equal(doc.activeElement,popup.querySelector('[data-example][aria-pressed="true"]'),'opening focuses the current preset');
+  doc.getElementById('quick-popover-title').dispatchEvent(new h.w.Event('pointerdown',{bubbles:true}));
+  doc.activeElement.dispatchEvent(new h.w.FocusEvent('focusout',{bubbles:true,relatedTarget:null}));
+  h.click('#quick-popover-title');
+  assert.equal(popup.hidden,false,'clicking a nonfocusable heading inside the popover must not dismiss it on a null-relatedTarget blur');
+  h.click('#quick-close');closed();assert.equal(doc.activeElement,toggle);
+  h.click('#quick-toggle');h.click('#quick-toggle');closed();
+  h.click('#quick-toggle');
+  doc.activeElement.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));h.good();
+  closed();assert.equal(doc.activeElement,toggle);
+  h.click('#quick-toggle');
+  h.click('body');closed();
+  h.click('#quick-toggle');doc.body.dispatchEvent(new h.w.Event('pointerdown',{bubbles:true}));h.good();closed();
+  h.click('#quick-toggle');toggle.focus();assert.equal(popup.hidden,false,'focus can return to the trigger without dismissing the popover');
+  doc.getElementById('pay').focus();h.good();closed();
+  assert.equal(doc.activeElement,doc.getElementById('pay'),'leaving the popover does not steal focus back');
+  assert.equal(JSON.stringify(h.api.getState()),before,'opening and dismissal do not change task or financial state');
+  const pricing=JSON.stringify(h.api.getState().plan);
+  h.click('#quick-toggle');h.click('[data-example="none-max"]');
+  closed();assert.equal(doc.activeElement,toggle);assert.equal(h.api.getState().task.video,false);
+  assert.equal(JSON.stringify(h.api.getState().plan),pricing,'applying a task preset does not alter pricing');
+  h.click('#quick-toggle');assert.equal(doc.activeElement,popup.querySelector('[data-example="none-max"]'));
+});
+
+test('quick options refresh model-specific descriptions and focus the first option when no preset matches', t => {
+  const h=boot(t),doc=h.w.document,popup=doc.getElementById('quick-popover');
+  h.input('seconds','9');h.click('#quick-toggle');
+  assert.equal(popup.querySelector('[data-example][aria-pressed="true"]'),null);
+  assert.equal(doc.activeElement,popup.querySelector('[data-example]'));
+  h.click('#quick-close');
+  for(const [model,label,maxSeconds,res] of [['seedance-2.5','Seedance 2.5','30','1080p'],['seedance-2.0-fast','Seedance 2.0 Fast','15','720p']]){
+    h.input('model',model,'change');h.click('#quick-toggle');
+    assert.equal(doc.getElementById('quick-model').textContent,label);
+    const highest=popup.querySelector('[data-example="video-max"]');
+    assert.match(highest.textContent,new RegExp(maxSeconds));assert.ok(highest.textContent.includes(res));
+    const pricing=JSON.stringify(h.api.getState().plan);
+    h.click('[data-example="video-max"]');
+    const task=h.api.getState().task;
+    assert.equal(task.model,model);assert.equal(task.seconds,maxSeconds);assert.equal(task.vin,maxSeconds);assert.equal(task.res,res);
+    assert.equal(popup.hidden,true);assert.equal(doc.activeElement.id,'quick-toggle');
+    assert.equal(JSON.stringify(h.api.getState().plan),pricing);
+  }
+});
+
+test('quick options float above the trigger and fit below when the available space is smaller', t => {
+  const h=boot(t),doc=h.w.document,toggle=doc.getElementById('quick-toggle'),popup=doc.getElementById('quick-popover');
+  let viewportWidth=1280,viewportHeight=800,anchor={top:600,bottom:632,left:40,right:400,width:360,height:32};
+  Object.defineProperties(h.w,{innerWidth:{configurable:true,get:()=>viewportWidth},innerHeight:{configurable:true,get:()=>viewportHeight}});
+  Object.defineProperties(doc.documentElement,{clientWidth:{configurable:true,get:()=>viewportWidth},clientHeight:{configurable:true,get:()=>viewportHeight}});
+  toggle.getBoundingClientRect=()=>anchor;
+  popup.getBoundingClientRect=()=>({top:0,bottom:260,left:0,right:360,width:360,height:260});
+  Object.defineProperties(popup,{offsetHeight:{configurable:true,value:260},scrollHeight:{configurable:true,value:260},offsetWidth:{configurable:true,value:360}});
+  const bounds=()=>{
+    assert.equal(h.w.getComputedStyle(popup).position,'fixed','the popover does not change the generation panel height');
+    const left=parseFloat(popup.style.left),top=parseFloat(popup.style.top),width=parseFloat(popup.style.width);
+    assert.ok(Number.isFinite(left)&&Number.isFinite(top)&&Number.isFinite(width));
+    assert.ok(left>=0&&left+width<=viewportWidth,'the popover stays within the horizontal viewport');
+    return {top,width};
+  };
+  h.click('#quick-toggle');
+  assert.ok(bounds().top+260<=anchor.top,'with enough room the popover opens upward');
+  h.click('#quick-close');
+  viewportWidth=320;viewportHeight=350;anchor={top:20,bottom:52,left:250,right:310,width:60,height:32};
+  h.click('#quick-toggle');
+  const below=bounds();
+  assert.ok(below.top>=anchor.bottom,'an anchor near the viewport top opens downward');
+  assert.ok(below.top+260<=viewportHeight,'the downward placement also remains visible');
+  h.click('#quick-close');
+  // 190 px above is not enough for 280 px of content; 500 px below is.
+  viewportWidth=1280;viewportHeight=762;anchor={top:210,bottom:242,left:40,right:400,width:360,height:32};
+  popup.getBoundingClientRect=()=>({top:0,bottom:280,left:0,right:360,width:360,height:280});
+  Object.defineProperty(popup,'scrollHeight',{configurable:true,value:280});
+  h.click('#quick-toggle');
+  assert.ok(bounds().top>=anchor.bottom,'prefer full visibility below over unnecessarily limiting an upward popover');
+  assert.ok(parseFloat(popup.style.maxHeight)>=280,'the complete content fits without internal scrolling');
+});
+
+test('a height-limited quick popover reveals its focused preset using only its own scroller', t => {
+  const h=boot(t),doc=h.w.document,toggle=doc.getElementById('quick-toggle'),popup=doc.getElementById('quick-popover');
+  h.click('#quick-toggle');h.click('[data-example="video-max"]');
+  const selected=popup.querySelector('[data-example="video-max"]');
+  Object.defineProperties(h.w,{innerHeight:{configurable:true,value:260},innerWidth:{configurable:true,value:1280}});
+  toggle.getBoundingClientRect=()=>({top:140,bottom:172,left:40,right:400,width:360,height:32});
+  let scrollPosition=0;
+  const panelHeight=()=>Math.min(280,parseFloat(popup.style.maxHeight)||280);
+  Object.defineProperties(popup,{
+    clientHeight:{configurable:true,get:panelHeight},scrollHeight:{configurable:true,value:280},
+    scrollTop:{configurable:true,get:()=>scrollPosition,set:value=>{scrollPosition=Math.max(0,Math.min(280-panelHeight(),Number(value)));}}
+  });
+  popup.getBoundingClientRect=()=>{const top=parseFloat(popup.style.top)||0,height=panelHeight();return {top,bottom:top+height,left:40,right:400,width:360,height};};
+  selected.getBoundingClientRect=()=>{const top=popup.getBoundingClientRect().top+220-scrollPosition;return {top,bottom:top+40,left:50,right:390,width:340,height:40};};
+  let pageScrolls=0;
+  h.w.scrollTo=()=>{pageScrolls++;};h.w.HTMLElement.prototype.scrollIntoView=()=>{pageScrolls++;};
+  doc.documentElement.scrollTop=37;
+  h.click('#quick-toggle');
+  assert.equal(doc.activeElement,selected);assert.ok(popup.clientHeight<popup.scrollHeight);
+  assert.ok(popup.scrollTop>0,'opening reveals the active option even though focus uses preventScroll');
+  const panel=popup.getBoundingClientRect(),option=selected.getBoundingClientRect();
+  assert.ok(option.top>=panel.top&&option.bottom<=panel.bottom,'the focused preset is fully visible');
+  assert.equal(doc.documentElement.scrollTop,37);assert.equal(pageScrolls,0,'only the popover scrolls');
+});
+
 test('four quick configurations are true official token extrema over all supported specifications', t => {
   const h=boot(t), selectors=['none-min','none-max','video-min','video-max'];
   assert.deepEqual([...h.w.document.querySelectorAll('[data-example]')].map(button=>button.dataset.example),selectors);
@@ -1069,6 +1184,7 @@ test('four quick configurations are true official token extrema over all support
   };
   for(const name of selectors){
     const video=name.startsWith('video'), highest=name.endsWith('max'), vin=highest?15:2;
+    h.click('#quick-toggle');
     h.click('[data-example="'+name+'"]');
     const task=h.api.getState().task, expected=extrema(video,vin);
     assert.equal(task.video,video,name+' sets input mode');
@@ -1138,7 +1254,8 @@ test('architecture: one workbench groups generation and its estimate on the left
   assert.ok(pricingDetail.contains(doc.getElementById('plan-principle')));
   for(const id of ['procurement-equation','points-equation','cash-equation','cash-gap'])assert.ok(pricingDetail.contains(doc.getElementById(id)),id+' is available in the calculation details');
   for(const pair of resultPairs)assert.equal(pair.closest('details'),null,'paired results remain visible without opening details');
-  assert.equal(doc.querySelector('.quick-config').closest('details'),null,'quick configurations are always available');
+  assert.equal(doc.getElementById('quick-toggle').closest('[hidden]'),null,'the quick-options trigger is always available');
+  assert.equal(doc.getElementById('quick-popover').hidden,true,'quick options stay collapsed until requested');
   assert.equal(doc.getElementById('platform-comparison').open,false);
   const estimate=h.api.quote().calc;
   h.click('#open-actual');assert.equal(actual.hidden,false);assert.equal(workbench.hidden,true);

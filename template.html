@@ -83,9 +83,6 @@
 .duration-slider::-moz-range-track{height:6px;background:#e4e9f2;border-radius:99px}.duration-slider::-moz-range-progress{height:6px;background:var(--accent);border-radius:99px}
 .duration-slider::-moz-range-thumb{box-sizing:border-box;width:20px;height:20px;border-radius:50%;background:white;border:3px solid var(--accent);box-shadow:0 1px 4px #26334726}
 .duration-slider:disabled{opacity:.4;cursor:not-allowed}.slider-scale{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
-.quick-label{font-size:10px;line-height:1.6;color:var(--muted);margin:0 0 8px}.quick-examples{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.quick-examples .btn{white-space:normal;text-align:left;padding:9px 8px;line-height:1.5}.quick-examples .btn span{display:block;font-size:10px;font-weight:600}.quick-examples small{display:block;font-size:9px;color:var(--muted);margin-top:4px;font-weight:400}
-.quick-examples .btn.active{color:var(--accent);background:var(--tint);border-color:#c7d5f6}
 .head h2.section-title{font-size:15px;font-weight:650;line-height:1.6}
 .plan-block.multiplier-block{display:block}.plan-block.multiplier-block .label{margin-bottom:9px;flex-wrap:wrap;gap:7px 10px}.multiplier-label>span:first-child{white-space:nowrap}.plan-block.multiplier-block .coefficient{text-align:left;overflow-wrap:anywhere;white-space:normal}
 .pricing-mode{border:1px solid var(--line);border-radius:6px;background:#fafbfe;font-size:11px;color:var(--sub);padding:3px 7px;max-width:100%;margin:0;flex:none}
@@ -111,7 +108,7 @@
 .basis-note b{display:block;margin-bottom:3px}.basis-note small{display:block;margin-top:4px;font-size:10px;font-variant-numeric:tabular-nums}
 /* Compact usage inputs explain the existing list-price estimate. */
 .usage-summary{margin:0 0 13px}
-.usage-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:100px;gap:10px;margin:0 0 10px}.usage-metrics.is-single #token-estimate-metric{grid-column:1/-1}
+.usage-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:84px;gap:10px;margin:0 0 10px}.usage-metrics.is-single #token-estimate-metric{grid-column:1/-1}
 .usage-token{min-width:0;padding:10px 12px;border:1px solid transparent;border-radius:7px;background:#f7f8fa}.usage-metrics dt{display:flex;align-items:center;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--muted);margin-bottom:4px;line-height:1.6}.usage-metrics dd{margin:0;font:550 17px/1.5 Inter,"Segoe UI",Arial,sans-serif;color:var(--sub);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .usage-token.is-adopted{background:var(--tint);border-color:#dce5fb}.usage-adopted{padding:0 5px;border-radius:4px;background:#e1e9fc;color:var(--accent);font-size:9px;line-height:1.8;white-space:nowrap}.usage-rule-kind{font-size:9px;color:var(--amber);white-space:nowrap}
 .usage-help{font-size:11px}.usage-status{display:block;margin:0 0 10px;color:var(--amber);font-size:10px}.usage-status[hidden]{margin:0}
@@ -208,15 +205,23 @@
 .estimate-actions{display:flex;align-items:center;gap:8px}
 .result-section-title{font-size:12px;line-height:1.6;font-weight:600;color:var(--sub);margin:0}
 .generation-panel .usage-summary{margin:0}
-.generation-panel .usage-metrics{gap:8px;margin:0 0 8px}.generation-panel .usage-token{container-type:inline-size;display:grid;grid-template-rows:40px 34px;gap:4px;padding:10px 12px}
-.generation-panel .usage-metrics dt{min-width:0;margin:0;align-content:flex-start;align-items:center;gap:2px 5px;font-size:11px}.generation-panel .usage-metrics dt>span:first-child{flex-basis:100%;white-space:nowrap}
+.generation-panel .model-cost-section{container-type:inline-size;container-name:usage}
+.generation-panel .usage-metrics{gap:8px;margin:0 0 8px}.generation-panel .usage-token{container-type:inline-size;display:grid;grid-template-rows:22px 34px;gap:6px;padding:10px 12px}
+.generation-panel .usage-metrics dt{min-width:0;margin:0;align-content:flex-start;align-items:center;gap:2px 5px;font-size:11px}.generation-panel .usage-metrics dt>span:first-child{white-space:nowrap}.generation-panel .usage-adopted{margin-left:auto}
 .generation-panel .usage-metrics dd{min-width:0;max-width:100%;font-size:20px;font-size:clamp(14px,calc(100cqi / var(--token-chars,10) / .62),20px);line-height:27px;text-align:left;white-space:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;overflow-wrap:normal;font-variant-numeric:tabular-nums}
+@container usage (max-width:340px){.generation-panel .usage-metrics{grid-auto-rows:100px}.generation-panel .usage-token{grid-template-rows:38px 34px}}
 .generation-panel .usage-status{margin:0 0 12px}
 .video-price{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;padding:10px 13px;border:1px solid transparent;border-radius:7px;background:#f7f8fa}
 .video-price-label{min-width:0;font-size:11px;line-height:1.6;color:var(--muted)}
 .video-price-amount{display:flex;align-items:baseline;justify-content:flex-end;gap:6px;min-width:0;max-width:60%;flex-shrink:0;margin:0;text-align:right}.video-price-amount .cost-number{min-width:0;font-size:var(--usage-value-size);font-weight:600;line-height:1.5;letter-spacing:0;color:var(--ink)}.video-price-unit{color:var(--muted);font-size:11px;white-space:nowrap}
-.quick-config{border-top:1px solid var(--line);padding-top:12px;margin-top:18px}
-.quick-config .quick-examples{margin:12px 0 0}
+.quick-config{border-top:1px solid var(--line);padding-top:8px;margin-top:18px}
+.quick-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;border:0;border-radius:6px;background:transparent;padding:6px 0;text-align:left;font-size:12px;color:var(--sub)}.quick-toggle:hover{color:var(--accent)}
+.quick-chevron{width:7px;height:7px;border-top:1.5px solid currentColor;border-right:1.5px solid currentColor;transform:rotate(-45deg);margin:4px 5px 0 0}.quick-toggle[aria-expanded=true] .quick-chevron{transform:rotate(135deg);margin-top:-4px}
+.quick-popover{position:fixed;z-index:25;box-sizing:border-box;max-width:calc(100vw - 24px);padding:16px;border:1px solid #dbe2ee;border-radius:12px;background:var(--paper);box-shadow:0 10px 38px #25334d24;overflow-y:auto;overscroll-behavior:contain;animation:quick-reveal .14s ease-out}
+.quick-popover-head{display:flex;align-items:center;gap:9px;margin-bottom:14px}.quick-popover-head h3{font-size:13px;font-weight:600}.quick-popover-head>span{font-size:10px;color:var(--muted)}.quick-close{border:0;border-radius:5px;background:transparent;margin-left:auto;padding:0 6px;color:var(--muted);font-size:20px;line-height:24px}.quick-close:hover{background:#f0f3f8;color:var(--ink)}
+.quick-group h4{font-size:11px;font-weight:500;color:var(--sub);margin:0 0 7px}.quick-group+.quick-group{margin-top:16px}.quick-group .quick-examples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+.quick-option{min-width:0;border:1px solid var(--line);border-radius:8px;background:#fff;padding:10px;text-align:left;line-height:1.65}.quick-option>span{display:block;font-size:12px;font-weight:550;color:var(--ink)}.quick-option small{display:block;margin-top:5px;font-size:10px;font-weight:400;color:var(--muted);white-space:pre-line;overflow-wrap:anywhere}.quick-option:hover{border-color:#afc1eb;background:#fafbff}.quick-option.active{border-color:#c7d5f6;background:var(--tint)}.quick-option.active>span{color:var(--accent)}
+@keyframes quick-reveal{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.quick-popover{animation:none}}
 .procurement-status{font-size:11px;color:var(--muted);margin:8px 0 0;line-height:1.7}.procurement-status.is-simulation{color:var(--amber)}
 .platform-calculation-detail>summary{font-size:11px;color:var(--sub);cursor:pointer}
 .pricing-panel .customer-charge-section{margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
@@ -261,7 +266,7 @@
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.12</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.13</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
 <section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
@@ -289,7 +294,13 @@
 </div>
 <dl class="video-price"><dt class="video-price-label">估算视频费用</dt><dd class="video-price-amount"><span class="cost-number num" id="cost-p">—</span><span class="video-price-unit">元/个</span></dd></dl>
 </section>
-<section class="quick-config" aria-labelledby="quick-config-title"><h3 class="result-section-title" id="quick-config-title">快捷选项</h3><div class="quick-examples"><button class="btn sm" data-example="none-min"><span>无视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="none-max"><span>无视频输入 · 最高用量</span><small></small></button><button class="btn sm" data-example="video-min"><span>有视频输入 · 最低用量</span><small></small></button><button class="btn sm" data-example="video-max"><span>有视频输入 · 最高用量</span><small></small></button></div></section>
+<section class="quick-config" aria-label="快捷选项">
+<button type="button" class="quick-toggle" id="quick-toggle" aria-expanded="false" aria-controls="quick-popover" aria-haspopup="dialog"><span>快捷选项</span><i class="quick-chevron" aria-hidden="true"></i></button>
+<section class="quick-popover" id="quick-popover" role="dialog" aria-modal="false" aria-labelledby="quick-popover-title" hidden>
+<div class="quick-popover-head"><h3 id="quick-popover-title">快捷选项</h3><span id="quick-model"></span><button type="button" class="quick-close" id="quick-close" aria-label="关闭快捷选项">×</button></div>
+<section class="quick-group" aria-labelledby="quick-none-title"><h4 id="quick-none-title">无视频输入</h4><div class="quick-examples"><button class="quick-option" data-example="none-min"><span>最低用量</span><small></small></button><button class="quick-option" data-example="none-max"><span>最高用量</span><small></small></button></div></section>
+<section class="quick-group" aria-labelledby="quick-video-title"><h4 id="quick-video-title">有视频输入</h4><div class="quick-examples"><button class="quick-option" data-example="video-min"><span>最低用量</span><small></small></button><button class="quick-option" data-example="video-max"><span>最高用量</span><small></small></button></div></section>
+</section></section>
 <button id="show-formula" hidden>公式明细</button>
 </article>
 <article class="card plan pricing-panel" aria-labelledby="plan-title">
