@@ -286,11 +286,8 @@ function renderUsage(v,t){
  if(v.partial){note.hidden=false;note.textContent='最低用量待补齐 · 仅基础估算';}
  if(drawerName==='usage'&&!$('modal').hidden)renderUsagePanel(v,t);
 }
-// Form display descriptions, verified against viewProperty.fieldInfos in both captured calculators.
-const USAGE_DESCRIPTIONS=Object.freeze({
- estimate:'(输入视频时长+输出视频时长) × 输出视频的宽 × 输出视频的高 × 输出视频的帧率/1024\n准确 token 用量以调用 API 后返回的 usage.completion_tokens 字段为准',
- minimum:'输入包含视频时，存在最低 token 用量限制。如果估算 token 用量 ＜ 最低 token 用量，则按最低 token 用量计算视频价格。\n最低 token 用量为估算值，实际以调用 API 后返回的 usage.completion_tokens 字段为准'
-});
+// Integrate the captured calculator descriptions with the current calculation.
+// Preserve the output-dimension formula, video-only minimum and API usage caveat.
 function usageCalculation(v,t){
  const c=v.calc,model=M.get(v.model||t.model);
  const context=`${model.label} · ${t.res==='4k'?'4K':t.res} · ${t.ratio} · 输出 ${t.seconds} 秒 · ${vinLabel(t)}`;
@@ -299,7 +296,7 @@ function usageCalculation(v,t){
  const value=n=>{const q=dec(n),shown=num(q,20);return cmp(q,shown)===0?tokenText(q,20):`${q.n} / ${q.d}`;};
  const step=(key,title,formula,substitution,note='')=>`<li data-step="${key}"><h4>${title}</h4><div><p class="usage-formula">${formula}</p><p class="usage-substitution">${substitution}</p>${note?`<p class="usage-calculation-note">${note}</p>`:''}</div></li>`;
  const estimate=step('estimate','估算 Token 用量',
-  '(输入视频时长 + 输出视频时长) × 宽 × 高 × 帧率 ÷ 1,024',
+  '(输入视频时长 + 输出视频时长) × 输出宽 × 输出高 × 输出帧率 ÷ 1,024',
   `(${value(t.video?t.vin:'0')} + ${value(t.seconds)}) × ${value(c.wh[0])} × ${value(c.wh[1])} × ${value(model.fps)} ÷ 1,024 = <strong id="usage-calc-estimate">${value(c.tokens)}</strong> Token`);
  let billed;
  if(v.partial){
@@ -309,7 +306,7 @@ function usageCalculation(v,t){
   const useMinimum=cmp(c.tokens,c.minimum)<0;
   billed=step('billed','计费用量','max(估算 Token 用量, 最低 Token 用量)',
    `max(${value(c.tokens)}, ${value(c.minimum)}) = <strong id="usage-calc-billed">${value(c.billedTokens)}</strong> Token <span class="usage-choice">采用${useMinimum?'最低':'估算'} Token 用量</span>`,
-   v.rule?.kind==='manual'?'最低 Token 用量使用人工设置。':'最低 Token 用量按本模型、分辨率、画面比例和输出时长查表。');
+   v.rule?.kind==='manual'?`<span class="usage-override">最低 Token 用量由人工设置。<br>${esc(v.rule.note)}</span>`:'有视频输入时适用最低用量，按模型、分辨率、画面比例和输出时长查表。');
  }else{
   billed=step('billed','计费用量','无视频输入，不应用最低 Token 用量',
    `<strong id="usage-calc-billed">${value(c.billedTokens)}</strong> Token <span class="usage-choice">采用估算 Token 用量</span>`);
@@ -318,7 +315,8 @@ function usageCalculation(v,t){
  const fee=v.partial?step('fee','估算视频费用',feeFormula,'<strong id="usage-calc-fee">—</strong> 元/个'):
   step('fee','估算视频费用',feeFormula,
    `${value(c.billedTokens)} × ${value(c.rate)} ÷ 1,000,000 ${cmp(c.P,fixed(c.P,6))===0?'=':'≈'} <strong id="usage-calc-fee">${fixed(c.P,6)}</strong> 元/个`);
- return `<section class="usage-calculation" id="usage-calculation">${heading}<ol class="usage-calculation-steps">${estimate}${billed}${fee}</ol></section>`;
+ const accuracy=`${t.video?'估算 Token 用量与最低 Token 用量均':'Token 用量'}为估算值，实际以 API 返回的 <code>usage.completion_tokens</code> 为准。`;
+ return `<section class="usage-calculation" id="usage-calculation">${heading}<ol class="usage-calculation-steps">${estimate}${billed}${fee}</ol><p class="usage-calculation-accuracy" id="usage-calculation-accuracy">${accuracy}</p></section>`;
 }
 function usageRateTable(t){
  const rows=[];
@@ -351,7 +349,7 @@ function usageDimensionTable(){
  }).join('');
  return `<div class="usage-table-scroll" tabindex="0" role="region" aria-labelledby="usage-dimensions-heading"><table class="usage-dimension-table" id="usage-dimension-table" aria-labelledby="usage-dimensions-heading"><colgroup><col class="dimension-model-column"><col class="dimension-resolution-column"><col span="6"></colgroup><thead><tr><th scope="col">模型</th><th scope="col">分辨率</th>${M.RATIOS.map(ratio=>`<th scope="col">${esc(ratio)}</th>`).join('')}</tr></thead>${groups}</table></div>`;
 }
-const USAGE_SECTIONS=Object.freeze([['usage-calculation','本次计算'],['usage-prices','模型刊例价'],['usage-dimensions','分辨率映射'],['usage-estimate-definition','估算 Token 用量'],['usage-minimum-definition','最低 Token 用量'],['usage-sources','相关资料']]);
+const USAGE_SECTIONS=Object.freeze([['usage-calculation','本次计算'],['usage-prices','模型刊例价'],['usage-dimensions','分辨率映射'],['usage-sources','相关资料']]);
 let activeUsageSection='usage-calculation',usageJumpPosition=null;
 function setUsageSection(id){
  if(!USAGE_SECTIONS.some(([key])=>key===id))return;
@@ -383,15 +381,12 @@ function syncUsageSection(){
  if(current)setUsageSection(current.id);
 }
 function usageExplanation(v,t,navigation=false){
- const manual=v.rule?.kind==='manual',source=M.get(t.model).sources;
+ const source=M.get(t.model).sources;
  const minimum20=M.get('seedance-2.0').sources.minima,minimum25=M.get('seedance-2.5').sources.minima;
- const override=manual?`<p class="usage-override">本次最低用量：${tokenText(v.rule.tokens)} Token（人工设置）<br>${esc(v.rule.note)}</p>`:v.partial?'<p class="usage-override">本规格最低用量待补齐。</p>':'';
  const content=`<div class="usage-explanation" id="usage-explanation">
  ${usageCalculation(v,t)}
  <section class="usage-prices" id="usage-prices"><div class="usage-section-heading"><h3>Seedance 系列模型刊例价</h3><span>元 / 百万 Token</span></div>${usageRateTable(t)}</section>
  <section class="usage-dimensions" id="usage-dimensions"><div class="usage-section-heading"><h3 id="usage-dimensions-heading">画面比例与像素分辨率</h3><label class="dimension-display-toggle" for="usage-show-pixels"><span>显示总像素</span><input type="checkbox" role="switch" id="usage-show-pixels" aria-controls="usage-dimension-table"${showDimensionPixels?' checked':''}></label></div>${usageDimensionTable()}</section>
- <section class="usage-definition" id="usage-estimate-definition"><h3>估算 Token 用量</h3><p id="usage-estimate-description">${esc(USAGE_DESCRIPTIONS.estimate)}</p></section>
- <section class="usage-definition" id="usage-minimum-definition"><h3>最低 Token 用量</h3><p id="usage-minimum-description">${esc(USAGE_DESCRIPTIONS.minimum)}</p>${override}</section>
  <nav class="usage-source-links" id="usage-sources" aria-label="相关资料">
  <div><a href="${esc(source.pricing.pageUrl)}" target="_blank" rel="noopener">模型价格 ↗</a><a href="${esc(source.dimensions.pageUrl)}" target="_blank" rel="noopener">分辨率说明 ↗</a></div>
  <div><a href="${esc(minimum20.calculatorUrl)}" target="_blank" rel="noopener">Seedance 2.0 / Fast 计算器 ↗</a><a href="${esc(minimum25.calculatorUrl)}" target="_blank" rel="noopener">Seedance 2.5 计算器 ↗</a></div>
@@ -562,7 +557,7 @@ function openDetails(mode='theory',recordId='',contextTask=null){
  const view=chosen==='actual'?actualBreakdown(selected,p):theoryBreakdown(t,p);
  const tabs=`<div class="detail-switch" role="tablist" aria-label="计算展开口径"><button role="tab" aria-selected="${chosen==='theory'}" data-detail-mode="theory" class="${chosen==='theory'?'active':''}">参数估算明细</button><button role="tab" aria-selected="${chosen==='actual'}" data-detail-mode="actual" class="${chosen==='actual'?'active':''}">实测金额复算展开</button></div>`;
  const content=tabs+detailPlan(p,t.model||'seedance-2.0')+selector+view.html+detailBusinessMath(p)+`<div class="actions" style="margin-top:20px"><button class="btn" id="export-calculation">导出这份计算明细 ↓</button><button class="btn" id="close-only">关闭</button></div>`;
- detailContext.text=[`Reelay V9.5.13 · ${chosen==='actual'?'平台实测金额复算':'参数估算明细'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
+ detailContext.text=[`Reelay V9.5.14 · ${chosen==='actual'?'平台实测金额复算':'参数估算明细'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text].join('\n');
  openDrawer('calculation','定价明细',label(t)+' / '+vinLabel(t)+' · 不改变主表输入',content,true);
 }
 let ruleContext=null;
@@ -623,11 +618,11 @@ function addTask(){const v=current();if(!v.x||!globalValid)return;if(state.tasks
 function openNewRecharge(){openDrawer('recharge','添加充值方案','不改变实测数据，也不执行实际充值。',`<div class="grid2"><div><label class="fieldlabel" for="r-pay">实付金额</label><input class="input" id="r-pay" inputmode="decimal" value="100"></div><div><label class="fieldlabel" for="r-total">到账总积分</label><input class="input" id="r-total" inputmode="decimal" value="1500"></div></div><div class="inline-error" id="r-error"></div><button class="btn primary" id="save-recharge">加入对比</button>`);}
 function download(name,text,type='text/plain;charset=utf-8'){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 const filename=()=>state.plan.company.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,50)||'Reelay方案';
-function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.5.13 · 视频成本与定价','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
+function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.5.14 · 视频成本与定价','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
 function exportJSON(){
  const procurementProfiles=Object.keys(PROCUREMENT_MODELS).map(model=>procurementInfo(model));
  const taskEstimates=state.tasks.map(row=>{const v=theory(row.params);return v.x?exportRow(row.title,v,v.x,row.qty):{model:row.params.model,...procurementInfo(row.params.model),scope:'规则缺项，未生成收费估算'};});
- download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.5.13',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
+ download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.5.14',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
 }
 function csvCell(x){let s=String(x??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
 function exportCSV(actual=false){const rows=actual?actualRows:tableRows;if(!rows.length)return toast('没有可导出记录。');const titles=actual?{scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',procurementRatio:'当前复算采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',record:'记录',params:'规格',coverage:'估算依据',theoryP:'刊例费用P',recordedP:'平台记录P',deltaP:'实测P减估算P',theoryC:'采购成本C',recordedC:'平台记录C',deltaC:'实测C减估算C',recordedN:'平台实际扣分_空白为未知',recalcN:'当前复算扣分_非历史',recalcCash:'当前复算金额',recalcProfit:'当前复算模型毛利',pay:'当前充值实付',total:'当前到账积分',M:'当前倍率',targetMode:'当前目标模式',usage:'API_completion_tokens_原记录',note:'备注'}:{scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',targetMode:'定价目标模式',targetMargin:'目标模型毛利率百分数_毛利模式',procurementRatio:'采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',profit:'每笔模型毛利',margin:'取整后测算模型毛利率百分数',scenario:'场景',coverage:'估算依据',ruleVersion:'规则版本',quantity:'数量_逐笔先取整',pay:'实付元',total:'到账积分',discount:'目标客户折扣',M:'定价倍率',P:'刊例费用P',C:'采购成本C',raw:'取整前积分',N:'每笔预计扣分_非实际',target:'目标金额',cash:'每笔折合金额',gap:'与目标差额'};const ks=Object.keys(titles),csv='\ufeff'+[ks.map(k=>csvCell(titles[k])).join(','),...rows.map(r=>ks.map(k=>csvCell(r[k])).join(','))].join('\r\n');download(filename()+(actual?'_实测对照':'_理论_'+state.tab)+'.csv',csv,'text/csv;charset=utf-8');}

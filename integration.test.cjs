@@ -687,7 +687,7 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
   assert.equal(shown('token-minimum'),'67,200');
   assert.equal(adopted('minimum'),'67,200');
   assert.match(explanation().textContent,/usage.completion_tokens/);
-  assert.match(explanation().textContent,/如果估算 token 用量 ＜ 最低 token 用量/);
+  assert.equal(explanation().querySelector('[data-step="billed"] .usage-formula').textContent,'max(估算 Token 用量, 最低 Token 用量)');
   h.update(s=>{s.task={res:'1080p',ratio:'16:9',seconds:'5',video:true,vin:'2'};});
   assert.equal(shown('token-rate'),'31.00');
   assert.equal(shown('token-estimate'),'340,200');
@@ -775,6 +775,11 @@ test('usage calculation leads the explanation and substitutes each model specifi
     assert.equal(doc.getElementById('usage-calc-estimate').textContent,entry.tokens);
     assert.equal(doc.getElementById('usage-calc-billed').textContent,entry.tokens);
     assert.match(section.querySelector('.usage-choice').textContent,/采用估算 Token 用量/);
+    const billed=section.querySelector('[data-step="billed"]');
+    assert.match(billed.textContent,/无视频输入.*不应用最低 Token 用量/);
+    assert.doesNotMatch(billed.textContent,/max\(|查表|人工设置/,'no-video calculations do not apply a minimum rule');
+    assert.equal(section.querySelectorAll('#usage-calculation-accuracy').length,1);
+    assert.equal(doc.getElementById('usage-calculation-accuracy').textContent,'Token 用量为估算值，实际以 API 返回的 usage.completion_tokens 为准。');
     const fee=section.querySelector('[data-step="fee"]');
     assert.match(fee.textContent,/计费用量.*刊例单价/);
     assert.match(clean(fee),/÷1000000/,'the per-million price is converted once');
@@ -793,7 +798,9 @@ test('usage calculation compares exact minima and follows threshold changes whil
   const billed=()=>doc.querySelector('#usage-calculation [data-step="billed"]');
   const chosen=()=>doc.querySelector('#usage-calculation .usage-choice').textContent;
   assert.match(billed().textContent,/max/i);
+  assert.match(billed().textContent,/有视频输入|输入包含视频/,'minimum usage is scoped to video input');
   assert.match(billed().textContent,/查表/,'official minima come from the current specification lookup');
+  for(const field of ['模型','分辨率','比例','输出时长'])assert.ok(billed().textContent.includes(field),field+' identifies the minimum lookup specification');
   assert.equal(doc.getElementById('usage-calc-estimate').textContent,'57,600');
   assert.equal(doc.getElementById('usage-calc-billed').textContent,'67,200');
   assert.match(chosen(),/采用最低 Token 用量/);
@@ -805,11 +812,17 @@ test('usage calculation compares exact minima and follows threshold changes whil
   assert.equal(doc.getElementById('usage-calc-estimate').textContent,'76,800');
   assert.equal(doc.getElementById('usage-calc-billed').textContent,'76,800');
   assert.match(chosen(),/采用估算 Token 用量/);
-  h.update(s=>{s.rules.minima[h.api.minimumKey(s.task)]={tokens:'76800.000000000001',kind:'manual',note:'精确门槛测试'};});
+  const manualNote='精确门槛 <em>测试</em> & 来源';
+  h.update(s=>{s.rules.minima[h.api.minimumKey(s.task)]={tokens:'76800.000000000001',kind:'manual',note:manualNote};});
   assert.equal(doc.getElementById('usage-calc-billed').textContent,'76,800.000000000001','the calculation trace retains precision hidden in the summary');
   assert.match(chosen(),/采用最低 Token 用量/,'selection uses exact values even when the rounded summary is equal');
   assert.match(billed().textContent,/人工设置/);
   assert.doesNotMatch(billed().textContent,/查表/,'a manual threshold is never presented as an official lookup');
+  const override=billed().querySelector('.usage-override');
+  assert.ok(override,'the manual rule and its note belong to the minimum-selection step');
+  assert.equal(doc.querySelectorAll('#usage-explanation .usage-override').length,1,'manual provenance is not repeated below the calculation');
+  assert.ok(override.textContent.includes(manualNote),'the user note is preserved verbatim');
+  assert.equal(override.querySelector('em'),null,'a note containing markup is rendered as text');
   assert.equal(doc.getElementById('usage-calc-fee').textContent,'2.150400');
   assert.match(doc.querySelector('#usage-calculation [data-step="fee"]').textContent,/≈/,'a sub-display-precision difference still requires approximate equality');
 });
@@ -851,13 +864,27 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   assert.equal(doc.activeElement.id,'close-drawer');
   const body=doc.getElementById('drawer-body');
   const parse=require('./source-rules.cjs').extractCalculatorSnapshot;
+  const estimateFormula=body.querySelector('[data-step="estimate"] .usage-formula').textContent;
+  const normalizedFormula=text=>text.replace(/输出视频的/g,'输出').replace(/\//g,'÷').replace(/[,\s]/g,'');
   for(const model of ['seedance-2.0','seedance-2.5']){
     const source=parse(read('evidence/2026-10-20/models/'+model+'-calculator-public.html'));
-    for(const [field,id] of [['fld0p1bMiB','usage-estimate-description'],['fldbHEcb1g','usage-minimum-description']]){
-      const description=source.viewProperty.fieldInfos[field].description.content.map(part=>part.text||'').join('');
-      assert.equal(doc.getElementById(id).textContent,description,'use the calculator form display text exactly');
-    }
+    const description=field=>source.viewProperty.fieldInfos[field].description.content.map(part=>part.text||'').join('');
+    const estimate=description('fld0p1bMiB'),minimum=description('fldbHEcb1g');
+    assert.equal(normalizedFormula(estimateFormula),normalizedFormula(estimate.split('\n')[0]),model+' preserves the captured output-dimension formula');
+    assert.match(estimate,/usage\.completion_tokens/);
+    assert.match(minimum,/输入包含视频时，存在最低 token 用量限制/);
+    assert.match(minimum,/估算 token 用量 ＜ 最低 token 用量，则按最低 token 用量计算/);
+    assert.match(minimum,/最低 token 用量为估算值/);
+    assert.match(minimum,/usage\.completion_tokens/);
   }
+  assert.equal(estimateFormula,'(输入视频时长 + 输出视频时长) × 输出宽 × 输出高 × 输出帧率 ÷ 1,024');
+  assert.deepEqual([...body.querySelectorAll('#usage-calculation [data-step]')].map(step=>step.dataset.step),['estimate','billed','fee']);
+  const accuracy=doc.getElementById('usage-calculation-accuracy');
+  assert.equal(body.querySelectorAll('#usage-calculation-accuracy').length,1);
+  assert.equal(accuracy.textContent,'估算 Token 用量与最低 Token 用量均为估算值，实际以 API 返回的 usage.completion_tokens 为准。');
+  assert.equal(accuracy.previousElementSibling.classList.contains('usage-calculation-steps'),true,'the accuracy note follows the calculation steps');
+  assert.equal((body.textContent.match(/usage\.completion_tokens/g)||[]).length,1,'the API accuracy explanation is stated once');
+  for(const id of ['usage-estimate-definition','usage-minimum-definition','usage-estimate-description','usage-minimum-description'])assert.equal(doc.getElementById(id),null,'merged definitions are not duplicated below the calculation');
   const priceRows=[...body.querySelectorAll('#usage-price-table tbody tr')];
   assert.equal(priceRows.length,6);
   for(const row of priceRows){
@@ -907,7 +934,7 @@ test('usage navigation addresses every section and scrolls within the dialog wit
   const body=doc.getElementById('drawer-body'),layout=body.querySelector('.usage-layout'),toc=body.querySelector('nav.usage-toc');
   assert.ok(layout?.contains(toc),'the usage dialog includes its own navigation');
   assert.ok(layout.contains(doc.getElementById('usage-explanation')));
-  const ids=['usage-calculation','usage-prices','usage-dimensions','usage-estimate-definition','usage-minimum-definition','usage-sources'];
+  const ids=['usage-calculation','usage-prices','usage-dimensions','usage-sources'];
   const buttons=[...toc.querySelectorAll('button[data-usage-section]')];
   assert.deepEqual(buttons.map(button=>button.dataset.usageSection),ids);
   const current=()=>[...toc.querySelectorAll('[aria-current="location"]')];
@@ -933,8 +960,8 @@ test('usage navigation addresses every section and scrolls within the dialog wit
     assert.equal(doc.documentElement.scrollTop,123,'the underlying page keeps its position');
   }
   Object.defineProperty(body,'clientHeight',{configurable:true,value:500});
-  Object.defineProperty(body,'scrollHeight',{configurable:true,value:2300});
-  for(const [position,id] of [[900,'usage-dimensions'],[1500,'usage-minimum-definition'],[1800,'usage-sources']]){
+  Object.defineProperty(body,'scrollHeight',{configurable:true,value:1700});
+  for(const [position,id] of [[600,'usage-prices'],[900,'usage-dimensions'],[1200,'usage-sources']]){
     body.scrollTop=position;body.dispatchEvent(new h.w.Event('scroll'));
     assert.equal(current().length,1);assert.equal(current()[0].dataset.usageSection,id,'the selected title follows manual scrolling');
   }
@@ -991,9 +1018,9 @@ test('usage navigation retains a clicked lower heading when its scroll position 
     scrollTop:{configurable:true,get:()=>scrollPosition,set:value=>{scrollPosition=Math.min(1000,Math.max(0,Number(value)));}}
   });
   body.getBoundingClientRect=()=>({top:100,bottom:900,left:0,right:1000,width:1000,height:800});
-  const offsets={'usage-calculation':0,'usage-prices':300,'usage-dimensions':800,'usage-estimate-definition':1300,'usage-minimum-definition':1450,'usage-sources':1600};
+  const offsets={'usage-calculation':0,'usage-prices':300,'usage-dimensions':1300,'usage-sources':1600};
   for(const [id,offset] of Object.entries(offsets))doc.getElementById(id).getBoundingClientRect=()=>({top:100+offset-scrollPosition,bottom:200+offset-scrollPosition,left:0,right:800,width:800,height:100});
-  for(const id of ['usage-estimate-definition','usage-minimum-definition']){
+  for(const id of ['usage-dimensions','usage-sources']){
     h.click('[data-usage-section="'+id+'"]');
     assert.equal(body.scrollTop,1000,'the browser cannot scroll this heading to the top');
     body.dispatchEvent(new h.w.Event('scroll'));
