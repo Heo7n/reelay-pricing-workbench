@@ -216,9 +216,9 @@
 .generation-panel .usage-metrics dd{min-width:0;max-width:100%;font-size:20px;font-size:clamp(14px,calc(100cqi / var(--token-chars,10) / .62),20px);line-height:27px;text-align:left;white-space:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;overflow-wrap:normal;font-variant-numeric:tabular-nums}
 @container usage (max-width:340px){.generation-panel .usage-metrics{grid-auto-rows:100px}.generation-panel .usage-token{grid-template-rows:38px 34px}}
 .generation-panel .usage-status{margin:0 0 12px}
-.video-price{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;padding:10px 13px;border:1px solid transparent;border-radius:7px;background:#f7f8fa}
+.video-price{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;margin:0;padding:10px 12px;border:1px solid transparent;border-radius:7px;background:#f7f8fa}
 .video-price-label{min-width:0;font-size:11px;line-height:1.6;color:var(--muted)}
-.video-price-amount{display:flex;align-items:baseline;justify-content:flex-end;gap:6px;min-width:0;max-width:60%;flex-shrink:0;margin:0;text-align:right}.video-price-amount .cost-number{min-width:0;font-size:var(--usage-value-size);font-weight:600;line-height:1.5;letter-spacing:0;color:var(--ink)}.video-price-unit{color:var(--muted);font-size:11px;white-space:nowrap}
+.video-price-amount{display:flex;align-items:baseline;justify-content:flex-start;gap:6px;min-width:0;max-width:100%;margin:0;text-align:left}.video-price-amount .cost-number{min-width:0;font-size:var(--usage-value-size);font-weight:600;line-height:1.5;letter-spacing:0;color:var(--ink)}.video-price-unit{color:var(--muted);font-size:11px;white-space:nowrap}
 .quick-config{position:relative;margin-top:18px}.quick-config.is-visible{z-index:25}
 .quick-toggle{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:34px;border:1px solid transparent;border-top-color:var(--line);border-radius:0;background:var(--paper);padding:7px 9px;text-align:left;font-size:12px;color:var(--sub)}.quick-toggle:hover{color:var(--accent)}.quick-config.is-visible .quick-toggle{border-color:#dbe2ee;border-radius:0 0 8px 8px;background:#f8f9fc}
 .quick-chevron{width:7px;height:7px;border-top:1.5px solid currentColor;border-right:1.5px solid currentColor;transform:rotate(-45deg);margin:4px 3px 0 0;transition:transform .22s ease,margin .22s ease}.quick-toggle[aria-expanded=true] .quick-chevron{transform:rotate(135deg);margin-top:-4px}
@@ -272,7 +272,7 @@
 </style></head><body>
 <header class="top"><div class="wrap"><div class="branding"><div class="logo">reelay<i></i></div><div class="brand-caption">视频生成 · 成本工作台</div></div><div class="actions"><button class="link" id="open-rules" hidden>计算规则</button><button class="btn" id="open-actual" data-workspace="actual" aria-controls="actual-workspace">实测对账</button><button class="btn" id="import">导入</button><button class="btn dark" id="export">导出 ↗</button></div></div></header>
 <main class="wrap">
-<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.17</span></div></section>
+<section class="intro"><div><h1>视频成本与定价</h1></div><div class="intro-meta"><span>V9.5.18</span></div></section>
 <div class="notice neutral" id="migration-note" hidden></div>
 <section id="theory-workspace" aria-label="定价计算器">
 <section class="work model-work pricing-workbench" aria-label="生成估算与积分定价">
