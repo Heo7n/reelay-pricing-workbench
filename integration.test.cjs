@@ -1161,6 +1161,16 @@ test('quick drawer stays attached to its trigger and limits its internal height 
   for(const property of ['left','top','width'])assert.equal(drawer.style[property],'','placement stays connected to the parent rather than storing viewport coordinates');
   assert.equal(drawer.dataset.placement,'above');assert.equal(parseFloat(drawer.style.height),240);assert.equal(parseFloat(content.style.maxHeight),240);
   assert.ok(anchor.top-parseFloat(drawer.style.height)>=0,'the upward drawer remains inside the viewport');
+  const metrics=doc.getElementById('usage-metrics');
+  let metricsTop=410;
+  metrics.getBoundingClientRect=()=>({top:metricsTop,bottom:metricsTop+84,left:40,right:400,width:360,height:84});
+  for(const top of [410,394,290]){
+    metricsTop=top;h.w.dispatchEvent(new h.w.Event('resize'));h.good();
+    assert.equal(drawer.dataset.placement,'above','visible Token metrics determine the opening direction');
+    assert.equal(anchor.top+1-parseFloat(drawer.style.height),metricsTop,'the drawer top matches the Token block, including the shared 1px trigger border');
+    assert.equal(content.style.maxHeight,drawer.style.height,'the visible tray fills the aligned shell');
+  }
+  metrics.getBoundingClientRect=()=>({top:0,bottom:0,left:0,right:0,width:0,height:0});
   h.click('#quick-toggle');
   viewportHeight=350;anchor={top:20,bottom:52,left:250,right:310,width:60,height:32};
   h.click('#quick-toggle');
