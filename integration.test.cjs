@@ -2356,7 +2356,7 @@ test('precision stays an accessible icon and task explanations share the existin
   const before=plain(h.api.getState());
   h.click('#details');assert.equal(doc.getElementById('modal').hidden,false);
   const steps=[...doc.querySelectorAll('.pricing-detail-steps > li')];assertCalculationFlow(doc);
-  assert.match(steps[0].textContent,/火山刊例成本/);assert.match(doc.getElementById('detail-variance').textContent,/目标售价/);
+  assert.match(steps[0].textContent,/官方刊例成本/);assert.match(doc.getElementById('detail-variance').textContent,/目标售价/);
   assert.ok(doc.getElementById('detail-variance').textContent.trim());
   h.click('#close-drawer');
   assert.deepEqual(plain(h.api.getState()),before,'viewing calculation details leaves pricing and historical records unchanged');
@@ -2722,7 +2722,7 @@ test('list-cost details, usage return and export retain the selected basis acros
   assertCalculationFlow(doc);assert.match(steps[1].textContent,/不应用采购折扣/);
   equal(steps[1].querySelector('strong').title,P,'detail cost uses P rather than discounted C');
   const detailText=body.textContent;h.click('#detail-usage');h.click('#back-pricing-details');assert.equal(body.textContent,detailText);
-  h.click('#export-calculation');assert.match(h.downloads.at(-1).name,/刊例成本/);assert.match(await h.downloads.at(-1).blob.text(),/采用火山刊例成本/);
+  h.click('#export-calculation');assert.match(h.downloads.at(-1).name,/刊例成本/);assert.match(await h.downloads.at(-1).blob.text(),/采用官方刊例成本/);
   h.click('#close-drawer');assert.equal(selectedCostBasis(doc),'list');
 });
 
@@ -2730,7 +2730,7 @@ test('list-cost details, usage return and export retain the selected basis acros
 test('entire cost tabs select their basis including amount children while the actual input stays independently editable',t=>{
   const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});
   const list=doc.getElementById('cost-tab-list'),theory=doc.getElementById('cost-tab-theory'),actual=doc.getElementById('cost-tab-actual'),input=doc.getElementById('record-cost');
-  assert.equal(list.querySelector('.task-cost-name').textContent.trim(),'火山刊例成本');
+  assert.equal(list.querySelector('.task-cost-name').textContent.trim(),'官方刊例成本');
   assert.equal(theory.querySelector('.task-cost-name').textContent.trim(),'理论采购成本');
   assert.equal(actual.querySelector('.task-cost-name').textContent.trim(),'立画实际成本');
   assert.ok(list.contains(doc.getElementById('task-list-cost')));assert.ok(theory.contains(doc.getElementById('cost-c')));
@@ -2778,7 +2778,7 @@ test('detail record creation follows its own task and restoring an override pres
   h.input('record-cost','8');h.click('#cost-tab-list');const cashBefore=displayText(doc,'actual-cash');h.click('#details');h.click('#restore-record-cost');
   assert.equal(selectedCostBasis(doc),'list');assert.equal(displayText(doc,'actual-cash'),cashBefore);nearDisplayed(doc,'record-cost','6');
   assert.equal(doc.getElementById('restore-record-cost'),null);assert.match(doc.getElementById('detail-record-context').textContent,/选中原记录/);
-  assert.match(doc.getElementById('drawer-sub').textContent,/火山刊例成本/);h.click('#close-drawer');
+  assert.match(doc.getElementById('drawer-sub').textContent,/官方刊例成本/);h.click('#close-drawer');
 });
 
 
