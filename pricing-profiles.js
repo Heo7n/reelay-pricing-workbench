@@ -2,6 +2,7 @@
 (function(root){
 'use strict';
 const MODELS=Object.freeze(['seedance-2.0','seedance-2.5','seedance-2.0-fast']);
+const DEFAULTS_REVISION=1;
 const FIELDS=Object.freeze(['q','targetMode','discount','margin','mode','digits','round','manualM','limitPrecision']);
 const own=(object,key)=>Object.prototype.hasOwnProperty.call(object,key);
 const record=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
@@ -24,7 +25,21 @@ function validMap(map){
  return record(map)&&Object.keys(map).length===MODELS.length&&MODELS.every(model=>own(map,model)&&validProfile(map[model]));
 }
 function defaults(){
- return Object.fromEntries(MODELS.map(model=>[model,{q:model==='seedance-2.0'?'0.735':'1',targetMode:'discount',discount:model==='seedance-2.0'?'7.35':'10',margin:'8.125',mode:'ideal',digits:12,round:'nearest',manualM:'1.538',limitPrecision:false}]));
+ return Object.fromEntries(MODELS.map(model=>{const discounted=model==='seedance-2.0';return[model,{q:discounted?'0.735':'1',targetMode:'discount',discount:discounted?'7.35':'10',margin:'8.125',mode:discounted?'ideal':'manual',digits:12,round:'nearest',manualM:discounted?'1.538':'1.65',limitPrecision:false}];}));
+}
+function upgradeDefaults(plan){
+ requireMap(plan);requireModel(plan.pricingModel);
+ if(plan.pricingDefaultsRevision>=DEFAULTS_REVISION)return [];
+ // Only untouched placeholder policies in restored local drafts adopt the new
+ // standard. Imported plans bypass this step and retain their exact policies.
+ const previous={q:'1',targetMode:'discount',discount:'10',margin:'8.125',mode:'ideal',digits:12,round:'nearest',manualM:'1.538',limitPrecision:false};
+ const current=defaults(),changed=[];
+ for(const model of ['seedance-2.5','seedance-2.0-fast'])if(FIELDS.every(field=>plan.modelPricing[model][field]===previous[field])){
+  plan.modelPricing[model]={...current[model]};changed.push(model);
+ }
+ plan.pricingDefaultsRevision=DEFAULTS_REVISION;
+ if(changed.length)mirror(plan,plan.pricingModel);
+ return changed;
 }
 function valid(plan){return record(plan)&&validMap(plan.modelPricing);}
 function requireMap(plan){if(!valid(plan))throw Error('模型定价规则无效');}
@@ -92,7 +107,7 @@ function forModel(plan,model){
  const profile=model===plan.pricingModel?select(plan):select(plan.modelPricing[model]);
  return{...plan,...profile,pricingModel:model,procurementModel:model};
 }
-const api={MODELS,FIELDS,defaults,normalize,activate,capture,forModel,valid,validProfile};
+const api={MODELS,FIELDS,DEFAULTS_REVISION,defaults,upgradeDefaults,normalize,activate,capture,forModel,valid,validProfile};
 root.ReelayProfiles=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

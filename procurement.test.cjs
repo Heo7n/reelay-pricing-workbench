@@ -50,7 +50,8 @@ test('only standard 2.0 starts with discounted procurement and switching restore
     const status=h.w.document.getElementById('procurement-status');
     assert.equal(status.hidden,true,'normal procurement does not add an explanatory notice');
     assert.equal(state.plan.discount,model==='seedance-2.0'?'7.35':'10');
-    assert.equal(state.plan.pricingModel,model);equal(h.api.pricing().usedM,'1.538');
+    assert.equal(state.plan.pricingModel,model);equal(h.api.pricing().usedM,model==='seedance-2.0'?'1.538':'1.65');
+    assert.equal(state.plan.mode,model==='seedance-2.0'?'ideal':'manual');
     assert.equal(status.classList.contains('is-simulation'),false);
   }
   h.select('seedance-2.0');equal(h.api.getState().plan.q,'0.735');
@@ -157,14 +158,14 @@ test('invalid platform drafts never persist an invalid or cross-model procuremen
   equal(restored.api.current().x.p.q,'1');
 });
 
-test('cross-model quotes use their own procurement and automatic multiplier while explicit plans remain explicit',t=>{
+test('cross-model quotes use their own procurement and pricing policy while explicit plans remain explicit',t=>{
   const h=boot(t);
   h.input('purchase-discount','6');h.select('seedance-2.0-fast');h.input('purchase-discount','9');h.input('discount','8');
   const expected={'seedance-2.0':'0.6','seedance-2.5':'1','seedance-2.0-fast':'0.9'};
   const quotes=()=>models.map(model=>h.api.theory(task(model)));
   const before=quotes();
   for(const [i,model] of models.entries()){
-    const p=E.plan({pay:'100',total:'1538',discount:{'seedance-2.0':'7.35','seedance-2.5':'10','seedance-2.0-fast':'8'}[model],q:expected[model]}),v=before[i],x=v.x;
+    const p=E.plan({pay:'100',total:'1538',discount:{'seedance-2.0':'7.35','seedance-2.5':'10','seedance-2.0-fast':'8'}[model],q:expected[model],...(model==='seedance-2.5'?{appliedM:'1.65',targetAvailable:false}:{})}),v=before[i],x=v.x;
     equal(x.p.q,expected[model]);equal(x.p.usedM,p.usedM);equal(x.C,E.mul(x.P,p.q));equal(x.raw,E.mul(E.mul(x.C,p.usedM),'10'));
     assert.equal(v.procurement.procurementSimulated,model==='seedance-2.0-fast');
   }
@@ -205,7 +206,7 @@ test('record recalculations and detail exports use the record model without rewr
   const original=plain(h.api.getState().observations),before=plain(h.api.getActualRows());
   const expected={'seedance-2.0':'0.6','seedance-2.5':'1','seedance-2.0-fast':'0.9'};
   for(const row of before){
-    const p=E.plan({pay:'100',total:'1538',discount:row.model==='seedance-2.0'?'8':'10',q:expected[row.model]});
+    const p=E.plan({pay:'100',total:'1538',discount:row.model==='seedance-2.0'?'8':'10',q:expected[row.model],...(row.model!=='seedance-2.0'?{appliedM:'1.65',targetAvailable:false}:{})});
     equal(row.procurementRatio,expected[row.model]);equal(row.M,E.decimalString(p.usedM,20));
     equal(row.recalcN,E.ceil(E.mul(E.mul('5',p.usedM),'10')));
     equal(row.theoryC,E.mul(row.theoryP,p.q));
@@ -293,7 +294,7 @@ test('incomplete model rule edits never overwrite that model or another model on
   const h=boot(t);h.manual('1.65');
   const profile=plain(h.api.getState().plan.modelPricing['seedance-2.0']);h.click('#edit-multiplier');h.input('manual-m','');
   assert.equal(h.w.document.getElementById('platformError').hidden,true);assert.equal(h.w.document.getElementById('manual-m').getAttribute('aria-invalid'),'true');
-  h.select('seedance-2.5');assert.equal(h.w.document.getElementById('platformError').hidden,true);equal(h.api.pricing().usedM,'1.538');
+  h.select('seedance-2.5');assert.equal(h.w.document.getElementById('platformError').hidden,true);equal(h.api.pricing().usedM,'1.65');
   assert.deepEqual(plain(h.api.getState().plan.modelPricing['seedance-2.0']),profile);
   h.select('seedance-2.0');equal(h.api.pricing().usedM,'1.65');h.click('#edit-multiplier');assert.equal(h.w.document.getElementById('manual-m').value,'1.65');
 });

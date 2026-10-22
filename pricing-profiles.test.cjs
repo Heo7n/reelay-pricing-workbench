@@ -23,9 +23,10 @@ test('fresh profiles reflect current procurement and do not share mutable settin
  assert.equal(first['seedance-2.0'].discount,'7.35');
  for(const model of ['seedance-2.5','seedance-2.0-fast']){
   assert.equal(first[model].q,'1');assert.equal(first[model].discount,'10');
+  assert.equal(first[model].mode,'manual');assert.equal(first[model].manualM,'1.65');
  }
  first['seedance-2.0'].manualM='2';
- assert.equal(first['seedance-2.5'].manualM,'1.538');
+ assert.equal(first['seedance-2.5'].manualM,'1.65');
  assert.equal(second['seedance-2.0'].manualM,'1.538');
 });
 
@@ -61,7 +62,7 @@ test('each model restores its complete independently edited policy',()=>{
  Object.assign(plan,{q:'0.6',targetMode:'margin',margin:'20',mode:'saved',digits:2,round:'truncate'});
  assert.equal(P.capture(plan),true);
  P.activate(plan,'seedance-2.5');
- assert.equal(plan.discount,'10');assert.equal(plan.mode,'ideal');
+ assert.equal(plan.discount,'10');assert.equal(plan.mode,'manual');
  Object.assign(plan,{q:'1',mode:'manual',manualM:'1.65',digits:5,round:'nearest'});
  P.activate(plan,'seedance-2.0-fast');
  Object.assign(plan,{q:'0.8',targetMode:'discount',discount:'9',mode:'ideal',digits:8});
@@ -120,7 +121,7 @@ test('canonical profile maps reject missing, extra, malformed and invalid entrie
   map=>{delete map['seedance-2.5'].margin;},
   map=>{map['seedance-2.5'].unexpected=true;},
   map=>{map['seedance-2.5'].q='0';},
-  map=>{map['seedance-2.5'].discount='';},
+  map=>{map['seedance-2.5'].mode='ideal';map['seedance-2.5'].discount='';},
   map=>{map['seedance-2.5'].targetMode='unknown';},
   map=>{map['seedance-2.5'].mode='unknown';},
   map=>{map['seedance-2.5'].digits=2.5;},
@@ -174,4 +175,49 @@ test('early per-model maps gain only the missing precision preference during nor
  assert.equal(P.validProfile({...plan.modelPricing['seedance-2.0'],limitPrecision:'true'}),false);
  const incomplete=clone(plan.modelPricing['seedance-2.0']);delete incomplete.limitPrecision;
  assert.equal(P.validProfile(incomplete),false,'direct validity requires normalized profiles');
+});
+
+const previousDefault=()=>({q:'1',targetMode:'discount',discount:'10',margin:'8.125',mode:'ideal',digits:12,round:'nearest',manualM:'1.538',limitPrecision:false});
+const oldDefaultsPlan=model=>{
+ const modelPricing=P.defaults();
+ for(const id of ['seedance-2.5','seedance-2.0-fast'])modelPricing[id]=previousDefault();
+ return P.normalize({...common(),modelPricing},model||'seedance-2.0');
+};
+
+test('standard multipliers stay fixed across recharge conditions and do not invent discount targets',()=>{
+ for(const model of ['seedance-2.5','seedance-2.0-fast']){
+  const plan=fresh(model);
+  for(const total of ['1000','1538','2000']){
+   const p=E.plan({...plan,total,appliedM:plan.manualM,targetAvailable:false});
+   equal(p.usedM,'1.65');equal(p.q,1);assert.equal(p.M,null);
+   const x=E.settle('3.1','3.1',p);
+   equal(x.raw,'51.15');equal(x.N,52);assert.equal(x.target,null);assert.equal(x.gap,null);
+   equal(x.cash,E.div('5200',total));equal(x.roundGap,E.mul('0.85',p.U));
+  }
+ }
+ const standard=fresh('seedance-2.0');assert.equal(standard.mode,'ideal');equal(finance(standard).usedM,'1.538');
+});
+
+test('local default refresh changes only exact old placeholders and mirrors the active model once',()=>{
+ const plan=oldDefaultsPlan('seedance-2.5'),standard=clone(plan.modelPricing['seedance-2.0']);
+ assert.equal(plan.mode,'ideal');
+ assert.deepEqual(P.upgradeDefaults(plan),['seedance-2.5','seedance-2.0-fast']);
+ assert.equal(plan.mode,'manual');assert.equal(plan.manualM,'1.65');assert.equal(plan.pricingDefaultsRevision,P.DEFAULTS_REVISION);
+ assert.deepEqual(plan.modelPricing['seedance-2.0'],standard);
+ plan.modelPricing['seedance-2.5']=previousDefault();
+ const before=clone(plan);assert.deepEqual(P.upgradeDefaults(plan),[]);assert.deepEqual(plan,before);
+});
+
+test('any customized field excludes an existing policy from the default refresh',()=>{
+ for(const patch of [{q:'0.9'},{targetMode:'margin'},{discount:'8'},{margin:'10'},{mode:'saved'},{digits:3},{round:'truncate'},{manualM:'1.8'},{limitPrecision:true}]){
+  const plan=oldDefaultsPlan('seedance-2.0');Object.assign(plan.modelPricing['seedance-2.5'],patch);
+  const customized=clone(plan.modelPricing['seedance-2.5']);
+  assert.deepEqual(P.upgradeDefaults(plan),['seedance-2.0-fast']);assert.deepEqual(plan.modelPricing['seedance-2.5'],customized);
+ }
+});
+
+test('canonical normalization never applies new defaults to explicitly supplied profiles',()=>{
+ const original=oldDefaultsPlan('seedance-2.5'),before=clone(original.modelPricing);
+ P.normalize(original,'seedance-2.5');
+ assert.deepEqual(original.modelPricing,before);assert.equal(original.mode,'ideal');equal(finance(original).usedM,'1.538');
 });

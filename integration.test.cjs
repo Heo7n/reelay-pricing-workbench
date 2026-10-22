@@ -1862,7 +1862,7 @@ test('manual pricing has no hidden target or variance, including after reload an
   h.click('#details');const text=doc.getElementById('drawer-body').textContent;
   assert.match(text,/采用指定倍率 M = 1\.65/);assert.doesNotMatch(text,/参考目标|与目标差额如何拆分|理想 M/);
   const variance=doc.getElementById('detail-variance');assert.ok(variance);
-  assert.match(variance.textContent,/手动倍率未设目标售价，无目标差额。/);
+  assert.match(variance.textContent,/取整/);assert.doesNotMatch(variance.textContent,/目标差额拆分/);
   assert.equal(variance.closest('details,[hidden]'),null,'the unavailable target explanation is visible without expanding a disclosure');
   assert.doesNotMatch(variance.textContent,/[¥￥]\s*0(?:\.0+)?(?:\s|$)/,'no zero target difference is manufactured for manual pricing');
   h.click('#close-drawer');h.click('#open-actual');assert.ok(doc.querySelectorAll('#actual-table tbody tr').length);h.click('#back-theory');
@@ -1949,7 +1949,7 @@ test('legacy comparison tabs reopen as discounts without erasing saved tasks or 
 test('automatic precision survives a manual basis round-trip and remains model-specific',t=>{
   const h=boot(t),doc=h.w.document;h.input('discount','8');h.click('#plan-settings');h.input('plan-digits','3','change');h.input('plan-round','truncate','change');
   equal(h.api.pricing().usedM,'1.674');h.manual('1.65');
-  h.input('model','seedance-2.5','change');assert.equal(h.api.getState().plan.mode,'ideal');
+  h.input('model','seedance-2.5','change');assert.equal(h.api.getState().plan.mode,'manual');equal(h.api.pricing().usedM,'1.65');
   h.input('model','seedance-2.0','change');equal(h.api.pricing().usedM,'1.65');
   h.input('pricing-basis','discount','change');assert.equal(h.api.getState().plan.mode,'saved');equal(h.api.pricing().usedM,'1.674');
   h.click('#plan-settings');assert.equal(doc.getElementById('plan-digits').value,'3');assert.equal(doc.getElementById('plan-round').value,'truncate');
@@ -1975,9 +1975,9 @@ test('task settlement shows one traceable calculation and distinguishes the targ
     nearDisplayed(doc,'task-list-cost',x.P);nearDisplayed(doc,'cost-c',x.C);
     nearDisplayed(doc,'raw-points',x.raw);equal(displayedNumeric(doc,'integer-points'),x.N);
     nearDisplayed(doc,'actual-cash',x.cash);
-    if(x.target===null){assert.equal(doc.getElementById('task-target-amount').textContent.trim(),'—');assert.equal(doc.getElementById('task-gap').textContent.trim(),'—');}
+    if(x.target===null){nearDisplayed(doc,'task-target-amount',x.rawCash);nearDisplayed(doc,'task-gap',x.roundGap);}
     else{nearDisplayed(doc,'task-target-amount',x.target);nearDisplayed(doc,'task-gap',x.gap);}
-    assert.equal(doc.getElementById('task-target-label').firstChild.textContent,'目标售价');
+    assert.equal(doc.getElementById('task-target-label').firstChild.textContent,x.target===null?'取整前金额':'目标售价');
     return x;
   };
   h.input('discount','8');const discounted=verify();
@@ -2325,7 +2325,8 @@ test('actual cost without list price computes settlement but never invents targe
   equal(displayedNumeric(doc,'integer-points'),a.N);nearDisplayed(doc,'actual-cash',a.cash);
   for(const id of ['task-target-amount','task-gap','task-effective'])assert.equal(doc.getElementById(id).textContent.trim(),'—');
   h.manual('1.65');
-  for(const id of ['task-target-amount','task-gap','task-effective'])assert.equal(doc.getElementById(id).textContent.trim(),'—');
+  const manual=h.api.recalcRecord(h.api.getState().observations[0]),rawCash=E.mul(manual.raw,h.api.pricing().U);
+  nearDisplayed(doc,'task-target-amount',rawCash);nearDisplayed(doc,'task-gap',E.sub(manual.cash,rawCash));assert.equal(displayText(doc,'task-effective'),'—');
   h.update(s=>{s.observations=[];});assert.equal(selectedCostBasis(doc),'theory');
   assert.equal(actualCostUnavailable(doc),true);nearDisplayed(doc,'actual-cash',h.api.current().x.cash);
   for(const id of ['record-raw','record-points','record-cash','record-settlement-row','theory-settlement-row'])assert.equal(doc.getElementById(id),null);
@@ -2534,7 +2535,7 @@ test('list cost tab settles C equal to P using unchanged model pricing and share
     nearDisplayed(doc,'task-list-cost',theory.P);nearDisplayed(doc,'cost-c',theory.C);
     nearDisplayed(doc,'raw-points',expected.raw);equal(displayedNumeric(doc,'integer-points'),expected.N);nearDisplayed(doc,'actual-cash',expected.cash);
     nearDisplayed(doc,'model-profit',expected.profit);nearDisplayed(doc,'task-effective',expected.effective,4);
-    if(expected.target===null)assert.equal(displayText(doc,'task-target-amount'),'—');else nearDisplayed(doc,'task-target-amount',expected.target);
+    if(expected.target===null)nearDisplayed(doc,'task-target-amount',expected.rawCash);else nearDisplayed(doc,'task-target-amount',expected.target);
     h.click('#cost-tab-theory');nearDisplayed(doc,'actual-cash',theory.cash);
   }
 });
@@ -2636,4 +2637,77 @@ test('saving a same-specification record from its detail uses that record inline
   assert.equal(doc.getElementById('o-c').value,'8','detail record A retains its own inline draft while main selection is record B');
   assert.equal(doc.getElementById('o-p').value,'');assert.equal(doc.getElementById('o-n').value,'');
   h.click('#cancel-observation');assert.deepEqual(plain(h.api.getState()).observations,before.observations);assert.deepEqual(plain(h.api.getState()).taskCostInput,before.taskCostInput);
+});
+
+
+test('undiscounted 2.5 and Fast default to fixed 1.65 while outcomes and discount scenarios remain exact',t=>{
+  for(const model of ['seedance-2.5','seedance-2.0-fast']){
+    const h=boot(t),doc=h.w.document;h.input('model',model,'change');
+    const verify=()=>{const p=h.api.pricing(),x=h.api.current().x,s=h.api.getState();
+      assert.equal(s.plan.mode,'manual');assert.equal(s.plan.manualM,'1.65');equal(p.q,1);equal(p.usedM,'1.65');
+      assert.equal(x.target,null);assert.equal(x.gap,null);nearDisplayed(doc,'task-target-amount',x.rawCash);nearDisplayed(doc,'task-gap',x.roundGap);assert.equal(doc.getElementById('task-target-label').textContent,'取整前金额');
+      const rawCash=E.mul(E.mul(E.mul(x.P,'1.65'),10),p.U),discount=E.mul(E.div(rawCash,x.P),10),margin=E.mul(E.div(E.sub(rawCash,x.P),rawCash),100);
+      assert.ok(Math.abs(Number(doc.getElementById('discount').value)-Number(E.decimalString(discount,12)))<0.00011);
+      assert.match(doc.getElementById('plan-principle').textContent,new RegExp(E.trim(margin,4).replace('.', '\\.')));
+      equal(x.N,E.ceil(E.mul(E.mul(x.P,'1.65'),10)));return x.N;};
+    const originalN=verify();h.input('pay','200');equal(verify(),originalN);h.input('total','2000');equal(verify(),originalN);
+    const rows=h.api.getTheoryRows();assert.ok(rows.length>0);assert.ok(rows.every(r=>r.targetMode==='discount'));
+    for(const row of rows){const auto=E.plan({pay:'200',total:'2000',q:'1',discount:row.discount});equal(row.M,auto.usedM);equal(row.target,E.mul(row.P,E.div(row.discount,10)));}
+    assert.equal(h.api.getState().plan.mode,'manual','viewing automatic discount scenarios does not adopt their target');
+    assert.equal(doc.querySelector('#table tr.selected'),null,'fixed multiplier does not pretend to select an automatic discount tier');
+    h.click('#table [data-discount="8"]');assert.equal(h.api.getState().plan.mode,'ideal');equal(h.api.pricing().usedM,'0.8');
+    const other=model==='seedance-2.5'?'seedance-2.0-fast':'seedance-2.5';h.input('model',other,'change');assert.equal(h.api.getState().plan.mode,'manual');equal(h.api.pricing().usedM,'1.65');
+    h.input('model',model,'change');assert.equal(h.api.getState().plan.mode,'ideal');equal(h.api.pricing().usedM,'0.8');
+    h.input('model','seedance-2.0','change');assert.equal(h.api.getState().plan.mode,'ideal');equal(h.api.pricing().q,'0.735');
+  }
+});
+
+
+test('old browser default pricing upgrades once while explicit imports and customized model policies retain their choices',t=>{
+  const base=boot(t),legacy=plain(base.api.defaults()),oldProfile={q:'1',targetMode:'discount',discount:'10',margin:'8.125',mode:'ideal',digits:12,round:'nearest',manualM:'1.538',limitPrecision:false};
+  delete legacy.plan.pricingDefaultsRevision;legacy.plan.modelPricing['seedance-2.5']={...oldProfile};legacy.plan.modelPricing['seedance-2.0-fast']={...oldProfile};
+  const standard=plain(legacy.plan.modelPricing['seedance-2.0']),original=JSON.stringify(legacy);
+  const restored=boot(t,[['reelay_pricing_v9_official',original]]);
+  assert.equal(JSON.stringify(legacy),original);assert.equal(restored.api.getState().plan.pricingDefaultsRevision,1);
+  for(const model of ['seedance-2.5','seedance-2.0-fast']){const profile=restored.api.getState().plan.modelPricing[model];assert.equal(profile.mode,'manual');assert.equal(profile.manualM,'1.65');}
+  assert.deepEqual(plain(restored.api.getState().plan.modelPricing['seedance-2.0']),standard);
+  const once=plain(restored.api.getState());once.plan.modelPricing['seedance-2.5']={...oldProfile};
+  const reloaded=boot(t,[['reelay_pricing_v9_official',JSON.stringify(once)]]);assert.deepEqual(plain(reloaded.api.getState().plan.modelPricing['seedance-2.5']),oldProfile,'the browser migration never runs again after its revision marker');
+  const customized=plain(legacy);customized.plan.modelPricing['seedance-2.5'].q='0.9';
+  const customReload=boot(t,[['reelay_pricing_v9_official',JSON.stringify(customized)]]);assert.deepEqual(plain(customReload.api.getState().plan.modelPricing['seedance-2.5']),customized.plan.modelPricing['seedance-2.5']);assert.equal(customReload.api.getState().plan.modelPricing['seedance-2.0-fast'].manualM,'1.65');
+  const imported=base.api.migrate({format:'reelay.pricing.v9',state:legacy}).value;assert.equal(imported.plan.pricingDefaultsRevision,1);
+  for(const model of ['seedance-2.5','seedance-2.0-fast'])assert.deepEqual(plain(imported.plan.modelPricing[model]),oldProfile);
+  const importReload=boot(t,[['reelay_pricing_v9_official',JSON.stringify(imported)]]);for(const model of ['seedance-2.5','seedance-2.0-fast'])assert.deepEqual(plain(importReload.api.getState().plan.modelPricing[model]),oldProfile,'an explicitly imported automatic policy remains automatic after refresh');
+});
+
+test('manual and automatic detail TXT exports describe the correct cash benchmark for every cost basis without rewriting history',async t=>{
+  for(const mode of ['manual','automatic'])for(const basis of ['theory','list','inline','recorded']){
+    const h=boot(t);h.input('model','seedance-2.5','change');
+    h.update(s=>{s.observations=[];});
+    if(mode==='automatic')h.click('#table [data-discount="8"]');
+    const p=h.api.pricing(),theory=h.api.current().x;
+    let C=theory.C,P=theory.P;
+    if(basis==='list'){h.click('#cost-tab-list');C=P;}
+    if(basis==='inline'){h.input('record-cost','2.345');h.click('#cost-tab-actual');C='2.345';}
+    if(basis==='recorded'){
+      h.update(s=>{s.observations=[{id:'export-record',title:'导出核验',params:plain(s.task),costBasis:'recorded',P:'10',C:'3.125',N:'99',date:'2026-10-22',note:'历史实测'}];});
+      P='10';C='3.125';h.click('#cost-tab-actual');
+    }
+    const observations=plain(h.api.getState().observations),expected=E.settle(P,C,p);
+    h.click('#details');h.click('#export-calculation');
+    const text=await h.downloads.at(-1).blob.text();
+    const amount=label=>{const line=text.split('\n').find(line=>line.startsWith(label+' = '));assert.ok(line,mode+'/'+basis+' includes '+label);return line.slice((label+' = ').length);};
+    if(mode==='manual'){
+      equal(p.usedM,'1.65');assert.equal(expected.target,null);
+      assert.doesNotMatch(text,/目标售价|与目标差额/);
+      assert.ok(E.cmp(E.abs(E.sub(amount('取整前金额'),expected.rawCash)),'0.000000000001')<=0);
+      assert.ok(E.cmp(E.abs(E.sub(amount('取整差额'),expected.roundGap)),'0.000000000001')<=0);
+    }else{
+      assert.doesNotMatch(text,/取整前金额|取整差额/);
+      assert.ok(E.cmp(E.abs(E.sub(amount('目标售价'),expected.target)),'0.000000000001')<=0);
+      assert.ok(E.cmp(E.abs(E.sub(amount('与目标差额'),expected.gap)),'0.000000000001')<=0);
+    }
+    if(basis==='recorded')assert.match(text,/历史实际扣分 = 99(?:\n|$)/);
+    assert.deepEqual(plain(h.api.getState().observations),observations);
+  }
 });
