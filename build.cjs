@@ -26,4 +26,4 @@ const html = template
 fs.mkdirSync(path.join(root, 'dist'), {recursive: true});
 fs.writeFileSync(path.join(root, 'dist', 'index.html'), html, 'utf8');
 fs.writeFileSync(path.join(root, 'reelay_pricing_workbench_v9.html'), html, 'utf8');
-console.log('Built V9.14.1 standalone HTML ('+Buffer.byteLength(html)+' bytes)');
+console.log('Built V9.14.2 standalone HTML ('+Buffer.byteLength(html)+' bytes)');

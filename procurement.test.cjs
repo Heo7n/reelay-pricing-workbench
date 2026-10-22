@@ -57,7 +57,7 @@ test('only standard 2.0 starts with discounted procurement and switching restore
   h.select('seedance-2.0');equal(h.api.getState().plan.q,'0.735');
   h.input('purchase-discount','6');equal(h.api.getState().plan.q,'0.6');
   h.select('seedance-2.5');h.input('purchase-discount','8');
-  assert.match(h.w.document.getElementById('procurement-status').textContent,/模拟采购/);
+  assert.equal(h.w.document.getElementById('procurement-status').textContent,'模拟');
   assert.equal(h.w.document.getElementById('procurement-status').classList.contains('is-simulation'),true);
   h.select('seedance-2.0-fast');h.input('purchase-discount','9');
   for(const [model,q] of [['seedance-2.0','0.6'],['seedance-2.5','0.8'],['seedance-2.0-fast','0.9']]){
