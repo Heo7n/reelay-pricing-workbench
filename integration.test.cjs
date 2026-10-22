@@ -1071,7 +1071,7 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   const h=boot(t),doc=h.w.document,help=doc.getElementById('usage-help'),modal=doc.getElementById('modal');
   assert.equal(doc.getElementById('cost-badge').textContent,'参数预估');
   assert.equal(doc.getElementById('token-minimum-label').textContent,'最低 Token 用量');
-  assert.ok(help.closest('.estimate-heading'));
+  assert.equal(help.parentElement,doc.querySelector('.generation-panel > .head'));
   assert.equal(doc.querySelector('.usage-rate-line'),null);
   assert.equal(doc.getElementById('token-rate'),null,'rates appear only inside the explanation dialog');
   assert.equal(help.getAttribute('aria-haspopup'),'dialog');
