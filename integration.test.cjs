@@ -2731,7 +2731,7 @@ test('entire cost tabs select their basis including amount children while the ac
   const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});
   const list=doc.getElementById('cost-tab-list'),theory=doc.getElementById('cost-tab-theory'),actual=doc.getElementById('cost-tab-actual'),input=doc.getElementById('record-cost');
   assert.equal(list.querySelector('.task-cost-name').textContent.trim(),'官方刊例成本');
-  assert.equal(theory.querySelector('.task-cost-name').textContent.trim(),'理论采购成本');
+  assert.equal(theory.querySelector('.task-cost-name').textContent.trim(),'预计采购成本');
   assert.equal(actual.querySelector('.task-cost-name').textContent.trim(),'立画实际成本');
   assert.ok(list.contains(doc.getElementById('task-list-cost')));assert.ok(theory.contains(doc.getElementById('cost-c')));
   assert.equal(doc.querySelector('[data-cost-value]'),null,'amounts no longer form a disconnected selectable row');
