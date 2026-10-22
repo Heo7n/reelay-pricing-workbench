@@ -24,7 +24,7 @@ test('7.35 折 covers procurement before rounding and preserves the recharge val
   equal(x.salesMarginPct, x.margin);
 });
 
-test('both recorded procurement amounts reproduce the original point calculations', () => {
+test('explicit procurement records retain their original cost when recalculating points', () => {
   const examples = [
     {P:'37.520955', C:'27.577902', raw:'424.14813276', N:'425'},
     {P:'45.550532', C:'33.479641', raw:'514.91687858', N:'515'},
@@ -38,6 +38,92 @@ test('both recorded procurement amounts reproduce the original point calculation
     equal(actual.C, example.C);
     assert.equal(actual.recordedN, '');
     assert.deepEqual(original, snapshot, 'recalculation must not rewrite original records');
+  }
+});
+
+test('platform-list records derive procurement from the current ratio and preserve four historical deductions', () => {
+  const examples = [
+    {P:'1.784800', C:'1.311828', referenceC:'1.311828', raw:'20.17591464', N:'30', expectedN:'21'},
+    {P:'37.520955', C:'27.577901925', referenceC:'27.577902', raw:'424.1481316065', N:'620', expectedN:'425'},
+    {P:'1.892800', C:'1.391208', referenceC:'1.391208', raw:'21.39677904', N:'32', expectedN:'22'},
+    {P:'45.550532', C:'33.47964102', referenceC:'33.479641', raw:'514.9168788876', N:'752', expectedN:'515'},
+  ];
+  for (const example of examples) {
+    const record = {costBasis:'platform-list', P:example.P, C:'', N:example.N, supplierReference:{q:'0.735', C:example.referenceC}};
+    const snapshot = structuredClone(record);
+    const result = E.recalcRecord(record, plan());
+    assert.equal(result.procurementDerived, true);
+    assert.equal(result.recordedC, null);
+    assert.equal(result.scope, 'recorded-list-recalculation');
+    equal(result.P, example.P);
+    equal(result.C, example.C);
+    equal(result.raw, example.raw);
+    equal(result.N, example.expectedN);
+    assert.equal(result.recordedN, example.N);
+    assert.deepEqual(record, snapshot, 'recalculation does not rewrite historical data or screenshot references');
+
+    // Numerical agreement is a cross-check, not evidence of historical settings.
+    equal(E.ceil(E.mul(example.P, '16.5')), example.N);
+    const changed = E.recalcRecord(record, plan({q:'0.6', appliedM:'1.65', targetAvailable:false}));
+    equal(changed.C, E.mul(example.P, '0.6'));
+    equal(changed.raw, E.mul(E.mul(example.P, '0.6'), '16.5'));
+    assert.equal(changed.recordedN, example.N);
+    assert.deepEqual(record, snapshot);
+  }
+});
+
+test('platform-list recalculation never uses a six-decimal supplier reference as exact procurement', () => {
+  const P='37.520955', exactC=E.mul(P, '0.735');
+  const record={costBasis:'platform-list', P, C:'999', N:'620', supplierReference:{q:'0.735', C:'27.577902'}};
+  const p=plan({appliedM:E.div('1', E.mul(exactC, '10')), targetAvailable:false});
+  const result=E.recalcRecord(record,p);
+  equal(result.C, exactC);
+  equal(result.recordedC, '999', 'original C remains identifiable but is not a derived-cost input');
+  equal(result.raw, '1');
+  equal(result.N, '1');
+  equal(E.ceil(E.mul(E.mul(record.supplierReference.C,p.usedM),'10')), '2', 'using the rounded screenshot C would cross the integer boundary');
+  const changedMetadata=E.recalcRecord({...record, supplierReference:{q:'0.1',C:'123456'}},p);
+  equal(changedMetadata.C, result.C);
+  equal(changedMetadata.raw, result.raw);
+  assert.equal(changedMetadata.recordedN, '620');
+});
+
+test('platform-list target pricing follows derived procurement without inventing a missing platform amount', () => {
+  const record={costBasis:'platform-list',P:'10',C:'',N:'99'};
+  const margin=E.recalcRecord(record,plan({q:'0.6',targetMode:'margin',margin:'20'}));
+  equal(margin.C,'6');
+  equal(margin.target,'7.5');
+  equal(margin.x.rawCash,'7.5');
+  const discount=E.recalcRecord(record,plan({q:'0.6',discount:'8'}));
+  equal(discount.C,'6');
+  equal(discount.target,'8');
+  equal(discount.x.rawCash,'8');
+  assert.equal(E.recalcRecord(record,plan({q:'0.6',appliedM:'1.65',targetAvailable:false})).target,null);
+
+  for (const p of [plan(),plan({targetMode:'margin',margin:'20'}),plan({appliedM:'1.65',targetAvailable:false})]) {
+    const missing=E.recalcRecord({...record,P:'',C:'8'},p);
+    assert.equal(missing.procurementDerived,true);
+    equal(missing.recordedC,'8');
+    for (const field of ['P','C','raw','N','cash','target','x','cashProfit','salesMarginPct','costMarkupPct']) assert.equal(missing[field],null,field+' cannot be inferred without the platform amount');
+    assert.equal(missing.recordedN,'99');
+  }
+  for (const P of ['0','-1']) assert.throws(()=>E.recalcRecord({...record,P},plan()),/须大于零/);
+});
+
+test('direct procurement stays direct for legacy and explicitly recorded bases, including zero costs', () => {
+  for (const costBasis of [undefined,'recorded']) for (const q of ['0.735','0.6','1']) {
+    const p=plan({q,appliedM:'1.65',targetAvailable:false});
+    const original={costBasis,P:'10',C:'8',N:'99',supplierReference:{q:'0.735',C:'7.35'}};
+    const result=E.recalcRecord(original,p);
+    assert.equal(result.procurementDerived,false);
+    assert.equal(result.scope,'recorded-cost-recalculation');
+    equal(result.recordedC,'8');equal(result.C,'8');equal(result.raw,'132');equal(result.N,'132');
+    assert.equal(result.recordedN,'99');
+    const zero=E.recalcRecord({...original,C:'0'},p);
+    equal(zero.recordedC,'0');equal(zero.C,'0');equal(zero.N,'0');equal(zero.cash,'0');
+    assert.equal(zero.salesMarginPct,null);
+    const missing=E.recalcRecord({...original,C:''},p);
+    assert.equal(missing.recordedC,null);assert.equal(missing.C,null);assert.equal(missing.N,null);
   }
 });
 

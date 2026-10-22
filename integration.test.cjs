@@ -10,6 +10,21 @@ const R = require('./data.js');
 const read = name => fs.readFileSync(path.join(__dirname, name), 'utf8');
 const equal = (a,b,message) => assert.equal(E.cmp(a,b), 0, message);
 const plain = value => JSON.parse(JSON.stringify(value));
+const displayText = (doc,id) => {const el=doc.getElementById(id);return el.tagName==='INPUT'?el.value:el.textContent;};
+const selectedCostBasis = doc => doc.querySelector('[data-cost-basis][aria-selected="true"]')?.dataset.costBasis;
+const actualCostUnavailable = doc => doc.getElementById('cost-tab-actual').getAttribute('aria-disabled')==='true';
+const displayedNumeric = (doc,id) => displayText(doc,id).replace(/[¥￥≈,元折%+\s]/g,'').replace(/−/g,'-');
+const nearDisplayed = (doc,id,expected,precision=6) => {
+  const value=displayedNumeric(doc,id);
+  assert.match(value,/^-?\d+(?:\.\d+)?$/,id+' displays a finite numeric amount');
+  assert.ok(E.cmp(E.abs(E.sub(value,expected)),E.dec('0.'+'0'.repeat(precision)+'5'))<=0,id+' agrees with exact arithmetic at display precision');
+};
+const legacyPlatformRecords = () => [
+  {id:'s1',title:'平台实测 · 原表第1行',params:{model:'seedance-2.0',res:'480p',ratio:'1:1',seconds:'4',video:false,vin:'2'},P:'1.784800',C:'1.311828',N:'',date:'',note:'用户确认为平台实际数据。只保留原表成本列；历史实际扣分与适用定价口径尚未单独确认。'},
+  {id:'s2',title:'平台实测 · 原表第2行',params:{model:'seedance-2.0',res:'1080p',ratio:'21:9',seconds:'15',video:false,vin:'2'},P:'37.520955',C:'27.577902',N:'',date:'',note:'原表平台实测成本。理论工作台不读取此金额。'},
+  {id:'s3',title:'平台实测 · 原表第3行',params:{model:'seedance-2.0',res:'480p',ratio:'1:1',seconds:'4',video:true,vin:'2'},P:'1.892800',C:'1.391208',N:'',date:'',note:'平台实测值1.892800元。与转述的官方预估约1.88元是不同来源，分别保留。'},
+  {id:'s4',title:'平台实测 · 原表第4行',params:{model:'seedance-2.0',res:'1080p',ratio:'21:9',seconds:'15',video:true,vin:'15'},P:'45.550532',C:'33.479641',N:'',date:'',note:'视频输入15秒，输出1080p、21:9、15秒。平台实际成本只用于对照，不替代公式输出。'},
+];
 
 function boot(t, storedEntries = []) {
   const errors = [], downloads = [], blobs = new Map();
@@ -45,8 +60,12 @@ function boot(t, storedEntries = []) {
     el.click();good();assert.equal(el.getAttribute('aria-pressed'),'true');assert.equal(api.getState().task.video,enabled);
     assert.equal(w.document.querySelector('[data-video="'+!enabled+'"]').getAttribute('aria-pressed'),'false');
   };
+  const manual=value=>{click('#edit-multiplier');input('manual-m',value);click('#save-multiplier');};
+  const addRecord=()=>{click('#details');click('#detail-add-observation');};
+  const openRecord=()=>{click('#details');const link=w.document.querySelector('#drawer-body [data-observation]');if(link){link.click();good();}};
+  const recordDetailsText=()=>{click('#details');const text=w.document.getElementById('drawer-body').textContent;click('#close-drawer');return text;};
   good();
-  return {w,api,downloads,good,update,input,click,setVideo};
+  return {w,api,downloads,good,update,input,click,setVideo,manual,addRecord,openRecord,recordDetailsText};
 }
 
 test('all 192 historical Oct19 display values remain consistent with the newly verified lookup', () => {
@@ -84,7 +103,6 @@ test('startup uses the official minimum, and 04 matches 4 in both theory and loo
   equal(h.api.current().x.P,'1.8816');
   h.input('vin','3'); equal(h.api.current().x.P,'1.8816');
   h.input('vin','4'); equal(h.api.current().x.P,'2.1504');
-  h.click('[data-tab="matrix"]');
   assert.ok(h.api.getTheoryRows().every(row=>row.coverage==='参数预估'));
 });
 
@@ -96,7 +114,7 @@ test('procurement input and target modes change the intended financial quantitie
   equal(h.api.pricing().q,'0.6');
   equal(h.api.current().x.C,E.mul(h.api.current().x.P,'0.6'));
   equal(h.api.current().x.target,initialTarget,'discount objective keeps the customer target despite a changed procurement ratio');
-  h.click('[data-pricing-basis="margin"]');
+  h.input('pricing-basis','margin','change');
   h.input('target-margin','30');
   equal(h.api.pricing().d,E.div('0.6','0.7'));
   h.input('purchase-discount','7.35');
@@ -109,24 +127,32 @@ test('procurement input and target modes change the intended financial quantitie
   assert.doesNotMatch(detail,/\$\{/);
 });
 
-test('gift input uses total received points exactly once', t => {
+test('recharge always edits total received points and preserves legacy gift-mode economics', t => {
   const h=boot(t);
-  h.input('total-mode','gift','change');
-  assert.equal(h.w.document.getElementById('total').value,'538');
+  assert.equal(h.w.document.getElementById('total-mode'),null);
+  assert.equal(h.w.document.getElementById('total').value,'1538');
   h.input('pay','200');
-  assert.equal(h.api.getState().plan.total,'2538');
-  equal(h.api.pricing().U,E.div('200','2538'));
-  h.input('total-mode','total','change');
-  assert.equal(h.w.document.getElementById('total').value,'2538');
+  assert.equal(h.api.getState().plan.total,'1538','changing cash paid never invents or adds credited points');
+  equal(h.api.pricing().U,E.div('200','1538'));
+  h.input('total','2538');equal(h.api.pricing().U,E.div('200','2538'));
+  const old=plain(h.api.getState()),before=h.api.current().x;
+  old.plan.giftMode=true;
+  const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(old)]]);
+  assert.equal(restored.api.getState().plan.giftMode,false);
+  assert.equal(restored.w.document.getElementById('total').value,'2538');
+  equal(restored.api.current().x.N,before.N);equal(restored.api.current().x.cash,before.cash);
+  const imported=restored.api.migrate({format:'reelay.pricing.v9',state:old}).value;
+  assert.equal(imported.plan.giftMode,false);assert.equal(imported.plan.total,'2538');
+  restored.input('pay','100');assert.equal(restored.api.getState().plan.total,'2538');
 });
 
 test('editing or removing actual records never changes theoretical costs or points', t => {
   const h=boot(t), before=h.api.current().x;
-  h.update(s=>{s.observations[2].P='999';s.observations[2].C='800';s.observations[2].N='12345';s.observations[2].usage='100000';});
+  h.update(s=>{delete s.observations[2].costBasis;delete s.observations[2].supplierReference;s.observations[2].P='999';s.observations[2].C='800';s.observations[2].N='12345';s.observations[2].usage='100000';});
   equal(h.api.current().x.P,before.P);
   equal(h.api.current().x.C,before.C);
   equal(h.api.current().x.N,before.N);
-  const actual=h.api.getActualRows().find(r=>r.record==='平台实测 · 原表第3行');
+  const actual=h.api.getActualRows().find(r=>r.record===h.api.getState().observations[2].title);
   assert.equal(actual.recordedP,'999');
   assert.equal(actual.recordedC,'800');
   assert.equal(actual.recordedN,'12345');
@@ -140,14 +166,16 @@ test('actual detail handles missing cost, cost-only margin and zero cost without
   h.update(s=>{s.plan.q='0.6';s.observations=[{id:'cost-gap',title:'缺项核对',params:{...s.task},P:'10',C:'',N:'17',usage:'',date:'',note:'fixture'}];});
   h.api.openDetails('actual','cost-gap');
   let detail=h.w.document.getElementById('drawer-body').textContent;
-  assert.match(detail,/缺少平台实际采购金额/);
+  assert.match(detail,/缺少计价成本/);
+  const missingSteps=h.w.document.querySelectorAll('.pricing-detail-steps > li');
+  assert.match(missingSteps[1].textContent,/未录入/);for(const index of [2,3,4])assert.equal(missingSteps[index].querySelector('.detail-value').textContent.trim(),'—');
   assert.doesNotMatch(detail,/\$\{|不再乘0\.735/);
   assert.equal(h.api.getState().observations[0].N,'17');
   h.update(s=>{s.plan.targetMode='margin';s.plan.margin='20';s.observations[0].P='';s.observations[0].C='8';});
   h.api.openDetails('actual','cost-gap');
   detail=h.w.document.getElementById('drawer-body').textContent;
   assert.doesNotMatch(detail,/未录入平台刊例P，不计算目标现金/);
-  assert.match(detail,/10\.000000/,'cost-only margin target is displayed');
+  assert.match(h.w.document.querySelectorAll('.pricing-detail-steps > li')[5].textContent,/10(?:\.0+)?\s*元/,'cost-only margin target is displayed');
   assert.equal(h.api.getState().observations[0].N,'17');
   h.update(s=>{s.observations[0].P='10';s.observations[0].C='0';});
   h.api.openDetails('actual','cost-gap');
@@ -172,13 +200,14 @@ test('V8 upgrade preserves raw observations and archives legacy minima while ado
   assert.equal(migrated.tasks[0].params.seconds,'4');
   assert.equal(migrated.rules.legacyMinima['480p|1:1|04|video|2'].tokens,'999999');
   equal(migrated.rules.minima[R.key(migrated.task)].tokens,'67200');
-  assert.equal(migrated.observations[3].C,'33.479641');
-  assert.equal(migrated.observations[3].N,'');
+  assert.equal(migrated.observations[3].C,'');
+  assert.equal(migrated.observations[3].N,'752');
+  assert.equal(migrated.observations[3].supplierReference.C,'33.479641');
   h.api.setState(migrated);h.good();
   equal(h.api.current().x.P,'1.8816');
 });
 
-test('JSON export round-trips the financial objective and CSV uses its current procurement ratio', async t => {
+test('JSON export round-trips the financial objective and discount calculations use its current procurement ratio', async t => {
   const h=boot(t);
   h.update(s=>{s.plan.q='0.6';s.plan.targetMode='margin';s.plan.margin='20';s.tab='tasks';s.tasks=[{id:'export-task',title:'导出任务',params:{...s.task},qty:'3'}];});
   h.click('#export');h.click('#export-json');
@@ -190,17 +219,15 @@ test('JSON export round-trips the financial objective and CSV uses its current p
   assert.equal(payload.state.plan.q,'0.6');
   const roundtrip=h.api.migrate(payload).value;
   assert.equal(roundtrip.plan.margin,'20');
-  assert.equal(roundtrip.observations[3].C,'33.479641');
-  assert.equal(roundtrip.observations[3].N,'');
-  h.click('#export-theory');
-  const csv=await h.downloads[1].blob.text();
-  assert.match(csv,/采购比例/);
-  assert.match(csv,/"margin"/);
-  assert.match(csv,/"0\.60000000000000000000"/);
-  assert.match(csv,/"3"/);
+  assert.equal(roundtrip.observations[3].C,'');
+  assert.equal(roundtrip.observations[3].N,'752');
+  assert.equal(roundtrip.observations[3].supplierReference.C,'33.479641');
+  assert.equal(h.w.document.getElementById('export-theory'),null);assert.equal(h.downloads.length,1,'viewing export options exposes no discount CSV download');
+  assert.equal(payload.state.tasks[0].qty,'3','saved legacy tasks remain in JSON even though comparison now shows discounts');
+  assert.equal(payload.state.tab,'discounts');
   const rows=h.api.getTheoryRows();
   equal(rows[0].C,E.mul(rows[0].P,'0.6'));
-  equal(rows[0].target,E.div(rows[0].C,'0.8'));
+  equal(rows[0].target,E.mul(rows[0].P,E.div(rows[0].discount,10)));
 });
 
 test('official rules cannot be silently replaced by imported values claiming official provenance', t => {
@@ -286,16 +313,14 @@ test('standard procurement can use either the exact cash target or a manually sp
   h.input('purchase-discount','10');
   h.input('discount','10');
   equal(h.api.pricing().usedM,'1.538','100 yuan / 1538 points and list-price sales require 1.538 automatically');
-  h.click('[data-pricing-basis="manual"]');
-  h.input('manual-m','1.8');
+  h.manual('1.8');
   equal(h.api.pricing().usedM,'1.8');
   h.input('purchase-discount','7.35');
   h.input('pay','200');
   equal(h.api.pricing().usedM,'1.8','manual mode survives changes to procurement and recharge');
   h.input('purchase-discount','10');
   h.input('pay','100');
-  h.click('[data-pricing-basis="manual"]');
-  h.input('manual-m','1.65');
+  h.manual('1.65');
   assert.equal(h.api.getState().plan.mode,'manual');
   equal(h.api.pricing().usedM,'1.65');
   assert.equal(h.w.document.getElementById('manual-m').value,'1.65');
@@ -308,28 +333,28 @@ test('standard procurement can use either the exact cash target or a manually sp
   equal(x.N,E.ceil(x.raw));
   assert.equal(h.api.current().x.target,null);
   const principle=h.w.document.getElementById('plan-principle').textContent;
-  assert.match(principle,/10\.7282/,'manual mode reports its actual unrounded list-price equivalent');
   assert.match(principle,/6\.787[89]/,'manual mode reports its actual unrounded margin rather than the 0% target');
-  h.click('[data-pricing-basis="discount"]');
+  h.input('pricing-basis','discount','change');
   equal(h.api.pricing().usedM,'1.538');
   equal(h.api.current().x.rawCash,h.api.current().x.target);
   assert.equal(h.api.pricing().targetAvailable,true);
 });
 
-test('precision settings contain only precision controls and leave active pricing unchanged until applied', t => {
+test('precision settings offer only two controls in a nonmodal popover and apply changes immediately', t => {
   const h=boot(t),doc=h.w.document;
   h.input('purchase-discount','10');h.input('discount','10');
   const before=plain(h.api.getState().plan);
   h.click('#plan-settings');
-  assert.equal(doc.getElementById('drawer-title').textContent,'倍率精度');
-  assert.equal(doc.querySelector('#plan-mode, #plan-manual'),null);
-  assert.equal(doc.getElementById('plan-source-value').textContent,'1.538');
-  h.click('#plan-limit-precision');h.input('plan-digits','2','change');
-  assert.equal(doc.getElementById('plan-used-value').textContent,'1.54');
-  assert.match(doc.getElementById('plan-result-note').textContent,/本次任务：\d+ → \d+ 积分/);
-  assert.deepEqual(plain(h.api.getState().plan),before);
-  h.click('#close-drawer');equal(h.api.pricing().usedM,'1.538','closing a preview does not apply it');
-  h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');
+  const popover=doc.getElementById('precision-popover');assert.ok(popover);
+  assert.equal(popover.hidden,false);assert.equal(popover.parentElement,doc.body);assert.equal(doc.getElementById('modal').hidden,true);
+  assert.deepEqual([...popover.querySelectorAll('select')].map(el=>el.id),['plan-digits','plan-round']);
+  assert.equal(doc.querySelector('#plan-mode, #plan-manual, #plan-limit-precision, #save-plan, #plan-source-value, #plan-used-value'),null);
+  assert.equal(doc.getElementById('plan-digits').value,'full');assert.equal(doc.getElementById('plan-round').disabled,true);
+  assert.deepEqual(plain(h.api.getState().plan),before,'opening precision settings does not modify pricing');
+  h.input('plan-digits','2','change');equal(h.api.pricing().usedM,'1.54');
+  assert.equal(h.api.getState().plan.mode,'saved');assert.equal(doc.getElementById('plan-round').disabled,false);assert.equal(popover.hidden,false);
+  h.click('#plan-settings');assert.equal(popover.hidden,true);equal(h.api.pricing().usedM,'1.54','closing retains the immediately applied setting');
+  h.manual('1.65');
   assert.equal(doc.getElementById('plan-settings').hidden,true,'an explicitly supplied decimal has no automatic rounding setting');
   equal(h.api.pricing().usedM,'1.65');
 });
@@ -338,32 +363,41 @@ test('automatic precision is optional, persists as a saved plan and restores exa
   const h=boot(t),doc=h.w.document;
   h.input('purchase-discount','10');h.input('discount','10');
   h.click('#plan-settings');
-  assert.equal(doc.getElementById('plan-mode'),null,'precision does not duplicate pricing basis');
-  assert.equal(doc.getElementById('plan-limit-precision').checked,false);
-  assert.equal(doc.getElementById('plan-precision').hidden,true);
-  h.click('#plan-limit-precision');
-  assert.equal(doc.getElementById('plan-precision').hidden,false);
-  h.input('plan-digits','2','change');
-  assert.equal(doc.getElementById('plan-used-value').textContent,'1.54');
-  h.input('plan-round','truncate','change');
-  assert.equal(doc.getElementById('plan-used-value').textContent,'1.53');
-  equal(h.api.pricing().usedM,'1.538','preview leaves the active plan unchanged');
-  h.click('#save-plan');
+  assert.equal(doc.getElementById('plan-digits').value,'full');assert.equal(doc.getElementById('plan-round').disabled,true);
+  h.input('plan-digits','2','change');equal(h.api.pricing().usedM,'1.54');
+  h.input('plan-round','truncate','change');equal(h.api.pricing().usedM,'1.53');
   assert.equal(h.api.getState().plan.mode,'saved');
-  equal(h.api.pricing().usedM,'1.53');
   const entries=Array.from({length:h.w.localStorage.length},(_,i)=>{
     const key=h.w.localStorage.key(i);return[key,h.w.localStorage.getItem(key)];
   });
   const restored=boot(t,entries),rdoc=restored.w.document;
   restored.click('#plan-settings');
-  assert.equal(rdoc.getElementById('plan-mode'),null);
-  assert.equal(rdoc.getElementById('plan-limit-precision').checked,true);
-  assert.equal(rdoc.getElementById('plan-digits').value,'2');
-  assert.equal(rdoc.getElementById('plan-round').value,'truncate');
-  assert.equal(rdoc.getElementById('plan-used-value').textContent,'1.53');
-  restored.click('#plan-limit-precision');restored.click('#save-plan');
-  assert.equal(restored.api.getState().plan.mode,'ideal');
+  assert.equal(rdoc.getElementById('plan-digits').value,'2');assert.equal(rdoc.getElementById('plan-round').disabled,false);
+  assert.equal(rdoc.getElementById('plan-round').value,'truncate');equal(restored.api.pricing().usedM,'1.53');
+  restored.input('plan-digits','full','change');
+  assert.equal(restored.api.getState().plan.mode,'ideal');assert.equal(rdoc.getElementById('plan-round').disabled,true);
   equal(restored.api.pricing().usedM,'1.538');
+});
+
+test('precision popover closes predictably and follows its trigger on scroll or resize', t => {
+  const h=boot(t),doc=h.w.document,trigger=doc.getElementById('plan-settings'),popover=doc.getElementById('precision-popover');
+  const before=plain(h.api.getState());
+  let rect={top:120,bottom:148,left:200,right:228,width:28,height:28};
+  trigger.getBoundingClientRect=()=>rect;
+  const open=()=>{trigger.focus();trigger.click();h.good();assert.equal(popover.hidden,false);assert.equal(trigger.getAttribute('aria-expanded'),'true');};
+  open();assert.equal(trigger.getAttribute('aria-controls'),'precision-popover');
+  const firstLeft=popover.style.left;rect={...rect,left:300,right:328};h.w.dispatchEvent(new h.w.Event('resize'));h.good();
+  assert.equal(popover.hidden,false);assert.notEqual(popover.style.left,firstLeft,'resize recomputes placement');
+  const firstTop=popover.style.top;rect={...rect,top:200,bottom:228};h.w.dispatchEvent(new h.w.Event('scroll'));h.good();
+  assert.equal(popover.hidden,false);assert.notEqual(popover.style.top,firstTop,'scroll follows the multiplier heading');
+  doc.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));h.good();
+  assert.equal(popover.hidden,true);assert.equal(doc.activeElement,trigger);assert.equal(trigger.getAttribute('aria-expanded'),'false');
+  open();trigger.click();h.good();assert.equal(popover.hidden,true,'a second trigger click closes it');
+  open();doc.body.dispatchEvent(new h.w.MouseEvent('pointerdown',{bubbles:true}));h.good();assert.equal(popover.hidden,true);
+  open();doc.getElementById('pay').focus();h.good();assert.equal(popover.hidden,true,'focus leaving the controls closes it');
+  assert.deepEqual(plain(h.api.getState()),before,'popover navigation leaves model pricing and task data unchanged');
+  open();h.input('discount','8');assert.equal(popover.hidden,true,'external changes close the old precision context');
+  open();h.input('model','seedance-2.5','change');assert.equal(popover.hidden,true,'switching models closes the old precision context');
 });
 
 test('calculation details derive the multiplier from original inputs without rounding them first', t => {
@@ -382,7 +416,7 @@ test('calculation details derive the multiplier from original inputs without rou
 
 test('margin-based multiplier stays constant when procurement changes while customer cash price follows cost', t => {
   const h=boot(t),doc=h.w.document;
-  h.click('[data-pricing-basis="margin"]');h.input('target-margin','8.125');
+  h.input('pricing-basis','margin','change');h.input('target-margin','8.125');
   const before=h.api.pricing().usedM,cashBefore=h.api.current().x.target;
   h.click('#details');
   const text=doc.getElementById('drawer-body').textContent;
@@ -394,30 +428,31 @@ test('margin-based multiplier stays constant when procurement changes while cust
   assert.match(doc.getElementById('drawer-body').textContent,/≈ 1\.674013605442/);
 });
 
-test('invalid manual values recover through basis selection and zero precision results cannot be applied', t => {
+test('invalid multiplier drafts leave active results intact and zero precision results cannot be applied', t => {
   const h=boot(t),doc=h.w.document;
-  h.click('[data-pricing-basis="manual"]');h.input('manual-m','');
-  assert.equal(doc.getElementById('platformError').hidden,false);assert.equal(doc.getElementById('manual-m').getAttribute('aria-invalid'),'true');
-  assert.equal(doc.getElementById('integer-points').textContent,'—');
-  h.click('[data-pricing-basis="discount"]');
+  const initial=plain(h.api.getState().plan),initialPoints=doc.getElementById('integer-points').textContent;
+  h.manual('');
+  assert.equal(doc.getElementById('platformError').hidden,true);assert.equal(doc.getElementById('manual-m').getAttribute('aria-invalid'),'true');
+  assert.equal(doc.getElementById('save-multiplier').disabled,true);assert.equal(doc.getElementById('multiplier-edit-error').hidden,false);
+  assert.equal(doc.getElementById('integer-points').textContent,initialPoints);assert.deepEqual(plain(h.api.getState().plan),initial);
+  h.input('pricing-basis','discount','change');
   assert.equal(doc.getElementById('platformError').hidden,true);assert.equal(h.api.getState().plan.mode,'ideal');
   h.input('purchase-discount','10');h.input('discount','10');h.input('total','10');
-  const before=JSON.stringify(h.api.getState().plan);
-  h.click('#plan-settings');h.click('#plan-limit-precision');h.input('plan-digits','0','change');h.input('plan-round','truncate','change');
-  assert.equal(doc.getElementById('save-plan').disabled,true);assert.match(doc.getElementById('plan-error').textContent,/倍率为0/);
-  doc.getElementById('save-plan').disabled=false;h.click('#save-plan');
-  assert.equal(doc.getElementById('save-plan').disabled,true,'save validates even if the button is enabled externally');
-  assert.equal(JSON.stringify(h.api.getState().plan),before);equal(h.api.pricing().usedM,'0.01');
-  h.input('plan-digits','2','change');assert.equal(doc.getElementById('save-plan').disabled,false);
-  h.click('#save-plan');equal(h.api.pricing().usedM,'0.01');
+  const before=JSON.stringify(h.api.getState().plan),saved=h.w.localStorage.getItem('reelay_pricing_v9_official');
+  h.click('#plan-settings');h.input('plan-digits','0','change');h.input('plan-round','truncate','change');
+  assert.equal(doc.getElementById('plan-digits').getAttribute('aria-invalid'),'true');assert.match(doc.getElementById('plan-error').textContent,/倍率为0/);
+  assert.equal(doc.getElementById('precision-popover').hidden,false,'invalid settings remain correctable');
+  assert.equal(JSON.stringify(h.api.getState().plan),before);assert.equal(h.w.localStorage.getItem('reelay_pricing_v9_official'),saved);
+  equal(h.api.pricing().usedM,'0.01');
+  h.input('plan-digits','2','change');assert.equal(doc.getElementById('plan-error').textContent,'');assert.equal(doc.getElementById('plan-digits').hasAttribute('aria-invalid'),false);
+  assert.equal(h.api.getState().plan.mode,'saved');assert.equal(h.api.getState().plan.round,'truncate');equal(h.api.pricing().usedM,'0.01');
 });
 
 test('manual mode and multiplier survive local storage reload and exported JSON round-trip', async t => {
   const h=boot(t);
   h.input('purchase-discount','10');
   h.input('discount','10');
-  h.click('[data-pricing-basis="manual"]');
-  h.input('manual-m','1.65');
+  h.manual('1.65');
   const entries=Array.from({length:h.w.localStorage.length},(_,i)=>{
     const key=h.w.localStorage.key(i); return [key,h.w.localStorage.getItem(key)];
   });
@@ -425,7 +460,7 @@ test('manual mode and multiplier survive local storage reload and exported JSON 
   const reloaded=boot(t,entries);
   assert.equal(reloaded.api.getState().plan.mode,'manual');
   equal(reloaded.api.pricing().usedM,'1.65');
-  assert.equal(reloaded.w.document.querySelector('[data-pricing-basis="manual"]').getAttribute('aria-pressed'),'true');
+  assert.equal(reloaded.w.document.getElementById('restore-auto-multiplier').hidden,false);
   h.click('#export'); h.click('#export-json');
   const payload=JSON.parse(await h.downloads[0].blob.text());
   assert.equal(payload.state.plan.mode,'manual');
@@ -435,7 +470,7 @@ test('manual mode and multiplier survive local storage reload and exported JSON 
   equal(reloaded.api.pricing().usedM,'1.65');
   equal(reloaded.api.pricing().q,'1');
   assert.equal(reloaded.api.pricing().targetAvailable,false);
-  reloaded.click('[data-pricing-basis="discount"]');
+  reloaded.input('pricing-basis','discount','change');
   equal(reloaded.api.pricing().usedM,'1.538');
 });
 
@@ -469,8 +504,7 @@ test('task controls and compact input duration update live without changing pric
   assert.equal(slider.nextElementSibling.contains(vin),true);
   assert.equal(doc.getElementById('vin-scrubber'),null);
   assert.equal(doc.getElementById('vin-editor'),null);
-  h.click('[data-pricing-basis="manual"]');
-  h.input('manual-m','1.65');
+  h.manual('1.65');
   h.setVideo(true);
   assert.equal(doc.getElementById('video-detail').hidden,false);
   h.input('seconds','9');
@@ -631,8 +665,7 @@ test('compact reference slider and number stay synchronized across edits, preset
     equal(h.api.current().x.P,E.estimate(task,task.video?R.officialMinimum(task).tokens:'').P);
     equal(h.api.pricing().usedM,'1.65');
   };
-  h.click('[data-pricing-basis="manual"]');
-  h.input('manual-m','1.65');
+  h.manual('1.65');
   for(const seconds of [2,8,15,3]){h.input('vin-slider',String(seconds));value(seconds);}
   assert.equal(doc.getElementById('coverage-note').hidden,true,'3-second input exactly reaches the 4-second output threshold');
   h.input('vin-slider','2');value(2);
@@ -722,7 +755,7 @@ test('legacy range drafts and imports resolve to fixed tasks while preserving pr
       assert.equal(doc.getElementById('seconds').value,wantSeconds);
       assert.equal(doc.getElementById('seconds').disabled,false);
       assert.equal(doc.querySelector('[data-ratio][aria-pressed="true"]').dataset.ratio,wantRatio);
-      assert.equal(doc.getElementById('add-task').disabled,false);
+      assert.equal(doc.getElementById('add-task'),null);
     }
   }
   const legacy={...plain(original),task:{res:'720p',ratio:'auto',seconds:'auto',video:true,vin:'7.5'}};
@@ -734,8 +767,8 @@ test('legacy range drafts and imports resolve to fixed tasks while preserving pr
   assert.equal(persisted.task.ratio,'16:9');assert.equal(persisted.task.seconds,'15');
   equal(stored.api.pricing().usedM,'1.65');
   const cost=E.trim(stored.api.current().x.P,12);
-  stored.click('#add-task');
-  assert.equal(stored.api.getState().tasks.length,2);
+  assert.equal(stored.w.document.getElementById('add-task'),null);
+  assert.equal(stored.api.getState().tasks.length,1);
   equal(stored.api.current().x.P,cost);
   const v7=stored.api.migrate({format:'reelay.pricing.v7',state:legacy});
   assert.equal(v7.value.task.ratio,'16:9');assert.equal(v7.value.task.seconds,'15');
@@ -858,8 +891,8 @@ test('usage summary marks the chosen base or minimum without a duplicate amount'
     s.rules.minima[R.key(s.task)]={tokens:'76800.000000000001',kind:'manual',note:'人工精度 <来源> 测试'};
   });
   assert.equal(shown('token-minimum-kind'),'人工');
-  assert.equal(shown('token-minimum'),'≈ 76,800');
-  assert.equal(adopted('minimum'),'≈ 76,800','selection compares exact values, not rounded display values');
+  assert.equal(shown('token-minimum'),'76,800');
+  assert.equal(adopted('minimum'),'76,800','selection compares exact values, not rounded display values');
   assert.equal(doc.getElementById('token-minimum').title,'76,800.000000000001 Token');
   assert.equal(doc.getElementById('coverage-note').hidden,true,'the adopted badge is sufficient even for an exact fractional threshold');
   assert.match(explanation().textContent,/76,800.000000000001/);
@@ -912,7 +945,7 @@ test('usage calculation leads the explanation and substitutes each model specifi
     assert.match(billed.textContent,/无视频输入.*不应用最低 Token 用量/);
     assert.doesNotMatch(billed.textContent,/max\(|查表|人工设置/,'no-video calculations do not apply a minimum rule');
     assert.equal(section.querySelectorAll('#usage-calculation-accuracy').length,1);
-    assert.equal(doc.getElementById('usage-calculation-accuracy').textContent,'Token 用量为估算值，实际以 API 返回的 usage.completion_tokens 为准。');
+    assert.equal(doc.getElementById('usage-calculation-accuracy').textContent,'估算 Token 用量、最低 Token 用量均为估算值，实际 Token 用量以 API 返回的 usage.completion_tokens 为准。');
     const fee=section.querySelector('[data-step="fee"]');
     assert.match(fee.textContent,/计费 Token 用量.*刊例单价/);
     assert.equal(billed.querySelector('h4').textContent,'计费 Token 用量');
@@ -936,13 +969,27 @@ test('fee display precision changes only the summary and retains exact pricing',
   const shown=()=>doc.getElementById('cost-p').textContent;
   const toggle=doc.getElementById('fee-digits');
   assert.equal(toggle.tagName,'BUTTON');assert.equal(toggle.type,'button');
-  assert.equal(toggle.textContent,'2 位');
-  assert.equal(toggle.getAttribute('aria-label'),'费用显示 2 位小数，点击切换为 6 位');
+  assert.ok(doc.querySelector('.video-price-label').contains(toggle),'the icon sits beside the fee label');
+  assert.equal(doc.querySelector('.video-price-amount button'),null,'the amount stays free of controls');
+  assert.equal(toggle.contains(doc.getElementById('cost-p')),false);
+  assert.equal(toggle.querySelector('.video-price-unit'),null);
+  assert.ok(toggle.querySelector('.bi-arrow-left-right'));
+  assert.equal(toggle.getAttribute('aria-label'),'切换费用小数位数');
+  assert.equal(toggle.title,'当前显示 2 位小数，点击切换为 6 位');
+  assert.equal(doc.getElementById('fee-digits-hint').hidden,true,'precision instructions do not occupy visible space');
   assert.equal(shown(),'4.26');
+  h.click('#cost-p');
+  h.click('.video-price-unit');
+  h.click('.video-price-amount');
+  assert.equal(shown(),'4.26','the amount, unit and surrounding area do not toggle precision');
   h.click('#fee-digits');
-  assert.equal(toggle.textContent,'6 位');
-  assert.equal(toggle.getAttribute('aria-label'),'费用显示 6 位小数，点击切换为 2 位');
+  assert.equal(toggle.title,'当前显示 6 位小数，点击切换为 2 位');
+  assert.equal(doc.getElementById('fee-digits-hint').textContent,toggle.title);
   assert.equal(shown(),'4.260281');
+  toggle.querySelector('.bi-arrow-left-right').dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));h.good();
+  assert.equal(shown(),'4.26','the icon toggles precision');
+  h.click('#fee-digits');
+  assert.equal(shown(),'4.260281','the icon button toggles in one click');
   equal(h.api.current().x.P,'4.2602805');
   assert.equal(JSON.stringify(h.api.getState()),savedState,'display preference is outside the task and plan');
   assert.deepEqual(h.api.current(),quoteBefore,'all pricing results retain full precision');
@@ -950,7 +997,7 @@ test('fee display precision changes only the summary and retains exact pricing',
   h.input('vin-slider','15');
   assert.equal(shown(),E.fixed(h.api.current().x.P,6),'precision survives task changes');
   h.click('#fee-digits');
-  assert.equal(toggle.textContent,'2 位');
+  assert.equal(toggle.title,'当前显示 2 位小数，点击切换为 6 位');
   assert.equal(shown(),E.fixed(h.api.current().x.P,2));
 });
 
@@ -1000,7 +1047,7 @@ test('usage calculation stays model-only when platform pricing changes or rechar
   h.input('purchase-discount','10');
   h.input('discount','10');
   assert.equal(trace(),original,'recharge, procurement and customer discounts do not change model usage or list fees');
-  h.click('[data-pricing-basis="margin"]');
+  h.input('pricing-basis','margin','change');
   h.input('target-margin','20');
   assert.equal(trace(),original,'the platform margin objective does not affect the model calculation');
   h.input('pay','');
@@ -1044,7 +1091,7 @@ test('usage explanation opens as a centered, sourced dialog and restores focus w
   assert.deepEqual([...body.querySelectorAll('#usage-calculation [data-step]')].map(step=>step.dataset.step),['estimate','billed','fee']);
   const accuracy=doc.getElementById('usage-calculation-accuracy');
   assert.equal(body.querySelectorAll('#usage-calculation-accuracy').length,1);
-  assert.equal(accuracy.textContent,'估算 Token 用量与最低 Token 用量均为估算值，实际以 API 返回的 usage.completion_tokens 为准。');
+  assert.equal(accuracy.textContent,'估算 Token 用量、最低 Token 用量均为估算值，实际 Token 用量以 API 返回的 usage.completion_tokens 为准。');
   assert.equal(accuracy.previousElementSibling.classList.contains('usage-calculation-steps'),true,'the accuracy note follows the calculation steps');
   assert.equal((body.textContent.match(/usage\.completion_tokens/g)||[]).length,1,'the API accuracy explanation is stated once');
   for(const id of ['usage-estimate-definition','usage-minimum-definition','usage-estimate-description','usage-minimum-description'])assert.equal(doc.getElementById(id),null,'merged definitions are not duplicated below the calculation');
@@ -1394,8 +1441,7 @@ test('quick drawer closing fallback is cancelled on reopen and reduced motion fi
 test('four quick configurations are true official token extrema over all supported specifications', t => {
   const h=boot(t), selectors=['none-min','none-max','video-min','video-max'];
   assert.deepEqual([...h.w.document.querySelectorAll('[data-example]')].map(button=>button.dataset.example),selectors);
-  h.click('[data-pricing-basis="manual"]');
-  h.input('manual-m','1.65');
+  h.manual('1.65');
   // Independently enumerate the official formula instead of sharing the preset lookup.
   // With video input, effective input is max(actual input, ceil(2 * output / 3)).
   const extrema=(video,vin)=>{
@@ -1426,30 +1472,35 @@ test('four quick configurations are true official token extrema over all support
 test('architecture: pricing separates shared conditions, model policy and current task results', t => {
   const h=boot(t),doc=h.w.document;
   const workbench=doc.getElementById('theory-workspace'),actual=doc.getElementById('actual-workspace'),work=workbench.querySelector('.work');
-  const generation=work.querySelector('.generation-panel'),plan=work.querySelector('.plan');
+  const generation=work.querySelector('.generation-panel'),column=work.querySelector('.pricing-column'),plan=column.querySelector('.pricing-panel'),result=column.querySelector('.task-panel');
+  assert.equal(doc.getElementById('plan-title').textContent,'平台定价');
   assert.equal(h.api.getState().workspace,'theory');assert.equal(actual.hidden,true);
   assert.equal(doc.querySelector('.workspace-nav'),null);assert.equal(doc.getElementById('platform-workspace'),null);
-  assert.equal(work.children.length,2);assert.equal(work.firstElementChild,generation);assert.equal(work.lastElementChild,plan);
+  assert.equal(work.children.length,2);assert.equal(work.firstElementChild,generation);assert.equal(work.lastElementChild,column);
+  assert.equal(column.children.length,2);assert.equal(column.firstElementChild,plan);assert.equal(column.lastElementChild,result);
+  assert.equal(plan.tagName,'ARTICLE');assert.equal(result.tagName,'ARTICLE');assert.ok(result.classList.contains('customer-charge-section'));
+  assert.equal(plan.contains(result),false,'task results are an independent panel beneath pricing');
   for(const id of ['model','seconds','vin-slider','token-estimate','token-minimum','cost-p','usage-help','globalError'])assert.ok(generation.contains(doc.getElementById(id)),id+' stays with generation');
-  for(const id of ['pay','total','purchase-discount','procurement-status','discount','target-margin','manual-m','cost-c','integer-points','actual-cash','platformError'])assert.ok(plan.contains(doc.getElementById(id)),id+' belongs to platform pricing');
+  for(const id of ['pay','total','purchase-discount','procurement-status','discount','target-margin','manual-m','platformError'])assert.ok(plan.contains(doc.getElementById(id)),id+' belongs to platform pricing');
   assert.equal(doc.querySelectorAll('#cost-p').length,1);assert.equal(plan.contains(doc.getElementById('cost-p')),false);
   assert.equal(doc.getElementById('pixels').closest('[hidden]'),null);assert.match(doc.querySelector('.pixel-line').textContent,/24 fps/);
   assert.equal(doc.getElementById('preview-frame'),null);
-  const conditions=plan.querySelector('.pricing-conditions'),rule=plan.querySelector('.pricing-rule-section'),result=plan.querySelector('.customer-charge-section');
+  const conditions=plan.querySelector('.pricing-conditions'),rule=plan.querySelector('.pricing-rule-section');
   assert.ok(conditions.compareDocumentPosition(rule)&h.w.Node.DOCUMENT_POSITION_FOLLOWING);
   assert.ok(rule.compareDocumentPosition(result)&h.w.Node.DOCUMENT_POSITION_FOLLOWING);
   assert.ok(conditions.querySelector('.pricing-recharge').contains(doc.getElementById('per-point')));
   assert.ok(conditions.querySelector('.pricing-procurement').contains(doc.getElementById('purchase-discount')));
-  assert.deepEqual([...rule.querySelectorAll('[data-pricing-basis]')].map(el=>el.dataset.pricingBasis),['discount','margin','manual']);
-  assert.equal(doc.querySelector('#pricing-mode, #target-mode, #target-settings, #per-yuan'),null);
+  assert.deepEqual([...doc.getElementById('pricing-basis').options].map(el=>el.value),['discount','margin']);assert.equal(doc.querySelector('[data-pricing-basis]'),null);
+  assert.equal(doc.querySelector('#pricing-mode, #target-mode, #target-settings, #total-mode'),null);
   assert.equal(doc.getElementById('plan-principle').closest('details'),null,'policy results are visible before task rounding');
-  for(const id of ['list-cost','raw-points','target-cash','pricing-detail','charge-breakdown','unit-check','economics-how','actual-calculation'])assert.equal(doc.getElementById(id),null,id+' is no longer a competing primary metric or entry');
-  for(const id of ['integer-points','actual-cash','cost-c','model-profit','model-margin']){
+  for(const id of ['list-cost','target-cash','pricing-detail','charge-breakdown','unit-check','economics-how','actual-calculation'])assert.equal(doc.getElementById(id),null,id+' is no longer a competing primary metric or entry');
+  for(const id of ['task-list-cost','task-target-amount','raw-points','integer-points','actual-cash','cost-c','model-profit','model-margin']){
     const el=doc.getElementById(id);assert.ok(result.contains(el));assert.equal(doc.querySelectorAll('#'+id).length,1);assert.equal(el.closest('details'),null);
   }
-  assert.ok(result.contains(doc.getElementById('details')));assert.ok(result.contains(doc.getElementById('add-task')));
+  assert.ok(result.contains(doc.getElementById('details')));assert.equal(doc.getElementById('add-task'),null);
   assert.equal(doc.getElementById('quick-toggle').closest('[hidden]'),null);assert.equal(doc.getElementById('quick-drawer').hidden,true);
-  assert.equal(doc.getElementById('platform-comparison').open,false);
+  assert.equal(doc.getElementById('platform-comparison').tagName,'SECTION');
+  assert.equal(doc.getElementById('comparison-title').textContent.trim(),'折扣测算');assert.equal(doc.querySelector('#platform-comparison [data-tab], #platform-comparison > summary'),null);
   const estimate=h.api.quote().calc;h.click('#open-actual');assert.equal(actual.hidden,false);assert.equal(workbench.hidden,true);
   h.click('#back-theory');assert.equal(workbench.hidden,false);equal(h.api.quote().calc.P,estimate.P);
   const legacy=h.api.getState();legacy.workspace='platform';legacy.plan.manualM='1.65';legacy.plan.mode='manual';delete legacy.plan.modelPricing;delete legacy.plan.pricingModel;
@@ -1460,7 +1511,7 @@ test('architecture: pricing separates shared conditions, model policy and curren
 test('architecture: invalid recharge input clears only platform results and leaves model estimates usable', t => {
   const h=boot(t),doc=h.w.document,before=h.api.quote().calc;
   const shown=Object.fromEntries(['cost-p','token-estimate','token-minimum'].map(id=>[id,doc.getElementById(id).textContent]));
-  const platformIds=['cost-c','integer-points','actual-cash','model-profit','model-margin'];
+  const platformIds=['task-list-cost','task-target-amount','cost-c','raw-points','integer-points','actual-cash','model-profit','model-margin'];
   const resultNodes=Object.fromEntries(platformIds.map(id=>[id,doc.getElementById(id)]));
   const previousResults=Object.fromEntries(platformIds.map(id=>[id,resultNodes[id].textContent]));
   for(const invalid of ['', 'not-a-price', '0']){
@@ -1492,12 +1543,13 @@ test('architecture: invalid recharge input clears only platform results and leav
 });
 
 test('platform task results agree with exact accounting across all pricing bases', t => {
-  const h=boot(t),doc=h.w.document;
+  const h=boot(t),doc=h.w.document;h.update(()=>{});
   const observations=plain(h.api.getState().observations),modelEstimate=h.api.quote().calc.P;
   const verify=planInput=>{
     const p=E.plan(planInput),x=E.settle(modelEstimate,E.mul(modelEstimate,p.q),p);
-    const expected={'cost-c':'¥'+E.fixed(x.C,6),'integer-points':E.fixed(x.N,0),'actual-cash':'¥'+E.fixed(x.cash,6),'model-profit':'¥'+E.fixed(x.profit,6),'model-margin':E.trim(x.margin,4)+'%'};
+    const expected={'integer-points':E.fixed(x.N,0),'model-profit':'¥'+E.fixed(x.profit,6),'model-margin':E.trim(x.margin,4)+'%'};
     for(const [id,value] of Object.entries(expected))assert.equal(doc.getElementById(id).textContent,value,id+' matches exact accounting');
+    nearDisplayed(doc,'cost-c',x.C);nearDisplayed(doc,'actual-cash',x.cash);
     assert.match(doc.getElementById('integer-points').textContent,/^\d+$/);
     const loss=E.cmp(x.profit,0)<0;
     assert.equal(doc.getElementById('pricing-loss').hidden,!loss);
@@ -1508,12 +1560,12 @@ test('platform task results agree with exact accounting across all pricing bases
   verify({...recharge,q:'0.735',discount:'7.35'});
   h.input('purchase-discount','10');verify({...recharge,q:'1',discount:'7.35'});
   h.input('purchase-discount','6');verify({...recharge,q:'0.6',discount:'7.35'});
-  h.click('[data-pricing-basis="margin"]');h.input('target-margin','20');verify({...recharge,q:'0.6',targetMode:'margin',margin:'20'});
-  h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');verify({...recharge,q:'0.6',targetMode:'margin',targetAvailable:false,appliedM:'1.65'});
-  h.input('discount','');h.input('target-margin','100');
-  assert.equal(doc.getElementById('platformError').hidden,true,'unselected targets cannot invalidate specified pricing');
+  h.input('pricing-basis','margin','change');h.input('target-margin','20');verify({...recharge,q:'0.6',targetMode:'margin',margin:'20'});
+  h.manual('1.65');verify({...recharge,q:'0.6',targetMode:'margin',targetAvailable:false,appliedM:'1.65'});
+  h.update(s=>{s.plan.discount='';s.plan.margin='100';});
+  assert.equal(doc.getElementById('platformError').hidden,true,'legacy stored targets cannot invalidate specified pricing');
   verify({...recharge,q:'0.6',targetAvailable:false,appliedM:'1.65'});
-  h.click('[data-pricing-basis="discount"]');assert.equal(doc.getElementById('platformError').hidden,false);
+  h.input('pricing-basis','discount','change');assert.equal(doc.getElementById('platformError').hidden,false);
   h.input('discount','8');verify({...recharge,q:'0.6',discount:'8'});
 });
 
@@ -1559,25 +1611,15 @@ test('architecture: model drafts and quote exports remain independent of an inva
   equal(restored.api.quote().calc.P,h.api.quote().calc.P);
 });
 
-test('architecture: reconciliation returns to the workbench and matrix choices focus generation parameters', t => {
+test('architecture: reconciliation returns to generation and full model parameters remain editable without a matrix', t => {
   const h=boot(t),doc=h.w.document;
-  h.input('model','seedance-2.5','change');
-  h.click('#platform-comparison > summary');h.click('[data-tab="matrix"]');
-  const headings=[...doc.querySelectorAll('#table th')].map(el=>el.textContent);
-  for(const seconds of ['20','25','30'])assert.ok(headings.includes(seconds+'秒'));
-  const thirty=[...doc.querySelectorAll('[data-matrix]')].find(el=>{
-    const task=JSON.parse(el.dataset.matrix);return task.res==='1080p'&&task.seconds==='30';
-  });
-  assert.ok(thirty,'the full 30-second 1080p specification is available');
-  const expected=h.api.quote(JSON.parse(thirty.dataset.matrix)).calc.P;
-  thirty.focus();thirty.click();h.good();
+  h.input('model','seedance-2.5','change');h.click('[data-res="1080p"]');h.input('seconds','30');
   const selected=h.api.getState();
   assert.equal(selected.workspace,'theory');assert.equal(selected.task.model,'seedance-2.5');
   assert.equal(selected.task.res,'1080p');assert.equal(selected.task.seconds,'30');
   assert.equal(doc.getElementById('seconds').value,'30');
-  assert.equal(doc.activeElement,doc.getElementById('model'),'loading a matrix cell focuses editable parameters');
-  equal(h.api.quote().calc.P,expected);
-  assert.equal(doc.getElementById('cost-c').closest('[hidden]'),null,'platform result remains on the same page');
+  assert.equal(doc.querySelector('[data-matrix]'),null);
+  assert.equal(doc.getElementById('cost-c').closest('[hidden]'),null);
   h.click('#open-actual');assert.equal(doc.activeElement.id,'actual-title');
   h.click('#back-theory');assert.equal(doc.activeElement.id,'generation-title');
 });
@@ -1757,7 +1799,8 @@ test('architecture: an incomplete composer does not hide saved actual records or
   assert.ok(button);button.click();
   assert.equal(doc.getElementById('modal').hidden,false);
   const detail=doc.getElementById('drawer-body').textContent;
-  assert.ok(detail.includes(record.title));assert.ok(detail.includes(record.P));assert.ok(detail.includes(record.C));
+  assert.ok(detail.includes(record.title));assert.ok(detail.includes(E.trim(record.P,6)));assert.ok(detail.includes(E.trim(h.api.recalcRecord(record).C,6)));
+  assert.equal(doc.getElementById('details-record'),null,'one matching record needs no selector');
   assert.match(detail,/completion_tokens = 100000/);
   assert.doesNotMatch(detail,/NaN|Infinity|undefined/);
   assert.deepEqual(plain(h.api.getState().observations[2]),record);
@@ -1774,7 +1817,7 @@ test('model calculation details link to the corresponding usage rules and return
     assert.match(doc.getElementById('drawer-title').textContent,/计算明细/);
     assert.ok(doc.getElementById('drawer-sub').textContent.includes(spec.label));assert.equal(doc.querySelector('[data-detail-mode]'),null);
     assert.equal(doc.querySelector('#usage-calculation, #usage-price-table'),null,'Token derivation is not repeated in pricing details');
-    assert.equal(doc.querySelectorAll('.pricing-details > .detail-section').length,4);
+    assert.equal(doc.querySelectorAll('.pricing-detail-steps > li').length,6);
     h.click('#detail-usage');
     assert.equal(doc.getElementById('drawer-title').textContent,'用量说明');
     const sourceLinks=[...doc.querySelectorAll('#drawer-body a')].map(el=>el.getAttribute('href'));
@@ -1787,46 +1830,55 @@ test('model calculation details link to the corresponding usage rules and return
 });
 
 
-test('pricing basis exposes one independent input and restores its model-specific draft', t => {
+test('customer pricing inputs reflect manual outcomes and editing one restores its automatic pricing basis', t => {
   const h=boot(t),doc=h.w.document;
-  const visible=()=>['discount-control','margin-control','manual-m-control'].filter(id=>!doc.getElementById(id).hidden);
+  const visible=()=>['discount-control','margin-control'].filter(id=>!doc.getElementById(id).hidden);
   assert.deepEqual(visible(),['discount-control']);h.input('discount','8');
-  h.click('[data-pricing-basis="margin"]');h.input('target-margin','20');assert.deepEqual(visible(),['margin-control']);
-  h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');assert.deepEqual(visible(),['manual-m-control']);
-  assert.equal(doc.getElementById('target-settings'),null);assert.equal(doc.getElementById('discount-picks').hidden,true);
+  assert.equal(doc.querySelector('label[for="discount"]').textContent,'客户折扣');
+  h.input('pricing-basis','margin','change');h.input('target-margin','20');assert.deepEqual(visible(),['margin-control']);
+  h.manual('1.65');assert.deepEqual(visible(),['margin-control']);
+  assert.equal(doc.getElementById('manual-m-control').hidden,true);assert.equal(doc.getElementById('manual-reference'),null);
+  assert.equal(doc.getElementById('auto-multiplier').hidden,false);assert.equal(doc.getElementById('plan-settings').hidden,true);
+  assert.equal(doc.getElementById('restore-auto-multiplier').hidden,false);
+  assert.ok(Math.abs(Number(doc.getElementById('target-margin').value)-6.787878787878)<0.00011);
+  assert.equal(h.api.getState().plan.margin,'20','the saved target survives a manually entered multiplier');
   equal(h.api.pricing().usedM,'1.65');assert.equal(h.api.current().x.target,null);
-  h.click('[data-pricing-basis="discount"]');assert.deepEqual(visible(),['discount-control']);assert.equal(doc.getElementById('discount').value,'8');
-  equal(h.api.current().x.rawCash,h.api.current().x.target);
-  h.click('[data-pricing-basis="margin"]');assert.equal(doc.getElementById('target-margin').value,'20');
-  h.click('[data-pricing-basis="manual"]');equal(h.api.pricing().usedM,'1.65');
-  assert.equal(doc.querySelectorAll('[data-pricing-basis][aria-pressed="true"]').length,1);
+  h.click('#restore-auto-multiplier');assert.equal(h.api.getState().plan.targetMode,'margin');equal(h.api.pricing().usedM,'1.9225');
+  h.input('pricing-basis','discount','change');assert.deepEqual(visible(),['discount-control']);assert.equal(doc.getElementById('discount').value,'8');
+  h.manual('1.65');assert.equal(doc.getElementById('pricing-basis').value,'discount');
+  assert.ok(Math.abs(Number(doc.getElementById('discount').value)-Number(E.decimalString(E.mul(E.div(E.mul(E.mul('0.735','1.65'),10),'15.38'),10),12)))<0.00011);
+  h.input('discount','8.2');assert.equal(h.api.getState().plan.mode,'ideal');equal(h.api.current().x.rawCash,h.api.current().x.target);
+  assert.equal(doc.getElementById('plan-settings').hidden,false);assert.equal(doc.getElementById('restore-auto-multiplier').hidden,true);
+  assert.deepEqual([...doc.getElementById('pricing-basis').options].map(el=>el.value),['discount','margin']);
 });
 
 
 test('manual pricing has no hidden target or variance, including after reload and export', async t => {
   const h=boot(t),doc=h.w.document;
   h.input('discount','');assert.equal(doc.getElementById('platformError').hidden,false);
-  h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');h.input('discount','n/a');h.input('target-margin','100');
+  h.manual('1.65');h.update(s=>{s.plan.discount='n/a';s.plan.margin='100';});
   assert.equal(doc.getElementById('platformError').hidden,true);
   const expected=h.api.current().x;assert.equal(expected.target,null);assert.equal(expected.gap,null);equal(expected.raw,E.mul(expected.C,'16.5'));
   h.click('#details');const text=doc.getElementById('drawer-body').textContent;
   assert.match(text,/采用指定倍率 M = 1\.65/);assert.doesNotMatch(text,/参考目标|与目标差额如何拆分|理想 M/);
+  const variance=doc.getElementById('detail-variance');assert.ok(variance);
+  assert.match(variance.textContent,/手动倍率未设目标售价，无目标差额。/);
+  assert.equal(variance.closest('details,[hidden]'),null,'the unavailable target explanation is visible without expanding a disclosure');
+  assert.doesNotMatch(variance.textContent,/[¥￥]\s*0(?:\.0+)?(?:\s|$)/,'no zero target difference is manufactured for manual pricing');
   h.click('#close-drawer');h.click('#open-actual');assert.ok(doc.querySelectorAll('#actual-table tbody tr').length);h.click('#back-theory');
-  h.click('[data-tab="recharges"]');assert.equal(doc.getElementById('recharge-mode').value,'fixed');assert.ok(doc.querySelectorAll('#table tbody tr').length);
-  h.input('recharge-mode','reprice','change');assert.equal(doc.querySelectorAll('#table tbody tr').length,0);
-  h.input('recharge-mode','fixed','change');
+  assert.ok(h.api.getTheoryRows().length,'discount scenarios remain available without adopting an inactive manual target');
   h.click('#export');h.click('#export-json');const exported=JSON.parse(await h.downloads.at(-1).blob.text());
   assert.equal(exported.state.plan.discount,'n/a');assert.equal(exported.state.plan.manualM,'1.65');
   const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(exported.state)]]);
   equal(restored.api.current().x.N,expected.N);assert.equal(restored.api.current().x.target,null);
-  h.click('#close-drawer');h.click('[data-pricing-basis="margin"]');assert.equal(doc.getElementById('platformError').hidden,false);
+  h.click('#close-drawer');h.input('pricing-basis','margin','change');assert.equal(doc.getElementById('platformError').hidden,false);
   h.input('target-margin','20');assert.equal(doc.getElementById('platformError').hidden,true);equal(h.api.current().x.rawCash,h.api.current().x.target);
 });
 
 
 test('unrounded policy loss remains visible even when point rounding makes the current task profitable',t=>{
   const h=boot(t),doc=h.w.document;
-  h.input('purchase-discount','1');h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.53');
+  h.input('purchase-discount','1');h.manual('1.53');
   const x=h.api.current().x;
   assert.ok(E.cmp(x.unroundedCashProfit,0)<0);assert.ok(E.cmp(x.profit,0)>0);equal(x.N,'3');
   const policy=doc.getElementById('plan-principle');assert.equal(policy.closest('details'),null);
@@ -1839,8 +1891,14 @@ test('negative profit and margin remain readable in complete calculation details
   const h=boot(t),doc=h.w.document;h.input('purchase-discount','10');h.setVideo(false);h.input('seconds','9');
   assert.ok(E.cmp(h.api.current().x.profit,0)<0);h.click('#details');
   assert.equal(doc.getElementById('drawer-title').textContent,'计算明细');
-  assert.equal(doc.querySelectorAll('.pricing-details > .detail-section').length,4);
-  assert.match(doc.getElementById('cash-equation').textContent,/−\d/);assert.doesNotMatch(doc.getElementById('drawer-body').textContent,/NaN|undefined|Infinity/);
+  assert.equal(doc.querySelectorAll('.pricing-detail-steps > li').length,6);
+  const extraGrid=doc.querySelector('.pricing-detail-extra-grid');assert.ok(extraGrid);
+  const sections=[...extraGrid.querySelectorAll(':scope > .pricing-detail-extra')];
+  assert.deepEqual(sections.map(el=>el.id),['detail-multiplier','detail-profit','detail-variance','detail-unit-check']);
+  for(const section of sections){assert.equal(section.tagName,'SECTION');assert.equal(section.closest('details,[hidden]'),null,section.id+' is directly available');}
+  assert.equal(extraGrid.querySelector('details'),null,'the supplementary calculations have no nested disclosure');
+  assert.equal(doc.getElementById('unit-p').closest('details,[hidden]'),null,'amount checking is directly editable');
+  assert.match(doc.getElementById('profit-equation').textContent,/−\d/);assert.doesNotMatch(doc.getElementById('drawer-body').textContent,/NaN|undefined|Infinity/);
   const before=JSON.stringify(h.api.getState()),original=h.api.current().x;
   h.input('unit-p','10');assert.match(doc.getElementById('unit-result').textContent,/假设采购成本/);
   h.input('unit-p','');assert.match(doc.getElementById('unit-result').textContent,/正数金额/);
@@ -1857,8 +1915,8 @@ test('a task input error leaves a valid policy outcome visible while clearing on
 
 test('model overview compares each model policy and switches only the selected context',t=>{
   const h=boot(t),doc=h.w.document;
-  h.input('discount','8');h.input('model','seedance-2.5','change');h.click('[data-pricing-basis="margin"]');h.input('target-margin','20');
-  h.input('model','seedance-2.0-fast','change');h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');
+  h.input('discount','8');h.input('model','seedance-2.5','change');h.input('pricing-basis','margin','change');h.input('target-margin','20');
+  h.input('model','seedance-2.0-fast','change');h.manual('1.65');
   const before=plain(h.api.getState()),profiles=plain(before.plan.modelPricing);
   h.click('#model-pricing-overview');assert.equal(doc.getElementById('modal').classList.contains('centered'),true);
   const rows=[...doc.querySelectorAll('.pricing-overview-table tbody tr')];assert.equal(rows.length,3);
@@ -1869,47 +1927,713 @@ test('model overview compares each model policy and switches only the selected c
   assert.deepEqual(plain(h.api.getState().plan.modelPricing),profiles);
 });
 
-test('recharge comparison holds the current model multiplier live rather than a stale captured value',t=>{
-  const h=boot(t),doc=h.w.document;
-  assert.equal(h.api.getState().rechargeMode,'fixed');h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');h.click('[data-tab="recharges"]');
-  const verify=M=>{const rows=h.api.getTheoryRows();assert.equal(rows.length,3);for(const row of rows)equal(row.M,M);assert.equal(new Set(rows.map(row=>row.N)).size,1,'gift points change cash equivalence, not the fixed points charge');return rows;};
-  const rows=verify('1.65');assert.ok(E.cmp(rows[0].cash,rows[2].cash)>0,'more gift points reduce cash-equivalent price');
-  h.input('manual-m','1.8');verify('1.8');
-  h.input('model','seedance-2.5','change');verify('1.538');
-  h.click('[data-pricing-basis="manual"]');h.input('manual-m','2');verify('2');
-  h.input('model','seedance-2.0','change');verify('1.8');
-  assert.equal(doc.getElementById('recharge-mode').value,'fixed');
-  const old=plain(h.api.getState());old.frozenM={n:'999',d:'1'};
-  const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(old)]]);
-  assert.equal(restored.api.getState().frozenM,null);for(const row of restored.api.getTheoryRows())equal(row.M,'1.8');
-});
-
-test('explicit recharge repricing preserves the chosen target and its saved multiplier precision',t=>{
-  const h=boot(t),doc=h.w.document;h.input('discount','8');h.click('#plan-settings');h.click('#plan-limit-precision');h.input('plan-digits','2','change');h.input('plan-round','truncate','change');h.click('#save-plan');
-  h.click('[data-tab="recharges"]');h.input('recharge-mode','reprice','change');
-  const rows=h.api.getTheoryRows();assert.equal(rows.length,3);assert.ok(new Set(rows.map(row=>row.M)).size>1);
-  for(const row of rows){const p=E.plan({pay:row.pay,total:row.total,q:'0.735',discount:'8'});equal(row.M,E.decimalString(p.M,2,'truncate'));equal(row.target,E.mul(row.P,'0.8'));}
-  h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');
-  assert.equal(doc.querySelectorAll('#table tbody tr').length,0,'manual rules do not silently borrow an inactive target');
-  assert.match(doc.getElementById('table').textContent,/指定倍率/);
-  h.input('recharge-mode','fixed','change');assert.equal(h.api.getTheoryRows().length,3);
+test('legacy comparison tabs reopen as discounts without erasing saved tasks or recharge scenarios',async t=>{
+  const initial=boot(t),base=plain(initial.api.getState());
+  base.tasks=[{id:'retained',title:'旧任务',params:{...base.task},qty:'3'}];
+  base.recharges=[{pay:'100',total:'1500'},{pay:'200',total:'3200'}];
+  for(const tab of ['tasks','matrix','recharges']){
+    const legacy={...plain(base),tab},source=JSON.stringify(legacy);
+    const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(legacy)]]),doc=restored.w.document;
+    assert.equal(JSON.stringify(legacy),source);
+    assert.equal(restored.api.getState().tab,'discounts');assert.equal(doc.getElementById('platform-comparison').tagName,'SECTION');
+    assert.deepEqual(plain(restored.api.getState().tasks),base.tasks);assert.deepEqual(plain(restored.api.getState().recharges),base.recharges);
+    assert.equal(doc.querySelector('[data-tab], [data-matrix], #recharge-mode, #add-task'),null);
+    const saved=JSON.parse(restored.w.localStorage.getItem('reelay_pricing_v9_official'));
+    assert.equal(saved.tab,'discounts');assert.deepEqual(saved.tasks,base.tasks);assert.deepEqual(saved.recharges,base.recharges);
+    assert.equal(doc.getElementById('table-export'),null);restored.click('#export');
+    assert.equal(doc.getElementById('export-theory'),null);assert.equal(restored.downloads.length,0);restored.click('#close-drawer');
+    assert.ok(restored.api.getTheoryRows().every(row=>row.targetMode==='discount'));
+  }
 });
 
 test('automatic precision survives a manual basis round-trip and remains model-specific',t=>{
-  const h=boot(t),doc=h.w.document;h.input('discount','8');h.click('#plan-settings');h.click('#plan-limit-precision');h.input('plan-digits','3','change');h.input('plan-round','truncate','change');h.click('#save-plan');
-  equal(h.api.pricing().usedM,'1.674');h.click('[data-pricing-basis="manual"]');h.input('manual-m','1.65');
+  const h=boot(t),doc=h.w.document;h.input('discount','8');h.click('#plan-settings');h.input('plan-digits','3','change');h.input('plan-round','truncate','change');
+  equal(h.api.pricing().usedM,'1.674');h.manual('1.65');
   h.input('model','seedance-2.5','change');assert.equal(h.api.getState().plan.mode,'ideal');
   h.input('model','seedance-2.0','change');equal(h.api.pricing().usedM,'1.65');
-  h.click('[data-pricing-basis="discount"]');assert.equal(h.api.getState().plan.mode,'saved');equal(h.api.pricing().usedM,'1.674');
-  h.click('#plan-settings');assert.equal(doc.getElementById('plan-limit-precision').checked,true);assert.equal(doc.getElementById('plan-digits').value,'3');assert.equal(doc.getElementById('plan-round').value,'truncate');
+  h.input('pricing-basis','discount','change');assert.equal(h.api.getState().plan.mode,'saved');equal(h.api.pricing().usedM,'1.674');
+  h.click('#plan-settings');assert.equal(doc.getElementById('plan-digits').value,'3');assert.equal(doc.getElementById('plan-round').value,'truncate');
 });
 
 
 test('applying a discount comparison row produces its displayed charge under the chosen precision',t=>{
   const h=boot(t),doc=h.w.document;
-  h.click('#plan-settings');h.click('#plan-limit-precision');h.input('plan-digits','2','change');h.input('plan-round','truncate','change');h.click('#save-plan');
-  h.click('[data-tab="discounts"]');const row=h.api.getTheoryRows().find(row=>row.scenario==='8折');assert.ok(row);
+  h.click('#plan-settings');h.input('plan-digits','2','change');h.input('plan-round','truncate','change');
+  const row=h.api.getTheoryRows().find(row=>row.scenario==='8折');assert.ok(row);
   const expected=E.plan({pay:'100',total:'1538',q:'0.735',discount:'8'});equal(row.M,E.decimalString(expected.M,2,'truncate'));
   h.click('#table [data-discount="8"]');equal(h.api.current().x.N,row.N);assert.equal(E.decimalString(h.api.current().x.cash,20),row.cash);equal(h.api.pricing().usedM,row.M);
   assert.equal(doc.getElementById('discount').value,'8');assert.equal(h.api.getState().plan.mode,'saved');
+});
+
+test('task settlement shows one traceable calculation and distinguishes the target from the rounded cash amount',t=>{
+  const h=boot(t),doc=h.w.document;
+  const panel=doc.querySelector('.task-panel');assert.ok(panel);
+  assert.equal(selectedCostBasis(doc),'theory');
+  for(const id of ['cost-c','raw-points','integer-points','actual-cash'])assert.ok(panel.contains(doc.getElementById(id)),id+' belongs to the active calculation');
+  const verify=()=>{
+    const x=h.api.current().x;
+    nearDisplayed(doc,'task-list-cost',x.P);nearDisplayed(doc,'cost-c',x.C);
+    nearDisplayed(doc,'raw-points',x.raw);equal(displayedNumeric(doc,'integer-points'),x.N);
+    nearDisplayed(doc,'actual-cash',x.cash);
+    if(x.target===null){assert.equal(doc.getElementById('task-target-amount').textContent.trim(),'—');assert.equal(doc.getElementById('task-gap').textContent.trim(),'—');}
+    else{nearDisplayed(doc,'task-target-amount',x.target);nearDisplayed(doc,'task-gap',x.gap);}
+    assert.equal(doc.getElementById('task-target-label').firstChild.textContent,'目标售价');
+    return x;
+  };
+  h.input('discount','8');const discounted=verify();
+  assert.ok(E.cmp(discounted.cash,discounted.target)>0,'per-task rounding can make the charge exceed the target amount');
+  h.input('pricing-basis','margin','change');h.input('target-margin','20');verify();
+  h.manual('1.65');verify();
+  h.input('pay','200');verify();h.input('total','2400');verify();
+  h.input('seconds','7');verify();
+});
+
+test('matching platform records use recorded cost once and keep historical charges separate from current recalculation',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations=[{id:'direct-cost',title:'供应商采购账单',params:{...s.task},P:'1.892800',C:'1.391208',N:'',date:'',note:'已确认采购金额'}];});
+  const selected=h.api.getState().observations.find(o=>h.api.key(o.params)===h.api.key(h.api.getState().task));assert.ok(selected);
+  assert.equal(actualCostUnavailable(doc),false);
+  h.click('#cost-tab-actual');
+  assert.match(h.recordDetailsText(),/供应商采购账单/);
+  assert.match(h.recordDetailsText(),/历史.*(?:未记录|未录入)/);
+  const original=plain(h.api.getState().observations),verify=()=>{
+    const p=h.api.pricing(),raw=E.mul(E.mul(selected.C,p.usedM),10),N=E.ceil(raw),cash=E.mul(N,p.U);
+    nearDisplayed(doc,'record-cost',selected.C);nearDisplayed(doc,'raw-points',raw);
+    equal(displayedNumeric(doc,'integer-points'),N);nearDisplayed(doc,'actual-cash',cash);
+    assert.deepEqual(plain(h.api.getState().observations),original,'current pricing never rewrites recorded cost or unknown history');
+  };
+  verify();h.input('purchase-discount','6');verify();
+  h.manual('1.65');verify();
+  const beforePoints=doc.getElementById('integer-points').textContent;
+  h.input('pay','200');verify();assert.equal(doc.getElementById('integer-points').textContent,beforePoints,'fixed multiplier keeps points independent of recharge cash value');
+  h.openRecord();assert.equal(doc.getElementById('modal').hidden,false);
+  assert.ok(doc.getElementById('drawer-body').textContent.includes(selected.C),'record link opens the selected original record');
+  h.click('#close-drawer');
+});
+
+test('record matching considers every task dimension and offers input rather than a nearest record',t=>{
+  const h=boot(t),doc=h.w.document,task=plain(h.api.getState().task);
+  const variants=[
+    {model:'seedance-2.5'},{res:'720p'},{ratio:'16:9'},{seconds:'5'},{video:false},{vin:'3'},
+  ];
+  h.update(s=>{s.observations=variants.map((patch,i)=>({id:'wrong-'+i,title:'不同规格 '+i,params:{...task,...patch},P:'10',C:'7',N:'99',date:'',note:'fixture'}));});
+  assert.equal(actualCostUnavailable(doc),true);
+  h.click('#details');assert.match(doc.getElementById('detail-record-context').textContent,/无.*同规格|暂无.*同规格/);
+  assert.equal(doc.getElementById('detail-add-observation').closest('[hidden]'),null);h.click('#close-drawer');
+  h.addRecord();assert.equal(doc.getElementById('drawer-title').textContent,'录入平台实测');
+  assert.equal(doc.getElementById('o-cost-basis').value,'recorded');assert.equal(doc.getElementById('o-c-field').hidden,false);
+  assert.equal(doc.getElementById('o-model').value,task.model);assert.equal(doc.getElementById('o-res').value,task.res);assert.equal(doc.getElementById('o-ratio').value,task.ratio);
+  h.click('#close-drawer');
+  h.update(s=>{s.observations.push({id:'exact',title:'完全匹配',params:{...task},P:'10',C:'6',N:'71',date:'',note:'fixture'});});
+  assert.equal(actualCostUnavailable(doc),false);nearDisplayed(doc,'record-cost','6');
+  assert.match(h.recordDetailsText(),/71/);
+  assert.equal(doc.getElementById('task-record-select').closest('[hidden]')!==null,true,'one matching record needs no selector');
+  h.input('seconds','6');assert.equal(actualCostUnavailable(doc),true,'changing output duration removes stale record comparison');assert.equal(selectedCostBasis(doc),'theory');
+  h.input('seconds','4');nearDisplayed(doc,'record-cost','6');
+});
+
+test('multiple platform records select explicitly and retain missing or zero cost without manufacturing historical data',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations=[
+    {id:'costed',title:'有成本',params:{...s.task},P:'10',C:'6',N:'80',date:'2026-10-20',note:'fixture'},
+    {id:'missing',title:'缺采购',params:{...s.task},P:'10',C:'',N:'17',date:'2026-10-21',note:'fixture'},
+    {id:'zero',title:'零采购',params:{...s.task},P:'10',C:'0',N:'0',date:'2026-10-21',note:'fixture'},
+    {id:'cost-only',title:'仅采购',params:{...s.task},P:'',C:'8',N:'',date:'2026-10-21',note:'fixture'},
+  ];});
+  const original=plain(h.api.getState().observations),theory=h.api.current().x;
+  assert.equal(doc.getElementById('task-record-select').closest('[hidden]'),null);
+  assert.deepEqual([...doc.getElementById('task-record-select').options].map(o=>o.value),['costed','missing','zero','cost-only']);
+  h.input('task-record-select','missing','change');
+  assert.equal(doc.getElementById('record-cost').value.trim(),'','procurement cannot be inferred from a record with unknown cost basis');assert.equal(actualCostUnavailable(doc),true);
+  assert.match(h.recordDetailsText(),/17/);
+  h.input('task-record-select','zero','change');h.click('#cost-tab-actual');for(const id of ['record-cost','raw-points','integer-points','actual-cash'])equal(displayedNumeric(doc,id),0);
+  assert.match(h.recordDetailsText(),/0/);assert.doesNotMatch(h.recordDetailsText(),/历史.*(?:未记录|未录入)/);
+  h.input('task-record-select','cost-only','change');nearDisplayed(doc,'record-cost','8');assert.match(h.recordDetailsText(),/历史.*(?:未记录|未录入)/);
+  const p=h.api.pricing();equal(displayedNumeric(doc,'integer-points'),E.ceil(E.mul(E.mul(8,p.usedM),10)));
+  h.input('discount','8');assert.equal(doc.getElementById('task-record-select').value,'cost-only','editing the policy keeps an explicit record choice');
+  h.openRecord();assert.ok(doc.getElementById('drawer-body').textContent.includes('仅采购'));h.click('#close-drawer');
+  assert.deepEqual(plain(h.api.getState().observations),original);equal(h.api.current().x.P,theory.P);equal(h.api.current().x.C,theory.C);
+});
+
+test('new settlement and record comparison clear stale data on invalid plans or task inputs and recover',t=>{
+  const h=boot(t),doc=h.w.document;
+  const ids=['task-list-cost','task-target-amount','raw-points','cost-c','integer-points','actual-cash','record-cost','task-gap','task-effective'];
+  const before=Object.fromEntries(ids.map(id=>[id,displayText(doc,id)]));
+  h.input('pay','');
+  for(const id of ids)assert.equal(displayText(doc,id).trim(),id==='record-cost'?before[id]:'—',id+' clears computed output while retaining editable cost input after invalid recharge');
+  h.input('pay','100');for(const id of ids)assert.equal(displayText(doc,id),before[id]);
+  const vin=doc.getElementById('vin');vin.value='';vin.dispatchEvent(new h.w.Event('input',{bubbles:true}));
+  assert.equal(doc.getElementById('globalError').hidden,false);
+  for(const id of ids)assert.equal(displayText(doc,id).trim(),id==='record-cost'?before[id]:'—',id+' clears computed output while retaining editable cost input after invalid generation parameters');
+  h.input('vin','2');for(const id of ids)assert.equal(displayText(doc,id),before[id]);
+});
+
+test('the source screenshot preserves Lihua base costs and historical charges while supplier costs remain a separate scenario',async t=>{
+  const h=boot(t),doc=h.w.document,old=legacyPlatformRecords(),historical=['30','620','32','752'];
+  h.update(()=>{});
+  const originals=plain(h.api.getState().observations);
+  for(const [i,o] of originals.entries()){
+    assert.equal(o.provider,'立画');assert.equal(o.costBasis,'platform-list');assert.equal(o.C,'');
+    assert.equal(o.P,old[i].P);assert.equal(o.N,historical[i]);
+    assert.deepEqual(o.supplierReference,{q:'0.735',C:old[i].C},'the screenshot supplier column is preserved as a scenario, not an invoice');
+  }
+  h.input('purchase-discount','10');h.manual('1.65');
+  for(const [i,o] of originals.entries()){
+    h.update(s=>{s.task={...o.params};});h.click('#cost-tab-actual');
+    nearDisplayed(doc,'record-cost',o.P);equal(displayedNumeric(doc,'integer-points'),historical[i]);
+    assert.match(h.recordDetailsText(),new RegExp(historical[i]));
+    h.input('purchase-discount','6');const expectedC=E.mul(o.P,'0.6'),expectedRaw=E.mul(expectedC,'16.5');
+    nearDisplayed(doc,'record-cost',expectedC);nearDisplayed(doc,'raw-points',expectedRaw);equal(displayedNumeric(doc,'integer-points'),E.ceil(expectedRaw));
+    assert.match(h.recordDetailsText(),new RegExp(historical[i]));
+    assert.deepEqual(plain(h.api.getState().observations),originals,'scenario changes cannot rewrite the screenshot facts');
+    h.input('purchase-discount','10');
+  }
+  const rows=plain(h.api.getActualRows());assert.deepEqual(rows.map(o=>o.recordedN),historical);
+  for(const row of rows)assert.equal(row.recordedC,'','exported actual procurement is not populated from a proposed supplier discount');
+  h.click('#export');h.click('#export-json');const payload=JSON.parse(await h.downloads.at(-1).blob.text());
+  assert.deepEqual(payload.state.observations,originals);assert.deepEqual(plain(h.api.migrate(payload).value.observations),originals);
+});
+
+test('old unedited default records migrate from misclassified supplier values to source-backed platform records',t=>{
+  const h=boot(t),old=plain(h.api.defaults());old.observations=legacyPlatformRecords();
+  const original=JSON.stringify(old),expected=plain(h.api.defaults().observations).map(o=>({...o,usage:o.usage||''}));
+  const imported=h.api.migrate({format:'reelay.pricing.v9',state:old}).value;
+  assert.deepEqual(plain(imported.observations),expected);assert.equal(JSON.stringify(old),original,'migration never mutates the imported object');
+  const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(old)]]);
+  assert.deepEqual(plain(restored.api.getState().observations),expected);
+  assert.deepEqual(plain(restored.api.upgradeState(restored.api.getState()).observations),expected,'the source correction is idempotent');
+  equal(restored.api.current().x.P,h.api.current().x.P);equal(restored.api.current().x.N,h.api.current().x.N);
+});
+
+test('source migration leaves user-edited records and lookalike custom records untouched',t=>{
+  const h=boot(t),mutations=[
+    o=>{o.P='1.9';},o=>{o.C='1.2';},o=>{o.N='31';},o=>{o.params.seconds='5';},
+    o=>{o.id='custom-copy';},o=>{o.title='我重命名的记录';},o=>{o.note='用户核对过的说明';},o=>{o.date='2026-10-21';},
+  ];
+  for(const change of mutations){
+    const input=plain(h.api.defaults());input.observations=legacyPlatformRecords();change(input.observations[0]);
+    const expected={...plain(input.observations[0]),usage:''},original=JSON.stringify(input);
+    const result=h.api.migrate({format:'reelay.pricing.v9',state:input}).value;
+    assert.deepEqual(plain(result.observations[0]),expected,'user-owned edits must not be silently replaced by a newer built-in record');
+    assert.equal(result.observations[1].costBasis,'platform-list','unmodified sibling records still receive the source correction');
+    assert.equal(JSON.stringify(input),original);
+  }
+});
+
+test('rounded integral displays disclose approximation without altering exact upward settlement',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations=[{id:'round-boundary',title:'取整边界',params:{...s.task},P:'2',C:'1',N:'',date:'',note:'fixture'}];});
+  h.manual('0.1000000001');h.click('#cost-tab-actual');
+  assert.equal(doc.getElementById('raw-points').textContent,'1');
+  assert.equal(doc.getElementById('integer-points').textContent,'2');
+  assert.equal(doc.getElementById('raw-points').title,'1.000000001','the exact unrounded number remains inspectable');
+  h.manual('0.1');assert.equal(doc.getElementById('raw-points').textContent,'1');assert.equal(doc.getElementById('integer-points').textContent,'1');
+});
+
+test('new platform records default to direct actual cost without inventing list price or deductions',t=>{
+  const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});
+  const plan=plain(h.api.getState().plan),task=plain(h.api.getState().task);
+  h.addRecord();
+  assert.equal(doc.getElementById('o-cost-basis').value,'recorded');assert.equal(doc.getElementById('o-c-field').hidden,false);
+  for(const id of ['o-p','o-c','o-n'])assert.equal(doc.getElementById(id).value,'','new records start without fabricated amounts');
+  h.input('o-c','1.892800');h.input('o-n','32');h.click('#save-observation');
+  assert.equal(doc.getElementById('modal').hidden,true);
+  const record=plain(h.api.getState().observations[0]);assert.ok(record);
+  assert.equal(record.costBasis,'recorded');assert.equal(record.P,'');assert.equal(record.C,'1.892800');assert.equal(record.N,'32');
+  assert.deepEqual(plain(h.api.getState().plan),plan);assert.deepEqual(plain(h.api.getState().task),task);
+  equal(h.api.recalcRecord(record).C,'1.892800');
+  h.input('purchase-discount','6');equal(h.api.recalcRecord(record).C,'1.892800');
+  assert.deepEqual(plain(h.api.getState().observations[0]),record,'changing a quote never rewrites the newly recorded history');
+});
+
+test('record editing explicitly changes the cost basis and clears hidden direct cost instead of retaining conflicting truth',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations=[{id:'edit-basis',title:'采购记录',params:{...s.task},P:'10',C:'6',N:'83',date:'',note:'fixture'}];});
+  const before=h.api.current().x;
+  h.openRecord();h.click('[data-edit-observation="edit-basis"]');
+  assert.equal(doc.getElementById('o-cost-basis').value,'recorded');assert.equal(doc.getElementById('o-c-field').hidden,false);
+  h.input('o-cost-basis','platform-list','change');assert.equal(doc.getElementById('o-c-field').hidden,true);
+  assert.equal(doc.getElementById('o-c').value,'6','hiding a draft input does not establish recorded procurement');
+  h.click('#save-observation');
+  let o=h.api.getState().observations[0];assert.equal(o.costBasis,'platform-list');assert.equal(o.C,'');assert.equal(o.P,'10');assert.equal(o.N,'83');
+  nearDisplayed(doc,'record-cost',E.mul(10,h.api.pricing().q));equal(h.api.current().x.P,before.P);equal(h.api.current().x.N,before.N);
+  h.openRecord();h.click('[data-edit-observation="edit-basis"]');
+  h.input('o-cost-basis','recorded','change');h.input('o-c','4');h.click('#save-observation');
+  o=h.api.getState().observations[0];assert.equal(o.costBasis,'recorded');assert.equal(o.C,'4');assert.equal(o.N,'83');
+  h.input('purchase-discount','5');nearDisplayed(doc,'record-cost','4');
+});
+
+test('imports reject contradictory or unknown observation cost bases rather than silently recategorizing money',t=>{
+  const h=boot(t),original=JSON.stringify(h.api.getState());
+  for(const change of [
+    o=>{o.costBasis='unexpected';},
+    o=>{o.costBasis='platform-list';o.C='1';},
+    o=>{o.costBasis='platform-list';o.P='';o.C='';},
+  ]){
+    const draft=plain(h.api.getState());change(draft.observations[0]);
+    assert.equal(h.api.validState(draft),false);assert.throws(()=>h.api.migrate({format:'reelay.pricing.v9',state:draft}));
+    assert.equal(JSON.stringify(h.api.getState()),original);
+  }
+});
+
+
+test('built-in platform evidence preserves the user table separately from computed supplier costs',t=>{
+  const h=boot(t),source=JSON.parse(read('evidence/2026-10-21/lihua-platform-test.json'));
+  const digest=require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(__dirname,'evidence/2026-10-21/lihua-platform-test.png'))).digest('hex');
+  assert.equal(digest,'6f9229090e21a4ba006bd1997da67f5b1825d9d97c3b7de978dc2e38d07f24ee');
+  for(const row of source.rows){
+    const record=h.api.OBS.find(o=>o.id===row.id);assert.ok(record);
+    assert.equal(record.P,row.platformCost);assert.equal(record.N,row.historicalPoints);
+    assert.equal(record.supplierReference.C,row.supplierReference);assert.equal(record.C,'');
+    assert.equal(record.supplierReference.q,source.supplierRatio);
+    assert.equal(E.fixed(E.mul(row.platformCost,source.supplierRatio),6),row.supplierReference);
+  }
+});
+
+test('selecting a record in details updates the same-specification comparison without mutating history',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations=[{id:'first',title:'记录甲',params:{...s.task},P:'2',C:'1',N:'20',date:'',note:'fixture'},{id:'second',title:'记录乙',params:{...s.task},P:'3',C:'2',N:'30',date:'',note:'fixture'}];});
+  const before=plain(h.api.getState().observations);
+  h.openRecord();h.input('details-record','second','change');h.click('#close-drawer');
+  assert.equal(doc.getElementById('task-record-select').value,'second');
+  nearDisplayed(doc,'record-cost','2');assert.match(h.recordDetailsText(),/30/);
+  assert.deepEqual(plain(h.api.getState().observations),before);
+});
+
+
+test('clicking the adopted multiplier opens a reversible draft and unchanged edits preserve exact automatic precision',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.input('pay','3');h.input('total','10');h.input('purchase-discount','10');h.input('discount','10');
+  const original=plain(h.api.getState().plan),used=h.api.pricing().usedM,points=h.api.current().x.N;
+  equal(used,E.div(1,3));h.click('#edit-multiplier');
+  assert.equal(doc.getElementById('manual-m-control').hidden,false);assert.equal(doc.activeElement.id,'manual-m');
+  assert.deepEqual(plain(h.api.getState().plan),original,'opening an editor never captures the rounded display');
+  h.click('#save-multiplier');assert.equal(doc.getElementById('manual-m-control').hidden,true);
+  assert.equal(h.api.getState().plan.mode,'ideal');equal(h.api.pricing().usedM,used);equal(h.api.current().x.N,points);
+  h.click('#edit-multiplier');h.input('manual-m','1.65');
+  assert.deepEqual(plain(h.api.getState().plan),original,'typing is a draft until committed');
+  h.click('#cancel-multiplier');assert.equal(doc.getElementById('manual-m-control').hidden,true);assert.equal(doc.activeElement.id,'edit-multiplier');
+  assert.deepEqual(plain(h.api.getState().plan),original);
+  h.click('#edit-multiplier');h.input('manual-m','1.7');
+  doc.getElementById('manual-m').dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));h.good();
+  assert.equal(doc.getElementById('manual-m-control').hidden,true);assert.equal(doc.activeElement.id,'edit-multiplier');equal(h.api.pricing().usedM,used);
+  h.click('#edit-multiplier');h.input('manual-m','1.65');
+  doc.getElementById('manual-m').dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));h.good();
+  assert.equal(doc.getElementById('manual-m-control').hidden,true);assert.equal(h.api.getState().plan.mode,'manual');equal(h.api.pricing().usedM,'1.65');
+  h.click('#restore-auto-multiplier');assert.equal(h.api.getState().plan.mode,'ideal');equal(h.api.pricing().usedM,used);
+});
+
+test('invalid inline multiplier saves cannot overwrite the valid model rule or its persisted state',t=>{
+  const h=boot(t),doc=h.w.document;h.manual('1.65');
+  const original=plain(h.api.getState().plan),saved=h.w.localStorage.getItem('reelay_pricing_v9_official'),points=doc.getElementById('integer-points').textContent;
+  h.click('#edit-multiplier');h.input('manual-m','0');
+  assert.equal(doc.getElementById('save-multiplier').disabled,true);assert.equal(doc.getElementById('manual-m').getAttribute('aria-invalid'),'true');
+  doc.getElementById('save-multiplier').disabled=false;h.click('#save-multiplier');
+  assert.equal(doc.getElementById('save-multiplier').disabled,true);assert.deepEqual(plain(h.api.getState().plan),original);
+  assert.equal(h.w.localStorage.getItem('reelay_pricing_v9_official'),saved);assert.equal(doc.getElementById('integer-points').textContent,points);
+  h.click('#cancel-multiplier');equal(h.api.pricing().usedM,'1.65');
+});
+
+test('precision stays an accessible icon and task explanations share the existing calculation details',t=>{
+  const h=boot(t),doc=h.w.document,icon=doc.getElementById('plan-settings');
+  assert.equal(icon.textContent.trim(),'');assert.ok(icon.querySelector('.bi-sliders2'));assert.match(icon.getAttribute('aria-label'),/小数位.*舍入/);
+  assert.ok(icon.closest('.pricing-multiplier-heading'));
+  assert.equal(doc.querySelector('[data-pricing-help]'),null);assert.equal(doc.getElementById('pricing-hint'),null);
+  const before=plain(h.api.getState());
+  h.click('#details');assert.equal(doc.getElementById('modal').hidden,false);
+  const steps=[...doc.querySelectorAll('.pricing-detail-steps > li')];assert.equal(steps.length,6);
+  assert.match(steps[0].textContent,/火山刊例成本/);assert.match(steps[5].textContent,/目标售价/);
+  assert.match(steps[5].textContent,/折扣.*毛利/);
+  h.click('#close-drawer');
+  assert.deepEqual(plain(h.api.getState()),before,'viewing calculation details leaves pricing and historical records unchanged');
+  h.manual('1.65');h.click('#details');
+  const manualTarget=doc.querySelectorAll('.pricing-detail-steps > li')[5];assert.match(manualTarget.textContent,/取整前金额/);
+  assert.doesNotMatch(manualTarget.textContent,/目标售价|设定售价/);
+  h.click('#close-drawer');h.click('#restore-auto-multiplier');h.click('#details');
+  assert.match(doc.querySelectorAll('.pricing-detail-steps > li')[5].textContent,/目标售价/);h.click('#close-drawer');
+  const strip=doc.querySelector('.task-cost-strip');assert.ok(strip);
+  for(const id of ['task-list-cost','cost-c','record-cost'])assert.ok(strip.contains(doc.getElementById(id)));
+  assert.equal(doc.getElementById('theory-settlement-row'),null);assert.equal(doc.getElementById('record-settlement-row'),null);
+  assert.deepEqual([...doc.querySelectorAll('[data-cost-basis]')].map(o=>o.dataset.costBasis),['list','theory','actual']);
+  assert.equal(doc.getElementById('task-cost-basis'),null);
+  for(const id of ['task-list-cost','task-target-amount','cost-c','actual-cash','record-cost']){
+    assert.doesNotMatch(displayText(doc,id),/[元分¥≈]/,'currency and approximate sign are separated from '+id+' numeric readout');
+    const currency=doc.getElementById(id).previousElementSibling;assert.ok(currency?.classList.contains('currency-symbol'));
+    assert.equal(currency.textContent,'¥','primary monetary readouts omit approximation signs');
+  }
+  for(const id of ['raw-points','integer-points']){
+    assert.doesNotMatch(doc.getElementById(id).textContent,/[元分¥]/,'unit is separated from '+id+' numeric readout');
+    assert.ok(doc.getElementById(id).nextElementSibling?.classList.contains('metric-unit'));
+  }
+});
+
+
+test('confirming a fallback multiplier repairs invalid automatic pricing even when its draft text is unchanged',t=>{
+  const h=boot(t),doc=h.w.document;h.input('discount','');assert.equal(doc.getElementById('platformError').hidden,false);
+  h.click('#edit-multiplier');const value=doc.getElementById('manual-m').value;assert.ok(Number(value)>0);
+  h.click('#save-multiplier');assert.equal(h.api.getState().plan.mode,'manual');
+  assert.equal(doc.getElementById('platformError').hidden,true);equal(h.api.pricing().usedM,value);assert.equal(h.api.pricing().targetAvailable,false);
+});
+
+
+test('multiplier drafts stay concise without losing saved precision and policy shows only the complementary outcome',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.input('pay','3');h.input('total','10');h.input('purchase-discount','10');h.input('discount','10');
+  h.click('#edit-multiplier');assert.equal(doc.getElementById('manual-m').value,'0.333333333333');
+  h.click('#save-multiplier');equal(h.api.pricing().usedM,E.div(1,3));
+  const precise='1.12345678901234567890';
+  h.click('#edit-multiplier');h.input('manual-m',precise);h.click('#save-multiplier');
+  h.click('#edit-multiplier');assert.equal(doc.getElementById('manual-m').value,precise);
+  h.click('#cancel-multiplier');equal(h.api.pricing().usedM,precise);
+  assert.equal(doc.getElementById('outcome-help'),null);
+  const policy=doc.getElementById('plan-principle');
+  assert.match(policy.textContent,/模型毛利率/);assert.doesNotMatch(policy.textContent,/客户折扣/);
+  h.input('pricing-basis','margin','change');
+  assert.match(policy.textContent,/折合客户折扣/);assert.doesNotMatch(policy.textContent,/模型毛利率/);
+  assert.equal(policy.children.length,1);
+  h.input('pricing-basis','discount','change');
+  assert.match(policy.textContent,/模型毛利率/);assert.equal(policy.children.length,1);h.good();
+});
+
+
+test('task cost basis controls one settlement, comparisons and details without changing theoretical evidence',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations=[{id:'active-record',title:'当前实际',params:{...s.task},P:'10',C:'6',N:'99',date:'',note:'fixture'}];});
+  const theory=h.api.current().x,record=h.api.getState().observations[0],before=plain(h.api.getState());
+  assert.equal(selectedCostBasis(doc),'theory');nearDisplayed(doc,'actual-cash',theory.cash);
+  h.click('#cost-tab-actual');
+  const a=h.api.recalcRecord(record);
+  nearDisplayed(doc,'task-list-cost',theory.P);nearDisplayed(doc,'cost-c',theory.C);nearDisplayed(doc,'record-cost',a.C);
+  nearDisplayed(doc,'raw-points',a.raw);equal(displayedNumeric(doc,'integer-points'),a.N);nearDisplayed(doc,'actual-cash',a.cash);
+  nearDisplayed(doc,'task-target-amount',a.target);nearDisplayed(doc,'task-gap',E.sub(a.cash,a.target));
+  nearDisplayed(doc,'task-effective',E.mul(E.div(a.cash,a.P),10),4);
+  nearDisplayed(doc,'model-profit',a.cashProfit);nearDisplayed(doc,'model-margin',a.salesMarginPct,4);
+  assert.match(h.recordDetailsText(),/99/);
+  h.click('#details');assert.equal(doc.getElementById('drawer-title').textContent,'实测复算');h.click('#close-drawer');
+  h.click('#cost-tab-theory');nearDisplayed(doc,'actual-cash',theory.cash);
+  h.click('#details');assert.equal(doc.getElementById('drawer-title').textContent,'计算明细');h.click('#close-drawer');
+  assert.deepEqual(plain(h.api.getState()),before,'basis is a view selection, not a pricing or evidence mutation');
+  h.click('#cost-tab-actual');h.input('seconds','5');
+  assert.equal(selectedCostBasis(doc),'theory');assert.equal(actualCostUnavailable(doc),true);
+});
+
+test('actual cost without list price computes settlement but never invents target or equivalent discount',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations=[{id:'cost-only-basis',title:'仅采购',params:{...s.task},P:'',C:'8',N:'',date:'',note:'fixture'}];});
+  h.click('#cost-tab-actual');
+  const a=h.api.recalcRecord(h.api.getState().observations[0]);
+  equal(displayedNumeric(doc,'integer-points'),a.N);nearDisplayed(doc,'actual-cash',a.cash);
+  for(const id of ['task-target-amount','task-gap','task-effective'])assert.equal(doc.getElementById(id).textContent.trim(),'—');
+  h.manual('1.65');
+  for(const id of ['task-target-amount','task-gap','task-effective'])assert.equal(doc.getElementById(id).textContent.trim(),'—');
+  h.update(s=>{s.observations=[];});assert.equal(selectedCostBasis(doc),'theory');
+  assert.equal(actualCostUnavailable(doc),true);nearDisplayed(doc,'actual-cash',h.api.current().x.cash);
+  for(const id of ['record-raw','record-points','record-cash','record-settlement-row','theory-settlement-row'])assert.equal(doc.getElementById(id),null);
+});
+
+
+test('inline actual cost enables the basis and settles the entered C once without rewriting records',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations=[];});h.manual('1.65');
+  const original=plain(h.api.getState().observations),input=doc.getElementById('record-cost'),basis=doc.getElementById('cost-tab-actual');
+  assert.equal(input.tagName,'INPUT');assert.equal(input.getAttribute('inputmode'),'decimal');assert.equal(input.disabled,false);
+  assert.equal(basis.disabled,false);assert.equal(selectedCostBasis(doc),'theory');
+  h.input('record-cost','2.3456789');assert.equal(basis.disabled,false);assert.equal(actualCostUnavailable(doc),false);
+  h.click('#cost-tab-actual');
+  const verify=()=>{const p=h.api.pricing(),raw=E.mul(E.mul('2.3456789',p.usedM),10),N=E.ceil(raw);
+    nearDisplayed(doc,'raw-points',raw);equal(displayedNumeric(doc,'integer-points'),N);nearDisplayed(doc,'actual-cash',E.mul(N,p.U));
+    nearDisplayed(doc,'model-profit',E.sub(E.mul(N,p.U),'2.3456789'));return N;};
+  const N=verify();h.input('purchase-discount','5');equal(verify(),N,'entered procurement cost is not discounted a second time');
+  h.input('pay','200');verify();assert.equal(input.value,'2.3456789');
+  h.input('pricing-basis','discount','change');h.input('discount','8');
+  const x=h.api.current().x,actual=E.settle(x.P,E.dec('2.3456789'),h.api.pricing());
+  nearDisplayed(doc,'task-target-amount',actual.target);nearDisplayed(doc,'task-effective',E.mul(E.div(actual.cash,x.P),10),4);
+  h.click('#details');assert.match(doc.getElementById('drawer-body').textContent,/2\.3456789/);
+  assert.match(doc.getElementById('drawer-body').textContent,/录入|输入/);h.click('#close-drawer');
+  assert.deepEqual(plain(h.api.getState().observations),original);
+  h.click('#cost-tab-theory');nearDisplayed(doc,'actual-cash',h.api.current().x.cash);
+});
+
+test('blank and invalid inline costs disable actual while zero remains usable and drafts persist by task and record',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations=[{id:'inline-a',title:'记录A',params:{...s.task},P:'10',C:'3',N:'99',date:'',note:'fixture'},{id:'inline-b',title:'记录B',params:{...s.task},P:'20',C:'4',N:'88',date:'',note:'fixture'}];});
+  const observations=plain(h.api.getState().observations),basis=doc.getElementById('cost-tab-actual');
+  h.input('record-cost','7.1234567890123456789');h.click('#cost-tab-actual');
+  const draft=plain(h.api.getState().taskCostInput);assert.equal(draft.value,'7.1234567890123456789');assert.equal(draft.taskKey,h.api.key(h.api.getState().task));assert.equal(draft.recordId,'inline-a');
+  const stored=JSON.parse(h.w.localStorage.getItem('reelay_pricing_v9_official'));
+  const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(stored)]]);
+  assert.equal(restored.w.document.getElementById('record-cost').value,draft.value);assert.equal(actualCostUnavailable(restored.w.document),false);
+  h.input('task-record-select','inline-b','change');equal(doc.getElementById('record-cost').value,'4','an override must not leak to another record');
+  h.input('record-cost','9.87');
+  const secondStored=JSON.parse(h.w.localStorage.getItem('reelay_pricing_v9_official'));
+  const secondRestored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(secondStored)]]);
+  assert.equal(secondRestored.w.document.getElementById('task-record-select').value,'inline-b');
+  assert.equal(secondRestored.w.document.getElementById('record-cost').value,'9.87');
+  for(const bad of ['', '-1','abc','1.123456789012345678901']){
+    h.input('record-cost',bad);assert.equal(basis.disabled,false);assert.equal(selectedCostBasis(doc),'theory');assert.equal(actualCostUnavailable(doc),true);
+    nearDisplayed(doc,'actual-cash',h.api.current().x.cash);
+  }
+  h.input('record-cost','0');assert.equal(basis.disabled,false);h.click('#cost-tab-actual');
+  for(const id of ['raw-points','integer-points','actual-cash'])equal(displayedNumeric(doc,id),0);
+  h.input('seconds','5');assert.equal(selectedCostBasis(doc),'theory');assert.equal(basis.disabled,false);assert.equal(doc.getElementById('record-cost').value,'');
+  assert.deepEqual(plain(h.api.getState().observations),observations);
+});
+
+
+test('inline cost correction resumes actual only when intended and restoring a record leaves its evidence unchanged',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations=[{id:'restore-inline',title:'原记录',params:{...s.task},P:'10',C:'3',N:'71',date:'',note:'fixture'}];});
+  const original=plain(h.api.getState().observations),basis=doc.getElementById('cost-tab-actual');
+  assert.equal(doc.getElementById('record-cost').value,'3');h.click('#details');assert.equal(doc.getElementById('restore-record-cost'),null);h.click('#close-drawer');
+  h.input('record-cost','8');h.click('#details');assert.ok(doc.getElementById('restore-record-cost'));h.click('#close-drawer');
+  h.click('#cost-tab-actual');h.input('record-cost','');assert.equal(selectedCostBasis(doc),'theory');assert.equal(basis.disabled,false);
+  h.input('record-cost','9');assert.equal(selectedCostBasis(doc),'actual','correcting an interrupted actual draft resumes the selected basis');
+  h.click('#cost-tab-theory');h.input('record-cost','bad');assert.equal(selectedCostBasis(doc),'theory');
+  h.input('record-cost','7');assert.equal(selectedCostBasis(doc),'theory','explicit theory choice cancels automatic resumption');
+  h.click('#cost-tab-actual');h.click('#details');h.click('#restore-record-cost');h.click('#close-drawer');
+  assert.equal(doc.getElementById('record-cost').value,'3');h.click('#details');assert.equal(doc.getElementById('restore-record-cost'),null);h.click('#close-drawer');
+  assert.ok(!h.api.getState().taskCostInput);assert.deepEqual(plain(h.api.getState().observations),original);
+  const a=h.api.recalcRecord(original[0]);nearDisplayed(doc,'actual-cash',a.cash);nearDisplayed(doc,'task-target-amount',a.target);
+  h.click('#details');assert.equal(doc.getElementById('drawer-title').textContent,'实测复算');h.click('#close-drawer');
+});
+
+
+test('missing actual cost tab explains its unavailable state and focuses the cost input',t=>{
+  const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});
+  const tab=doc.getElementById('cost-tab-actual');
+  assert.equal(tab.disabled,false);assert.equal(actualCostUnavailable(doc),true);
+  h.click('#cost-tab-actual');assert.match(doc.getElementById('toast').textContent,/请先录入立画成本/);
+  assert.equal(selectedCostBasis(doc),'theory');assert.equal(doc.activeElement.id,'record-cost');
+  h.input('record-cost','2');assert.equal(actualCostUnavailable(doc),false);
+  assert.equal(selectedCostBasis(doc),'theory','editing cost does not itself select a tab');
+  doc.getElementById('toast').textContent='';h.click('#cost-tab-actual');assert.equal(doc.getElementById('toast').textContent,'');assert.equal(selectedCostBasis(doc),'actual');
+});
+
+test('discount comparison has no CSV export surface or dispatch route while actual CSV remains available',async t=>{
+  const h=boot(t),doc=h.w.document;
+  assert.equal(doc.getElementById('table-export'),null);assert.equal(doc.querySelector('#platform-comparison .comparison-actions'),null);
+  h.click('#export');assert.equal(doc.getElementById('export-theory'),null);assert.equal(h.downloads.length,0);
+  assert.doesNotMatch(read('app.js'),/case\s*['"](?:table-export|export-theory)['"]/);
+  h.click('#export-actual');assert.equal(h.downloads.length,1);assert.match(h.downloads[0].name,/实测/);
+  const csv=await h.downloads[0].blob.text();assert.match(csv,/平台实际扣分/);
+});
+
+
+test('new observation seeds only compatible inline cost and keeps optional facts collapsed and unmanufactured',t=>{
+  const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});
+  h.input('record-cost','4.1234567890123456789');h.click('#cost-tab-actual');
+  const beforeCash=displayText(doc,'actual-cash'),beforeTarget=displayText(doc,'task-target-amount');
+  const before=plain(h.api.getState());h.addRecord();
+  assert.equal(doc.getElementById('o-title').value,'');assert.match(doc.getElementById('o-title').placeholder,/自动/);
+  assert.equal(doc.getElementById('o-c').value,'4.1234567890123456789');assert.equal(doc.getElementById('o-p').value,'');assert.equal(doc.getElementById('o-n').value,'');
+  assert.equal(doc.getElementById('o-cost-basis').value,'recorded');
+  for(const id of ['o-res','o-p','o-title','o-usage']){const details=doc.getElementById(id).closest('details');assert.ok(details,id+' belongs in a secondary disclosure');assert.equal(details.open,false);}
+  assert.equal(doc.getElementById('o-c').closest('details'),null);assert.equal(doc.getElementById('o-n').closest('details'),null);
+  assert.ok(doc.getElementById('drawer-footer').contains(doc.getElementById('save-observation')));
+  h.input('o-cost-basis','platform-list','change');h.input('o-p','8');h.click('#cancel-observation');
+  assert.deepEqual(plain(h.api.getState()),before,'switching and cancelling a draft does not write any record or quote');
+  h.addRecord();h.click('#save-observation');
+  const saved=h.api.getState().observations[0];assert.equal(saved.C,'4.1234567890123456789');assert.equal(saved.P,'');assert.equal(saved.N,'');assert.equal(saved.costBasis,'recorded');assert.equal(saved.provider,'立画');
+  assert.equal(h.api.getState().taskCostInput.recordId,saved.id);assert.equal(h.api.getState().taskCostInput.value,saved.C);
+  assert.equal(selectedCostBasis(doc),'actual');assert.equal(displayText(doc,'actual-cash'),beforeCash);assert.equal(displayText(doc,'task-target-amount'),beforeTarget);
+  h.click('#cost-tab-actual');nearDisplayed(doc,'task-target-amount',h.api.current().x.target);
+});
+
+test('observation editing retains old basis and evidence despite an inline override and invalid optional fields reveal themselves',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations=[{id:'editor-old',title:'原始记录',params:{...s.task},costBasis:'platform-list',P:'10',C:'',N:'99',date:'',note:'fixture'}];});
+  const original=plain(h.api.getState().observations);h.input('record-cost','7');
+  h.openRecord();h.click('[data-edit-observation="editor-old"]');
+  assert.equal(doc.getElementById('o-cost-basis').value,'platform-list');assert.equal(doc.getElementById('o-p').value,'10');assert.equal(doc.getElementById('o-c').value,'');assert.equal(doc.getElementById('o-n').value,'99');
+  h.input('o-cost-basis','recorded','change');h.input('o-c','6');h.input('o-p','bad');h.click('#save-observation');
+  assert.equal(doc.getElementById('modal').hidden,false);assert.equal(doc.activeElement.id,'o-p');assert.equal(doc.getElementById('o-p').closest('details').open,true);
+  assert.deepEqual(plain(h.api.getState().observations),original);
+  h.input('o-p','');h.click('#save-observation');
+  const saved=h.api.getState().observations[0];assert.equal(saved.costBasis,'recorded');assert.equal(saved.C,'6');assert.equal(saved.P,'');assert.equal(saved.N,'99');
+  assert.ok(!h.api.getState().taskCostInput,'editing the source record clears its superseded inline override');nearDisplayed(doc,'record-cost','6');
+});
+
+
+test('new observation never borrows an inline draft from another task or an invalid amount',t=>{
+  const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});
+  h.input('record-cost','8');h.input('seconds','5');h.addRecord();
+  for(const id of ['o-p','o-c','o-n'])assert.equal(doc.getElementById(id).value,'');h.click('#close-drawer');
+  h.input('record-cost','bad');h.addRecord();
+  for(const id of ['o-p','o-c','o-n'])assert.equal(doc.getElementById(id).value,'');h.click('#close-drawer');
+  h.input('record-cost','0');h.addRecord();assert.equal(doc.getElementById('o-c').value,'0');
+  h.click('#save-observation');const saved=h.api.getState().observations[0];assert.equal(saved.C,'0');assert.equal(saved.P,'');assert.equal(saved.N,'');
+});
+
+
+test('new direct-cost observation requires C even with optional P and derives its default name from the saved task',t=>{
+  const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});h.addRecord();
+  h.input('o-p','10');h.click('#save-observation');
+  assert.equal(doc.getElementById('modal').hidden,false);assert.equal(doc.activeElement.id,'o-c');assert.equal(h.api.getState().observations.length,0);
+  h.input('o-c','3');h.input('o-seconds','5');h.click('#save-observation');
+  const saved=h.api.getState().observations[0];assert.equal(saved.params.seconds,'5');assert.equal(saved.C,'3');assert.equal(saved.P,'10');assert.equal(saved.provider,'立画');
+  assert.match(saved.title,/5\s*秒|5s/);assert.ok(saved.title.trim());
+});
+
+
+test('explicit recorded list price supersedes inline target basis and a changed record task never rebinds its source draft',t=>{
+  const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});h.input('record-cost','3');h.click('#cost-tab-actual');
+  h.addRecord();h.input('o-p','20');h.click('#save-observation');
+  const saved=h.api.getState().observations[0],record=h.api.recalcRecord(saved);
+  assert.equal(saved.P,'20');assert.ok(!h.api.getState().taskCostInput,'explicit recorded P supersedes the theoretical inline baseline');
+  assert.equal(selectedCostBasis(doc),'actual');nearDisplayed(doc,'task-target-amount',record.target);nearDisplayed(doc,'task-effective',E.mul(E.div(record.cash,20),10),4);
+  const other=boot(t),otherDoc=other.w.document;other.update(s=>{s.observations=[];});other.input('record-cost','4');
+  const original=plain(other.api.getState().taskCostInput);other.addRecord();other.input('o-seconds','5');other.click('#save-observation');
+  const changed=other.api.getState().observations[0];assert.equal(changed.params.seconds,'5');
+  assert.notEqual(other.api.getState().taskCostInput?.recordId,changed.id);assert.deepEqual(plain(other.api.getState().taskCostInput),original);
+  assert.equal(otherDoc.getElementById('record-cost').value,'4');assert.equal(other.api.getState().task.seconds,'4');
+});
+
+
+test('legacy direct-cost records with unknown C can save metadata without inventing procurement',t=>{
+  for(const basis of ['recorded',undefined]){
+    const h=boot(t),doc=h.w.document;
+    h.update(s=>{s.observations=[{id:'legacy-unknown-c',title:'旧缺项记录',params:{...s.task},...(basis?{costBasis:basis}:{}),P:'10',C:'',N:'71',date:'',note:'原备注'}];});
+    const before=plain(h.api.getState().observations[0]);
+    h.openRecord();h.click('[data-edit-observation="legacy-unknown-c"]');
+    assert.equal(doc.getElementById('o-cost-basis').value,'recorded');assert.equal(doc.getElementById('o-c').value,'');
+    h.input('o-note','只更新来源备注');h.click('#save-observation');
+    assert.equal(doc.getElementById('modal').hidden,true);
+    const saved=h.api.getState().observations[0];assert.equal(saved.P,before.P);assert.equal(saved.C,'');assert.equal(saved.N,before.N);assert.equal(saved.note,'只更新来源备注');assert.deepEqual(plain(saved.params),before.params);
+    assert.equal(h.api.recalcRecord(saved).C,null,'missing historical procurement remains unknown');
+  }
+});
+
+test('invalid observation input-video duration reveals the task fields and focuses the actual invalid input',t=>{
+  const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});h.addRecord();h.input('o-c','2');
+  h.input('o-video','true','change');h.input('o-vin','');h.click('#save-observation');
+  assert.equal(doc.getElementById('modal').hidden,false);assert.equal(doc.activeElement.id,'o-vin');assert.equal(doc.getElementById('o-vin').getAttribute('aria-invalid'),'true');
+  assert.equal(doc.getElementById('o-vin').closest('details').open,true);assert.equal(h.api.getState().observations.length,0);
+  h.input('o-vin','2');h.click('#save-observation');assert.equal(doc.getElementById('modal').hidden,true);assert.equal(h.api.getState().observations[0].params.vin,'2');
+});
+
+test('new observation from reconciliation uses valid defaults when the current task draft is incomplete',t=>{
+  const h=boot(t),doc=h.w.document,defaults=plain(h.api.defaults().task),original=plain(h.api.getState().observations);
+  const vin=doc.getElementById('vin');vin.value='';vin.dispatchEvent(new h.w.Event('input',{bubbles:true}));
+  assert.equal(doc.getElementById('globalError').hidden,false);doc.getElementById('open-actual').click();doc.getElementById('add-observation').click();
+  assert.equal(doc.getElementById('modal').hidden,false);assert.equal(doc.getElementById('drawer-title').textContent,'录入平台实测');
+  for(const [id,key] of [['o-model','model'],['o-res','res'],['o-ratio','ratio'],['o-seconds','seconds'],['o-vin','vin']])assert.equal(doc.getElementById(id).value,defaults[key]);
+  assert.equal(doc.getElementById('o-video').value,String(defaults.video));
+  for(const id of ['o-p','o-c','o-n'])assert.equal(doc.getElementById(id).value,'');
+  doc.getElementById('cancel-observation').click();assert.equal(h.api.getState().task.vin,'');assert.deepEqual(plain(h.api.getState().observations),original);
+});
+
+
+test('list cost tab settles C equal to P using unchanged model pricing and shared recharge',t=>{
+  const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});h.input('purchase-discount','6');h.input('discount','8');
+  for(const mode of ['discount','margin','manual']){
+    if(mode==='margin'){h.input('pricing-basis','margin','change');h.input('target-margin','20');}
+    if(mode==='manual')h.manual('1.65');
+    const before=plain(h.api.getState()),p=h.api.pricing(),theory=h.api.current().x,expected=E.settle(theory.P,theory.P,p);
+    h.click('#cost-tab-list');assert.equal(selectedCostBasis(doc),'list');
+    assert.deepEqual(plain(h.api.getState()),before,'cost basis selection does not change pricing or evidence');equal(h.api.pricing().usedM,p.usedM);
+    nearDisplayed(doc,'task-list-cost',theory.P);nearDisplayed(doc,'cost-c',theory.C);
+    nearDisplayed(doc,'raw-points',expected.raw);equal(displayedNumeric(doc,'integer-points'),expected.N);nearDisplayed(doc,'actual-cash',expected.cash);
+    nearDisplayed(doc,'model-profit',expected.profit);nearDisplayed(doc,'task-effective',expected.effective,4);
+    if(expected.target===null)assert.equal(displayText(doc,'task-target-amount'),'—');else nearDisplayed(doc,'task-target-amount',expected.target);
+    h.click('#cost-tab-theory');nearDisplayed(doc,'actual-cash',theory.cash);
+  }
+});
+
+test('cost tabs expose one labelled panel, support keyboard selection and skip unavailable actual cost',t=>{
+  const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});
+  const panel=doc.getElementById('task-basis-results');assert.equal(panel.getAttribute('role'),'tabpanel');
+  const verify=mode=>{assert.equal(selectedCostBasis(doc),mode);assert.equal(panel.getAttribute('aria-labelledby'),'cost-tab-'+mode);
+    const tabs=[...doc.querySelectorAll('[data-cost-basis]')];assert.equal(tabs.filter(tab=>tab.getAttribute('aria-selected')==='true').length,1);
+    for(const tab of tabs){assert.equal(tab.getAttribute('role'),'tab');assert.equal(tab.tabIndex,tab.dataset.costBasis===mode?0:-1);}};
+  const key=(mode,key)=>{doc.getElementById('cost-tab-'+mode).dispatchEvent(new h.w.KeyboardEvent('keydown',{key,bubbles:true,cancelable:true}));h.good();};
+  verify('theory');key('theory','ArrowLeft');verify('list');assert.equal(doc.activeElement.id,'cost-tab-list');
+  key('list','End');verify('theory');key('theory','ArrowRight');verify('list');
+  h.input('record-cost','2');verify('list');doc.getElementById('record-cost').click();verify('list');
+  key('list','End');verify('actual');key('actual','Home');verify('list');key('list','ArrowRight');verify('theory');key('theory','ArrowRight');verify('actual');
+  h.input('record-cost','');verify('theory');assert.equal(actualCostUnavailable(doc),true);
+  h.input('record-cost','3');verify('actual');
+});
+
+
+test('list-cost details, usage return and export retain the selected basis across model and duration changes',async t=>{
+  const h=boot(t),doc=h.w.document;h.input('purchase-discount','6');h.manual('1.65');h.click('#cost-tab-list');
+  const profiles=plain(h.api.getState().plan.modelPricing);
+  h.input('seconds','5');assert.equal(selectedCostBasis(doc),'list');
+  h.input('model','seedance-2.5','change');assert.equal(selectedCostBasis(doc),'list');
+  h.input('model','seedance-2.0','change');assert.equal(selectedCostBasis(doc),'list');
+  assert.deepEqual(plain(h.api.getState().plan.modelPricing),profiles);equal(h.api.pricing().usedM,'1.65');
+  const P=h.api.current().x.P;h.click('#details');
+  const body=doc.getElementById('drawer-body'),steps=body.querySelectorAll('.pricing-detail-steps > li');
+  assert.equal(steps.length,6);assert.match(steps[1].textContent,/不应用采购折扣/);
+  equal(steps[1].querySelector('strong').title,P,'detail cost uses P rather than discounted C');
+  const detailText=body.textContent;h.click('#detail-usage');h.click('#back-pricing-details');assert.equal(body.textContent,detailText);
+  h.click('#export-calculation');assert.match(h.downloads.at(-1).name,/刊例成本/);assert.match(await h.downloads.at(-1).blob.text(),/采用火山刊例成本/);
+  h.click('#close-drawer');assert.equal(selectedCostBasis(doc),'list');
+});
+
+
+test('entire cost tabs select their basis including amount children while the actual input stays independently editable',t=>{
+  const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});
+  const list=doc.getElementById('cost-tab-list'),theory=doc.getElementById('cost-tab-theory'),actual=doc.getElementById('cost-tab-actual'),input=doc.getElementById('record-cost');
+  assert.equal(list.querySelector('.task-cost-name').textContent.trim(),'火山刊例成本');
+  assert.equal(theory.querySelector('.task-cost-name').textContent.trim(),'理论采购成本');
+  assert.equal(actual.querySelector('.task-cost-name').textContent.trim(),'立画实际成本');
+  assert.ok(list.contains(doc.getElementById('task-list-cost')));assert.ok(theory.contains(doc.getElementById('cost-c')));
+  assert.equal(doc.querySelector('[data-cost-value]'),null,'amounts no longer form a disconnected selectable row');
+  assert.equal(input.closest('button,[role=tab],[role=tablist]'),null,'editing a form control is never nested inside tab activation');
+  h.click('#task-list-cost');assert.equal(selectedCostBasis(doc),'list');
+  h.click('#cost-c');assert.equal(selectedCostBasis(doc),'theory');
+  h.click('#cost-tab-list');assert.equal(selectedCostBasis(doc),'list','clicking the button surface selects the same basis as its amount');
+  input.focus();h.click('#record-cost');h.input('record-cost','2.5');assert.equal(selectedCostBasis(doc),'list');assert.equal(doc.activeElement,input);
+  h.click('#cost-tab-actual');assert.equal(selectedCostBasis(doc),'actual');
+  const expected=E.settle(h.api.current().x.P,E.dec('2.5'),h.api.pricing());nearDisplayed(doc,'actual-cash',expected.cash);
+  h.click('#cost-tab-theory');assert.equal(selectedCostBasis(doc),'theory');nearDisplayed(doc,'actual-cash',h.api.current().x.cash);
+});
+
+
+test('record provenance and actions live in calculation details while main cost tabs retain only record selection',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations=[{id:'context-first',title:'来源A',params:{...s.task},provider:'立画',P:'10',C:'3',N:'71',date:'',note:'fixture'},{id:'context-second',title:'来源B',params:{...s.task},P:'20',C:'6',N:'82',date:'',note:'fixture'}];});
+  const original=plain(h.api.getState().observations),taskPanel=doc.querySelector('.task-panel');
+  for(const id of ['task-record-context','task-record-note','task-record-history','task-record-link','task-record-add','restore-record-cost'])assert.equal(doc.getElementById(id),null);
+  const select=doc.getElementById('task-record-select');assert.ok(select.closest('.task-cost-editor'));assert.equal(select.closest('[hidden]'),null);
+  assert.doesNotMatch(taskPanel.textContent,/历史实扣|查看记录/);
+  for(const basis of ['theory','list']){
+    h.click('#cost-tab-'+basis);h.click('#details');
+    const context=doc.getElementById('detail-record-context');assert.ok(context);assert.match(context.textContent,/来源A/);assert.match(context.textContent,/71/);
+    assert.ok(context.querySelector('[data-observation="context-first"]'));assert.ok(context.querySelector('[data-edit-observation="context-first"]'));assert.equal(context.querySelector('#detail-add-observation'),null);
+    h.click('#detail-usage');h.click('#back-pricing-details');assert.match(doc.getElementById('detail-record-context').textContent,/来源A/);h.click('#close-drawer');assert.equal(selectedCostBasis(doc),basis);
+  }
+  h.input('task-record-select','context-second','change');h.input('record-cost','8');h.click('#cost-tab-actual');h.click('#details');
+  assert.match(doc.getElementById('detail-record-context').textContent,/来源B/);assert.match(doc.getElementById('detail-record-context').textContent,/82/);assert.ok(doc.getElementById('restore-record-cost'));
+  h.click('#restore-record-cost');assert.equal(selectedCostBasis(doc),'actual');nearDisplayed(doc,'record-cost','6');
+  assert.equal(doc.getElementById('drawer-title').textContent,'实测复算');assert.equal(doc.getElementById('restore-record-cost'),null);assert.equal(doc.getElementById('task-record-select').value,'context-second');
+  h.click('#close-drawer');assert.deepEqual(plain(h.api.getState().observations),original);
+});
+
+
+test('detail record creation follows its own task and restoring an override preserves list basis and selected record',t=>{
+  const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});h.input('record-cost','3');
+  const before=plain(h.api.getState()),otherTask={...before.task,seconds:'5'};
+  h.api.openDetails('theory','',otherTask);h.good();h.click('#detail-add-observation');
+  assert.equal(doc.getElementById('o-seconds').value,'5');assert.equal(doc.getElementById('o-c').value,'','another task cannot borrow the main task inline cost');
+  assert.equal(doc.getElementById('o-p').value,'');h.click('#cancel-observation');assert.deepEqual(plain(h.api.getState()),before);
+  h.update(s=>{s.observations=[{id:'restore-list-context',title:'选中原记录',params:{...s.task},P:'10',C:'6',N:'31',date:'',note:''}];});
+  h.input('record-cost','8');h.click('#cost-tab-list');const cashBefore=displayText(doc,'actual-cash');h.click('#details');h.click('#restore-record-cost');
+  assert.equal(selectedCostBasis(doc),'list');assert.equal(displayText(doc,'actual-cash'),cashBefore);nearDisplayed(doc,'record-cost','6');
+  assert.equal(doc.getElementById('restore-record-cost'),null);assert.match(doc.getElementById('detail-record-context').textContent,/选中原记录/);
+  assert.match(doc.getElementById('drawer-sub').textContent,/火山刊例成本/);h.click('#close-drawer');
+});
+
+
+test('saving a same-specification record from its detail uses that record inline draft rather than the main selected record',t=>{
+  const h=boot(t),doc=h.w.document;
+  h.update(s=>{s.observations=[{id:'detail-context-a',title:'记录A',params:{...s.task},P:'10',C:'3',N:'71',date:'',note:''},{id:'detail-context-b',title:'记录B',params:{...s.task},P:'20',C:'4',N:'82',date:'',note:''}];});
+  h.input('record-cost','8');h.input('task-record-select','detail-context-b','change');
+  assert.equal(doc.getElementById('task-record-select').value,'detail-context-b');nearDisplayed(doc,'record-cost','4');
+  const before=plain(h.api.getState());h.click('#open-actual');h.click('[data-observation="detail-context-a"]');
+  assert.ok(doc.getElementById('detail-add-observation'));h.click('#detail-add-observation');
+  assert.equal(doc.getElementById('o-c').value,'8','detail record A retains its own inline draft while main selection is record B');
+  assert.equal(doc.getElementById('o-p').value,'');assert.equal(doc.getElementById('o-n').value,'');
+  h.click('#cancel-observation');assert.deepEqual(plain(h.api.getState()).observations,before.observations);assert.deepEqual(plain(h.api.getState()).taskCostInput,before.taskCostInput);
 });

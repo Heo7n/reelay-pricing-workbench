@@ -1,0 +1,22 @@
+{
+  "source": "lihua-platform-test.png",
+  "receivedAt": "2026-10-21",
+  "testDate": null,
+  "provider": "立画",
+  "confirmation": "用户说明此表为立画真实平台测试数据。",
+  "model": "seedance-2.0",
+  "modelContext": "沿用此前已确认的 Seedance 2.0 项目规格；图片未单独标注模型。",
+  "columns": {
+    "officialEstimate": "原表官方估算成本，显示约值，不替代已核验规则",
+    "platformCost": "立画实际成本，供应商折扣前的成本基准",
+    "historicalPoints": "立画实际积分，不随当前方案变化",
+    "supplierReference": "新供应商采购成本 = 实际成本 × 7.35折；推算值，非已支付采购账单"
+  },
+  "supplierRatio": "0.735",
+  "rows": [
+    {"id":"s1","res":"480p","ratio":"1:1","seconds":"4","video":false,"vin":"0","officialEstimate":"1.77","platformCost":"1.784800","historicalPoints":"30","supplierReference":"1.311828"},
+    {"id":"s2","res":"1080p","ratio":"21:9","seconds":"15","video":false,"vin":"0","officialEstimate":"37.42","platformCost":"37.520955","historicalPoints":"620","supplierReference":"27.577902"},
+    {"id":"s3","res":"480p","ratio":"1:1","seconds":"4","video":true,"vin":"2","officialEstimate":"1.88","platformCost":"1.892800","historicalPoints":"32","supplierReference":"1.391208"},
+    {"id":"s4","res":"1080p","ratio":"21:9","seconds":"15","video":true,"vin":"15","officialEstimate":"45.49","platformCost":"45.550532","historicalPoints":"752","supplierReference":"33.479641"}
+  ]
+}

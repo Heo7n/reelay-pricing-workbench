@@ -78,14 +78,19 @@ function sumTasks(rows,p){let count=0,N=dec(0),cash=dec(0),C=dec(0),target=p.tar
 
 function recalcRecord(record,p){
  const P=record.P!==''&&record.P!=null?dec(record.P):null;
- const C=record.C!==''&&record.C!=null?dec(record.C):null;
+ const recordedC=record.C!==''&&record.C!=null?dec(record.C):null;
+ // Platform-list records contain the platform's original cost basis, not a
+ // supplier invoice. Apply the current procurement ratio at full precision;
+ // screenshot reference columns are metadata and never calculation inputs.
+ const procurementDerived=record.costBasis==='platform-list';
+ const C=procurementDerived?(P===null?null:mul(P,p.q)):recordedC;
  if(P&&cmp(P,0)<=0)throw Error('实测刊例金额须大于零');
- if(C&&cmp(C,0)<0)throw Error('实测采购金额不能为负');
+ if(recordedC&&cmp(recordedC,0)<0)throw Error('实测采购金额不能为负');
  const raw=C===null?null:mul(mul(C,p.usedM),p.K),N=raw===null?null:ceil(raw),cash=N===null?null:mul(N,p.U);
  const target=targetCash(P,C,p);
  const x=P!==null&&C!==null?settle(P,C,p):null;
  const cashProfit=C===null?null:sub(cash,C);
- return {P,C,raw,N,cash,target,x,cashProfit,salesMarginPct:cash!==null&&cmp(cash,0)?mul(div(cashProfit,cash),'100'):null,costMarkupPct:C!==null&&cmp(C,0)?mul(div(cashProfit,C),'100'):null,recordedN:record.N??'',scope:'recorded-cost-recalculation'};
+ return {P,C,recordedC,procurementDerived,raw,N,cash,target,x,cashProfit,salesMarginPct:cash!==null&&cmp(cash,0)?mul(div(cashProfit,cash),'100'):null,costMarkupPct:C!==null&&cmp(C,0)?mul(div(cashProfit,C),'100'):null,recordedN:record.N??'',scope:procurementDerived?'recorded-list-recalculation':'recorded-cost-recalculation'};
 }
 root.ReelayMath={Q,dec,add,sub,mul,div,cmp,abs,ceil,fixed,decimalString,trim,DIMS,RATES,plan,settle,estimate,fromUsage,sumTasks,recalcRecord,normalizeSeconds,normalizeVideo};
 if(typeof module!=='undefined')module.exports=root.ReelayMath;
