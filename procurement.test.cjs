@@ -91,7 +91,8 @@ test('current task record comparison follows the selected model policy without c
     equal(h.api.current().x.C,E.mul(h.api.current().x.P,'0.5'),'theory still adopts the current model procurement setting');
     assert.deepEqual(plain(h.api.getState().observations),original);
   }
-  h.input('seconds','5');assert.equal(doc.getElementById('cost-tab-actual').getAttribute('aria-disabled'),'true');assert.equal(doc.getElementById('cost-tab-theory').getAttribute('aria-selected'),'true');
+  h.input('seconds','5');assert.equal(doc.getElementById('cost-tab-actual').getAttribute('aria-disabled'),'false');assert.equal(doc.getElementById('cost-tab-actual').getAttribute('aria-selected'),'true');
+  for(const id of ['raw-points','integer-points','actual-cash','task-target-amount','task-gap','task-effective','model-profit'])assert.equal(doc.getElementById(id).textContent.trim(),'—');
 });
 
 test('platform-base record scenarios use each model current procurement while direct invoices and screenshot history remain independent',t=>{

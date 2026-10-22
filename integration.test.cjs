@@ -13,6 +13,15 @@ const plain = value => JSON.parse(JSON.stringify(value));
 const displayText = (doc,id) => {const el=doc.getElementById(id);return el.tagName==='INPUT'?el.value:el.textContent;};
 const selectedCostBasis = doc => doc.querySelector('[data-cost-basis][aria-selected="true"]')?.dataset.costBasis;
 const actualCostUnavailable = doc => doc.getElementById('cost-tab-actual').getAttribute('aria-disabled')==='true';
+const assertPendingActual = doc => {
+  assert.equal(selectedCostBasis(doc),'actual');
+  for(const id of ['raw-points','integer-points','actual-cash','task-target-amount','task-gap','task-effective','model-profit'])assert.equal(displayText(doc,id).trim(),'—',id+' stays pending rather than falling back to theory or a saved cost');
+};
+const assertCalculationFlow = doc => {
+  const stages=[...doc.querySelectorAll('.pricing-calculation-flow > .pricing-calculation-stage')];
+  assert.equal(stages.length,3,'calculation is grouped into three readable stages');
+  for(const stage of stages)assert.ok(stage.querySelector('.pricing-detail-steps > li'),'each stage contains its calculation steps');
+};
 const displayedNumeric = (doc,id) => displayText(doc,id).replace(/[¥￥≈,元折%+\s]/g,'').replace(/−/g,'-');
 const nearDisplayed = (doc,id,expected,precision=6) => {
   const value=displayedNumeric(doc,id);
@@ -25,6 +34,7 @@ const legacyPlatformRecords = () => [
   {id:'s3',title:'平台实测 · 原表第3行',params:{model:'seedance-2.0',res:'480p',ratio:'1:1',seconds:'4',video:true,vin:'2'},P:'1.892800',C:'1.391208',N:'',date:'',note:'平台实测值1.892800元。与转述的官方预估约1.88元是不同来源，分别保留。'},
   {id:'s4',title:'平台实测 · 原表第4行',params:{model:'seedance-2.0',res:'1080p',ratio:'21:9',seconds:'15',video:true,vin:'15'},P:'45.550532',C:'33.479641',N:'',date:'',note:'视频输入15秒，输出1080p、21:9、15秒。平台实际成本只用于对照，不替代公式输出。'},
 ];
+const legacyDerivedPlatformRecords=()=>legacyPlatformRecords().map((o,i)=>({...o,title:'立画实测 · 第'+(i+1)+'组',provider:'立画',C:'',N:['30','620','32','752'][i],costBasis:'platform-list',supplierReference:{q:'0.735',C:o.C},note:'用户提供的立画测试表。平台成本与实际积分为实测；新供应商成本列按平台成本 × 7.35折计算，仅作原表参考。'}));
 
 function boot(t, storedEntries = []) {
   const errors = [], downloads = [], blobs = new Map();
@@ -166,16 +176,17 @@ test('actual detail handles missing cost, cost-only margin and zero cost without
   h.update(s=>{s.plan.q='0.6';s.observations=[{id:'cost-gap',title:'缺项核对',params:{...s.task},P:'10',C:'',N:'17',usage:'',date:'',note:'fixture'}];});
   h.api.openDetails('actual','cost-gap');
   let detail=h.w.document.getElementById('drawer-body').textContent;
-  assert.match(detail,/缺少计价成本/);
-  const missingSteps=h.w.document.querySelectorAll('.pricing-detail-steps > li');
-  assert.match(missingSteps[1].textContent,/未录入/);for(const index of [2,3,4])assert.equal(missingSteps[index].querySelector('.detail-value').textContent.trim(),'—');
+  assert.match(detail,/待录入立画实际成本/);
+  assert.ok(h.w.document.querySelector('.pricing-pending [data-edit-observation="cost-gap"]'));
+  assert.equal(h.w.document.querySelector('.pricing-calculation-flow'),null,'missing cost has a concise pending state rather than stale calculation rows');
+  assert.match(h.w.document.getElementById('detail-record-history').textContent,/17 分/);
   assert.doesNotMatch(detail,/\$\{|不再乘0\.735/);
   assert.equal(h.api.getState().observations[0].N,'17');
   h.update(s=>{s.plan.targetMode='margin';s.plan.margin='20';s.observations[0].P='';s.observations[0].C='8';});
   h.api.openDetails('actual','cost-gap');
   detail=h.w.document.getElementById('drawer-body').textContent;
   assert.doesNotMatch(detail,/未录入平台刊例P，不计算目标现金/);
-  assert.match(h.w.document.querySelectorAll('.pricing-detail-steps > li')[5].textContent,/10(?:\.0+)?\s*元/,'cost-only margin target is displayed');
+  assert.match(h.w.document.getElementById('detail-variance').textContent,/10(?:\.0+)?\s*元/,'cost-only margin target is displayed');
   assert.equal(h.api.getState().observations[0].N,'17');
   h.update(s=>{s.observations[0].P='10';s.observations[0].C='0';});
   h.api.openDetails('actual','cost-gap');
@@ -200,7 +211,7 @@ test('V8 upgrade preserves raw observations and archives legacy minima while ado
   assert.equal(migrated.tasks[0].params.seconds,'4');
   assert.equal(migrated.rules.legacyMinima['480p|1:1|04|video|2'].tokens,'999999');
   equal(migrated.rules.minima[R.key(migrated.task)].tokens,'67200');
-  assert.equal(migrated.observations[3].C,'');
+  assert.equal(migrated.observations[3].C,'45.550532');
   assert.equal(migrated.observations[3].N,'752');
   assert.equal(migrated.observations[3].supplierReference.C,'33.479641');
   h.api.setState(migrated);h.good();
@@ -219,7 +230,7 @@ test('JSON export round-trips the financial objective and discount calculations 
   assert.equal(payload.state.plan.q,'0.6');
   const roundtrip=h.api.migrate(payload).value;
   assert.equal(roundtrip.plan.margin,'20');
-  assert.equal(roundtrip.observations[3].C,'');
+  assert.equal(roundtrip.observations[3].C,'45.550532');
   assert.equal(roundtrip.observations[3].N,'752');
   assert.equal(roundtrip.observations[3].supplierReference.C,'33.479641');
   assert.equal(h.w.document.getElementById('export-theory'),null);assert.equal(h.downloads.length,1,'viewing export options exposes no discount CSV download');
@@ -744,7 +755,7 @@ test('legacy range drafts and imports resolve to fixed tasks while preserving pr
       for(const [key,value] of Object.entries(original.plan))assert.deepEqual(plain(imported.value.plan[key]),value,key+' is preserved');
       assert.ok(Object.values(imported.value.plan.modelPricing).every(profile=>profile.mode==='manual'&&profile.manualM==='1.65'));
       assert.deepEqual(plain(imported.value.tasks),original.tasks);
-      assert.deepEqual(plain(imported.value.observations).map(({usage,...o})=>o),original.observations);
+      assert.deepEqual(plain(imported.value.observations).map(({usage,...o})=>o),original.observations.map(({usage,...o})=>o));
       assert.deepEqual(plain(imported.value.references),original.references);
       if(ratio==='auto'||seconds==='auto')assert.match(imported.note,/旧范围参数已设为/);
       h.api.setState(imported.value);h.good();
@@ -1494,7 +1505,7 @@ test('architecture: pricing separates shared conditions, model policy and curren
   assert.equal(doc.querySelector('#pricing-mode, #target-mode, #target-settings, #total-mode'),null);
   assert.equal(doc.getElementById('plan-principle').closest('details'),null,'policy results are visible before task rounding');
   for(const id of ['list-cost','target-cash','pricing-detail','charge-breakdown','unit-check','economics-how','actual-calculation'])assert.equal(doc.getElementById(id),null,id+' is no longer a competing primary metric or entry');
-  for(const id of ['task-list-cost','task-target-amount','raw-points','integer-points','actual-cash','cost-c','model-profit','model-margin']){
+  for(const id of ['task-list-cost','task-target-amount','raw-points','integer-points','actual-cash','cost-c','model-profit']){
     const el=doc.getElementById(id);assert.ok(result.contains(el));assert.equal(doc.querySelectorAll('#'+id).length,1);assert.equal(el.closest('details'),null);
   }
   assert.ok(result.contains(doc.getElementById('details')));assert.equal(doc.getElementById('add-task'),null);
@@ -1511,7 +1522,7 @@ test('architecture: pricing separates shared conditions, model policy and curren
 test('architecture: invalid recharge input clears only platform results and leaves model estimates usable', t => {
   const h=boot(t),doc=h.w.document,before=h.api.quote().calc;
   const shown=Object.fromEntries(['cost-p','token-estimate','token-minimum'].map(id=>[id,doc.getElementById(id).textContent]));
-  const platformIds=['task-list-cost','task-target-amount','cost-c','raw-points','integer-points','actual-cash','model-profit','model-margin'];
+  const platformIds=['task-list-cost','task-target-amount','cost-c','raw-points','integer-points','actual-cash','model-profit'];
   const resultNodes=Object.fromEntries(platformIds.map(id=>[id,doc.getElementById(id)]));
   const previousResults=Object.fromEntries(platformIds.map(id=>[id,resultNodes[id].textContent]));
   for(const invalid of ['', 'not-a-price', '0']){
@@ -1547,7 +1558,7 @@ test('platform task results agree with exact accounting across all pricing bases
   const observations=plain(h.api.getState().observations),modelEstimate=h.api.quote().calc.P;
   const verify=planInput=>{
     const p=E.plan(planInput),x=E.settle(modelEstimate,E.mul(modelEstimate,p.q),p);
-    const expected={'integer-points':E.fixed(x.N,0),'model-profit':'¥'+E.fixed(x.profit,6),'model-margin':E.trim(x.margin,4)+'%'};
+    const expected={'integer-points':E.fixed(x.N,0),'model-profit':'¥'+E.fixed(x.profit,6)};
     for(const [id,value] of Object.entries(expected))assert.equal(doc.getElementById(id).textContent,value,id+' matches exact accounting');
     nearDisplayed(doc,'cost-c',x.C);nearDisplayed(doc,'actual-cash',x.cash);
     assert.match(doc.getElementById('integer-points').textContent,/^\d+$/);
@@ -1667,6 +1678,7 @@ test('models: switching from 2.5 to Fast constrains unsupported values and tells
 
 test('models: legacy drafts, saved tasks and observations explicitly migrate to standard 2.0', t => {
   const initial=boot(t),legacy=plain(initial.api.defaults());
+  legacy.observations=legacy.observations.filter(o=>o.params.model==='seedance-2.0');
   legacy.tasks=[{id:'legacy-standard-task',title:'旧标准模型任务',params:{...legacy.task},qty:'2'}];
   delete legacy.task.model;delete legacy.tasks[0].params.model;
   for(const observation of legacy.observations)delete observation.params.model;
@@ -1710,7 +1722,7 @@ test('models: task identity, minimum overrides and JSON exports stay scoped to t
   const payload=JSON.parse(await h.downloads[0].blob.text());
   assert.equal(payload.state.task.model,'seedance-2.5');
   assert.deepEqual(payload.state.tasks.map(row=>row.params.model),variants.map(task=>task.model));
-  assert.ok(payload.state.observations.every(row=>row.params.model==='seedance-2.0'));
+  assert.deepEqual(payload.state.observations.map(row=>row.params.model),plain(h.api.OBS).map(row=>row.params.model),'export preserves the actual model of every source record');
   const reloaded=h.api.migrate(payload).value;
   assert.equal(reloaded.task.model,'seedance-2.5');
   assert.deepEqual(plain(reloaded.tasks).map(row=>row.params.model),variants.map(task=>task.model));
@@ -1817,7 +1829,7 @@ test('model calculation details link to the corresponding usage rules and return
     assert.match(doc.getElementById('drawer-title').textContent,/计算明细/);
     assert.ok(doc.getElementById('drawer-sub').textContent.includes(spec.label));assert.equal(doc.querySelector('[data-detail-mode]'),null);
     assert.equal(doc.querySelector('#usage-calculation, #usage-price-table'),null,'Token derivation is not repeated in pricing details');
-    assert.equal(doc.querySelectorAll('.pricing-detail-steps > li').length,6);
+    assertCalculationFlow(doc);
     h.click('#detail-usage');
     assert.equal(doc.getElementById('drawer-title').textContent,'用量说明');
     const sourceLinks=[...doc.querySelectorAll('#drawer-body a')].map(el=>el.getAttribute('href'));
@@ -1891,7 +1903,7 @@ test('negative profit and margin remain readable in complete calculation details
   const h=boot(t),doc=h.w.document;h.input('purchase-discount','10');h.setVideo(false);h.input('seconds','9');
   assert.ok(E.cmp(h.api.current().x.profit,0)<0);h.click('#details');
   assert.equal(doc.getElementById('drawer-title').textContent,'计算明细');
-  assert.equal(doc.querySelectorAll('.pricing-detail-steps > li').length,6);
+  assertCalculationFlow(doc);
   const extraGrid=doc.querySelector('.pricing-detail-extra-grid');assert.ok(extraGrid);
   const sections=[...extraGrid.querySelectorAll(':scope > .pricing-detail-extra')];
   assert.deepEqual(sections.map(el=>el.id),['detail-multiplier','detail-profit','detail-variance','detail-unit-check']);
@@ -1900,7 +1912,7 @@ test('negative profit and margin remain readable in complete calculation details
   assert.equal(doc.getElementById('unit-p').closest('details,[hidden]'),null,'amount checking is directly editable');
   assert.match(doc.getElementById('profit-equation').textContent,/−\d/);assert.doesNotMatch(doc.getElementById('drawer-body').textContent,/NaN|undefined|Infinity/);
   const before=JSON.stringify(h.api.getState()),original=h.api.current().x;
-  h.input('unit-p','10');assert.match(doc.getElementById('unit-result').textContent,/假设采购成本/);
+  h.input('unit-p','10');assert.match(doc.getElementById('unit-result').textContent,/假设计价成本/);
   h.input('unit-p','');assert.match(doc.getElementById('unit-result').textContent,/正数金额/);
   assert.equal(JSON.stringify(h.api.getState()),before);equal(h.api.current().x.N,original.N);
 });
@@ -1909,7 +1921,7 @@ test('a task input error leaves a valid policy outcome visible while clearing on
   const h=boot(t),doc=h.w.document;h.input('discount','8');const outcome=doc.getElementById('plan-principle').textContent;
   const vin=doc.getElementById('vin');vin.value='';vin.dispatchEvent(new h.w.Event('input',{bubbles:true}));
   assert.equal(doc.getElementById('globalError').hidden,false);assert.equal(doc.getElementById('plan-principle').textContent,outcome);
-  for(const id of ['integer-points','actual-cash','cost-c','model-profit','model-margin'])assert.equal(doc.getElementById(id).textContent,'—');
+  for(const id of ['integer-points','actual-cash','cost-c','model-profit'])assert.equal(doc.getElementById(id).textContent,'—');
   h.input('vin','2');assert.equal(doc.getElementById('globalError').hidden,true);
 });
 
@@ -2017,7 +2029,7 @@ test('record matching considers every task dimension and offers input rather tha
     {model:'seedance-2.5'},{res:'720p'},{ratio:'16:9'},{seconds:'5'},{video:false},{vin:'3'},
   ];
   h.update(s=>{s.observations=variants.map((patch,i)=>({id:'wrong-'+i,title:'不同规格 '+i,params:{...task,...patch},P:'10',C:'7',N:'99',date:'',note:'fixture'}));});
-  assert.equal(actualCostUnavailable(doc),true);
+  assert.equal(actualCostUnavailable(doc),false);
   h.click('#details');assert.match(doc.getElementById('detail-record-context').textContent,/无.*同规格|暂无.*同规格/);
   assert.equal(doc.getElementById('detail-add-observation').closest('[hidden]'),null);h.click('#close-drawer');
   h.addRecord();assert.equal(doc.getElementById('drawer-title').textContent,'录入平台实测');
@@ -2028,7 +2040,7 @@ test('record matching considers every task dimension and offers input rather tha
   assert.equal(actualCostUnavailable(doc),false);nearDisplayed(doc,'record-cost','6');
   assert.match(h.recordDetailsText(),/71/);
   assert.equal(doc.getElementById('task-record-select').closest('[hidden]')!==null,true,'one matching record needs no selector');
-  h.input('seconds','6');assert.equal(actualCostUnavailable(doc),true,'changing output duration removes stale record comparison');assert.equal(selectedCostBasis(doc),'theory');
+  h.input('seconds','6');assert.equal(actualCostUnavailable(doc),false,'actual cost remains selectable without a matching record');assert.equal(selectedCostBasis(doc),'theory');
   h.input('seconds','4');nearDisplayed(doc,'record-cost','6');
 });
 
@@ -2041,10 +2053,10 @@ test('multiple platform records select explicitly and retain missing or zero cos
     {id:'cost-only',title:'仅采购',params:{...s.task},P:'',C:'8',N:'',date:'2026-10-21',note:'fixture'},
   ];});
   const original=plain(h.api.getState().observations),theory=h.api.current().x;
-  assert.equal(doc.getElementById('task-record-select').closest('[hidden]'),null);
+  h.click('#cost-tab-actual');assert.equal(doc.getElementById('task-record-select').closest('[hidden]'),null);
   assert.deepEqual([...doc.getElementById('task-record-select').options].map(o=>o.value),['costed','missing','zero','cost-only']);
   h.input('task-record-select','missing','change');
-  assert.equal(doc.getElementById('record-cost').value.trim(),'','procurement cannot be inferred from a record with unknown cost basis');assert.equal(actualCostUnavailable(doc),true);
+  assert.equal(doc.getElementById('record-cost').value.trim(),'','procurement cannot be inferred from a record with unknown cost basis');assert.equal(actualCostUnavailable(doc),false);
   assert.match(h.recordDetailsText(),/17/);
   h.input('task-record-select','zero','change');h.click('#cost-tab-actual');for(const id of ['record-cost','raw-points','integer-points','actual-cash'])equal(displayedNumeric(doc,id),0);
   assert.match(h.recordDetailsText(),/0/);assert.doesNotMatch(h.recordDetailsText(),/历史.*(?:未记录|未录入)/);
@@ -2072,31 +2084,31 @@ test('the source screenshot preserves Lihua base costs and historical charges wh
   const h=boot(t),doc=h.w.document,old=legacyPlatformRecords(),historical=['30','620','32','752'];
   h.update(()=>{});
   const originals=plain(h.api.getState().observations);
-  for(const [i,o] of originals.entries()){
-    assert.equal(o.provider,'立画');assert.equal(o.costBasis,'platform-list');assert.equal(o.C,'');
+  for(const [i,o] of originals.slice(0,4).entries()){
+    assert.equal(o.provider,'立画');assert.equal(o.costBasis,'recorded');assert.equal(o.C,o.P);
     assert.equal(o.P,old[i].P);assert.equal(o.N,historical[i]);
     assert.deepEqual(o.supplierReference,{q:'0.735',C:old[i].C},'the screenshot supplier column is preserved as a scenario, not an invoice');
   }
   h.input('purchase-discount','10');h.manual('1.65');
-  for(const [i,o] of originals.entries()){
+  for(const [i,o] of originals.slice(0,4).entries()){
     h.update(s=>{s.task={...o.params};});h.click('#cost-tab-actual');
     nearDisplayed(doc,'record-cost',o.P);equal(displayedNumeric(doc,'integer-points'),historical[i]);
     assert.match(h.recordDetailsText(),new RegExp(historical[i]));
-    h.input('purchase-discount','6');const expectedC=E.mul(o.P,'0.6'),expectedRaw=E.mul(expectedC,'16.5');
+    h.input('purchase-discount','6');const expectedC=o.C,expectedRaw=E.mul(expectedC,'16.5');
     nearDisplayed(doc,'record-cost',expectedC);nearDisplayed(doc,'raw-points',expectedRaw);equal(displayedNumeric(doc,'integer-points'),E.ceil(expectedRaw));
     assert.match(h.recordDetailsText(),new RegExp(historical[i]));
     assert.deepEqual(plain(h.api.getState().observations),originals,'scenario changes cannot rewrite the screenshot facts');
     h.input('purchase-discount','10');
   }
-  const rows=plain(h.api.getActualRows());assert.deepEqual(rows.map(o=>o.recordedN),historical);
-  for(const row of rows)assert.equal(row.recordedC,'','exported actual procurement is not populated from a proposed supplier discount');
+  const rows=plain(h.api.getActualRows());assert.deepEqual(rows.slice(0,4).map(o=>o.recordedN),historical);
+  for(const row of rows)assert.equal(row.recordedC,row.recordedP,'historical undiscounted actual cost remains a recorded fact');
   h.click('#export');h.click('#export-json');const payload=JSON.parse(await h.downloads.at(-1).blob.text());
   assert.deepEqual(payload.state.observations,originals);assert.deepEqual(plain(h.api.migrate(payload).value.observations),originals);
 });
 
 test('old unedited default records migrate from misclassified supplier values to source-backed platform records',t=>{
   const h=boot(t),old=plain(h.api.defaults());old.observations=legacyPlatformRecords();
-  const original=JSON.stringify(old),expected=plain(h.api.defaults().observations).map(o=>({...o,usage:o.usage||''}));
+  const original=JSON.stringify(old),expected=plain(h.api.defaults().observations).slice(0,4).map(o=>({...o,usage:o.usage||''}));
   const imported=h.api.migrate({format:'reelay.pricing.v9',state:old}).value;
   assert.deepEqual(plain(imported.observations),expected);assert.equal(JSON.stringify(old),original,'migration never mutates the imported object');
   const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(old)]]);
@@ -2115,7 +2127,7 @@ test('source migration leaves user-edited records and lookalike custom records u
     const expected={...plain(input.observations[0]),usage:''},original=JSON.stringify(input);
     const result=h.api.migrate({format:'reelay.pricing.v9',state:input}).value;
     assert.deepEqual(plain(result.observations[0]),expected,'user-owned edits must not be silently replaced by a newer built-in record');
-    assert.equal(result.observations[1].costBasis,'platform-list','unmodified sibling records still receive the source correction');
+    assert.equal(result.observations[1].costBasis,'recorded','unmodified sibling records still receive the source correction');
     assert.equal(JSON.stringify(input),original);
   }
 });
@@ -2184,10 +2196,112 @@ test('built-in platform evidence preserves the user table separately from comput
   for(const row of source.rows){
     const record=h.api.OBS.find(o=>o.id===row.id);assert.ok(record);
     assert.equal(record.P,row.platformCost);assert.equal(record.N,row.historicalPoints);
-    assert.equal(record.supplierReference.C,row.supplierReference);assert.equal(record.C,'');
+    assert.equal(record.supplierReference.C,row.supplierReference);assert.equal(record.C,row.platformCost);
     assert.equal(record.supplierReference.q,source.supplierRatio);
     assert.equal(E.fixed(E.mul(row.platformCost,source.supplierRatio),6),row.supplierReference);
   }
+});
+
+test('three-model source transcription matches exact task parameters and keeps measured costs and points independent of current procurement',t=>{
+  const h=boot(t),doc=h.w.document,source=JSON.parse(read('evidence/2026-10-22/lihua-three-model-test.json'));
+  const digest=require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(__dirname,'evidence/2026-10-22/lihua-three-model-test.png'))).digest('hex');
+  assert.equal(digest,source.sha256);assert.equal(source.rows.length,12);assert.equal(h.api.OBS.length,12);
+  assert.equal(source.historicalPricing.procurementRatio,'1');assert.equal(source.historicalPricing.multiplier,'1.65');
+  h.update(()=>{});
+  const original=plain(h.api.getState().observations),presets=['none-min','none-max','video-min','video-max'];
+  for(const model of ['seedance-2.0','seedance-2.5','seedance-2.0-fast']){
+    h.input('model',model,'change');h.manual('1.65');
+    const rows=source.rows.filter(row=>row.model===model);
+    for(const [i,row] of rows.entries()){
+      h.click('#quick-toggle');h.click('[data-example="'+presets[i]+'"]');
+      if(h.api.key(h.api.getState().task)!==h.api.key(row)){
+        assert.equal(h.api.getState().observations.filter(o=>h.api.key(o.params)===h.api.key(h.api.getState().task)).length,0,'a higher-resolution maximum cannot borrow this screenshot sample');
+        const {res,ratio,seconds,video,vin}=row;h.update(s=>{s.task={model,res,ratio,seconds,video,vin};});
+      }
+      const matches=h.api.getState().observations.filter(o=>h.api.key(o.params)===h.api.key(row));assert.equal(matches.length,1);
+      const record=matches[0];assert.equal(record.costBasis,'recorded');assert.equal(record.C,row.actualCost);assert.equal(record.P,row.actualCost);assert.equal(record.N,row.actualPoints);
+      assert.deepEqual(plain(record.historicalPricing),{q:'1',M:'1.65'});
+      assert.ok(record.note.trim(),'recorded P=C carries source context');h.click('#cost-tab-actual');
+      h.input('purchase-discount','5');nearDisplayed(doc,'record-cost',row.actualCost);
+      equal(displayedNumeric(doc,'integer-points'),E.ceil(E.mul(row.actualCost,'16.5')));
+      assert.equal(h.api.getState().observations.find(o=>o.id===record.id).N,row.actualPoints,'historical points are never recalculated');
+    }
+  }
+  assert.deepEqual(plain(h.api.getState().observations),original);
+});
+
+test('browser platform samples refresh once without overwriting custom records or repopulating explicit imports',t=>{
+  const h=boot(t),legacy=plain(h.api.defaults());delete legacy.platformSamplesRevision;legacy.observations=legacyDerivedPlatformRecords();
+  const initial=JSON.stringify(legacy),fresh=plain(h.api.defaults().observations);
+  const restored=boot(t,[['reelay_pricing_v9_official',initial]]),after=plain(restored.api.getState());
+  assert.equal(JSON.stringify(legacy),initial);assert.equal(after.platformSamplesRevision,1);assert.equal(after.observations.length,12);
+  assert.equal(new Set(after.observations.map(o=>o.id)).size,12);
+  for(const expected of fresh){const record=after.observations.find(o=>o.id===expected.id);assert.ok(record);assert.equal(record.C,expected.C);assert.equal(record.N,expected.N);assert.equal(record.costBasis,'recorded');}
+  const once=plain(after);once.observations=once.observations.slice(0,4);
+  const onceReload=boot(t,[['reelay_pricing_v9_official',JSON.stringify(once)]]);assert.equal(onceReload.api.getState().observations.length,4,'a user deletion is not repopulated after revision completion');
+  const customized=plain(legacy);customized.observations[0].note='用户确认过的定制说明';
+  const collision={...plain(fresh[4]),title:'用户自有同 ID',C:'9',P:'10',N:'111',note:'custom collision'};customized.observations.push(collision);
+  const customReload=boot(t,[['reelay_pricing_v9_official',JSON.stringify(customized)]]),customRows=plain(customReload.api.getState().observations);
+  assert.equal(customRows.length,12);assert.deepEqual(customRows.find(o=>o.id===collision.id),{...collision,usage:collision.usage||''});
+  assert.equal(customRows[0].note,customized.observations[0].note);assert.equal(customRows[0].C,'');assert.equal(customRows[0].costBasis,'platform-list');
+  const duplicate=plain(legacy);duplicate.observations.push({...plain(fresh[4]),id:'existing-same-measurement',title:'已保存的同次实测'});
+  const dedup=boot(t,[['reelay_pricing_v9_official',JSON.stringify(duplicate)]]).api.getState().observations;
+  assert.equal(dedup.length,12);assert.ok(dedup.some(o=>o.id==='existing-same-measurement'));assert.ok(!dedup.some(o=>o.id===fresh[4].id),'same task, C and N are not appended under another ID');
+  const imported=h.api.migrate({format:'reelay.pricing.v9',state:legacy}).value;
+  assert.equal(imported.platformSamplesRevision,1);assert.equal(imported.observations.length,4);
+  const importReload=boot(t,[['reelay_pricing_v9_official',JSON.stringify(imported)]]);assert.deepEqual(plain(importReload.api.getState().observations),plain(imported.observations));
+  const crowded=plain(legacy);crowded.observations=Array.from({length:199},(_,i)=>({...plain(fresh[0]),id:'custom-'+i,title:'自有记录 '+i}));
+  const crowdedReload=boot(t,[['reelay_pricing_v9_official',JSON.stringify(crowded)]]),crowdedRows=crowdedReload.api.getState().observations;
+  assert.ok(crowdedRows.length<=200);assert.equal(crowdedRows.filter(o=>o.id.startsWith('custom-')).length,199,'refresh preserves every existing record at the collection limit');
+});
+
+test('legacy source correction preserves added provider metadata and API usage on otherwise untouched records',t=>{
+  const h=boot(t);
+  for(const patch of [{provider:'用户指定供应商'},{customMetadata:{confirmed:true}},{usage:'123456'}]){
+    const legacy=plain(h.api.defaults());delete legacy.platformSamplesRevision;
+    legacy.observations=legacyPlatformRecords();Object.assign(legacy.observations[0],patch);
+    const expected={...plain(legacy.observations[0]),usage:patch.usage||''};
+    const imported=h.api.migrate({format:'reelay.pricing.v9',state:legacy}).value;
+    assert.deepEqual(plain(imported.observations[0]),expected,'extra user evidence makes the legacy record user-owned');
+    const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(legacy)]]);
+    assert.deepEqual(plain(restored.api.getState().observations.find(o=>o.id==='s1')),expected);
+    assert.equal(restored.api.getState().observations.find(o=>o.id==='s2').costBasis,'recorded','an unchanged sibling still receives the correction');
+  }
+});
+
+test('seeding a previously record-less task rebinds its saved actual-cost draft without losing custom empty or zero values',t=>{
+  const base=boot(t);base.input('model','seedance-2.5','change');
+  const sample=plain(base.api.OBS.find(o=>o.id==='lihua-20261022-s25-1'));
+  for(const value of ['2.75','','0']){
+    const legacy=plain(base.api.getState());delete legacy.platformSamplesRevision;legacy.observations=legacyDerivedPlatformRecords();legacy.task=plain(sample.params);
+    legacy.taskCostInput={taskKey:base.api.key(sample.params),recordId:'',value};
+    const restored=boot(t,[['reelay_pricing_v9_official',JSON.stringify(legacy)]]);
+    const verify=h=>{
+      const state=h.api.getState(),doc=h.w.document;
+      assert.deepEqual(plain(state.taskCostInput),{taskKey:base.api.key(sample.params),recordId:sample.id,value});
+      assert.equal(doc.getElementById('record-cost').value,value);
+      h.click('#cost-tab-actual');
+      if(value==='')assertPendingActual(doc);
+      else {nearDisplayed(doc,'raw-points',E.mul(E.mul(value,h.api.pricing().usedM),10));equal(displayedNumeric(doc,'integer-points'),E.ceil(E.mul(E.mul(value,h.api.pricing().usedM),10)));}
+      const record=state.observations.find(o=>o.id===sample.id);assert.equal(record.C,sample.C);assert.equal(record.N,sample.N);
+    };
+    verify(restored);
+    const saved=restored.w.localStorage.getItem('reelay_pricing_v9_official');verify(boot(t,[['reelay_pricing_v9_official',saved]]));
+  }
+});
+
+test('pending actual detail entry edits its own record or restores its own task before focusing cost input',t=>{
+  const h=boot(t),doc=h.w.document,mainTask=plain(h.api.getState().task),otherTask={model:'seedance-2.5',res:'720p',ratio:'16:9',seconds:'12',video:false,vin:'2'};
+  h.update(s=>{s.observations=[{id:'pending-other',title:'另一任务缺成本',params:otherTask,P:'10',C:'',N:'17',date:'',note:'fixture'}];});
+  h.api.openDetails('actual','pending-other');h.good();
+  h.click('.pricing-pending [data-edit-observation="pending-other"]');
+  assert.equal(doc.getElementById('o-model').value,otherTask.model);assert.equal(doc.getElementById('o-seconds').value,otherTask.seconds);assert.equal(doc.getElementById('o-n').value,'17');
+  assert.equal(h.api.key(h.api.getState().task),h.api.key(mainTask),'record editing does not replace the active generation task');h.click('#cancel-observation');h.click('#close-drawer');
+  h.update(s=>{s.workspace='actual';});h.api.openDetails('inline','',otherTask);h.good();
+  h.click('#detail-enter-cost');assert.equal(h.api.getState().workspace,'theory');assert.equal(h.api.key(h.api.getState().task),h.api.key(otherTask));
+  assert.equal(doc.getElementById('modal').hidden,true);assert.equal(doc.activeElement.id,'record-cost');assertPendingActual(doc);
+  h.input('record-cost','4');nearDisplayed(doc,'raw-points',E.mul('4','16.5'));
+  assert.equal(h.api.getState().observations[0].C,'');assert.equal(h.api.getState().observations[0].N,'17');
 });
 
 test('selecting a record in details updates the same-specification comparison without mutating history',t=>{
@@ -2241,16 +2355,16 @@ test('precision stays an accessible icon and task explanations share the existin
   assert.equal(doc.querySelector('[data-pricing-help]'),null);assert.equal(doc.getElementById('pricing-hint'),null);
   const before=plain(h.api.getState());
   h.click('#details');assert.equal(doc.getElementById('modal').hidden,false);
-  const steps=[...doc.querySelectorAll('.pricing-detail-steps > li')];assert.equal(steps.length,6);
-  assert.match(steps[0].textContent,/火山刊例成本/);assert.match(steps[5].textContent,/目标售价/);
-  assert.match(steps[5].textContent,/折扣.*毛利/);
+  const steps=[...doc.querySelectorAll('.pricing-detail-steps > li')];assertCalculationFlow(doc);
+  assert.match(steps[0].textContent,/火山刊例成本/);assert.match(doc.getElementById('detail-variance').textContent,/目标售价/);
+  assert.ok(doc.getElementById('detail-variance').textContent.trim());
   h.click('#close-drawer');
   assert.deepEqual(plain(h.api.getState()),before,'viewing calculation details leaves pricing and historical records unchanged');
   h.manual('1.65');h.click('#details');
-  const manualTarget=doc.querySelectorAll('.pricing-detail-steps > li')[5];assert.match(manualTarget.textContent,/取整前金额/);
-  assert.doesNotMatch(manualTarget.textContent,/目标售价|设定售价/);
+  const manualTarget=doc.getElementById('detail-variance');assert.match(manualTarget.textContent,/取整前金额/);
+  assert.doesNotMatch(manualTarget.textContent,/目标售价\s*[=：]\s*[0-9]/);
   h.click('#close-drawer');h.click('#restore-auto-multiplier');h.click('#details');
-  assert.match(doc.querySelectorAll('.pricing-detail-steps > li')[5].textContent,/目标售价/);h.click('#close-drawer');
+  assert.match(doc.getElementById('detail-variance').textContent,/目标售价/);h.click('#close-drawer');
   const strip=doc.querySelector('.task-cost-strip');assert.ok(strip);
   for(const id of ['task-list-cost','cost-c','record-cost'])assert.ok(strip.contains(doc.getElementById(id)));
   assert.equal(doc.getElementById('theory-settlement-row'),null);assert.equal(doc.getElementById('record-settlement-row'),null);
@@ -2307,14 +2421,14 @@ test('task cost basis controls one settlement, comparisons and details without c
   nearDisplayed(doc,'raw-points',a.raw);equal(displayedNumeric(doc,'integer-points'),a.N);nearDisplayed(doc,'actual-cash',a.cash);
   nearDisplayed(doc,'task-target-amount',a.target);nearDisplayed(doc,'task-gap',E.sub(a.cash,a.target));
   nearDisplayed(doc,'task-effective',E.mul(E.div(a.cash,a.P),10),4);
-  nearDisplayed(doc,'model-profit',a.cashProfit);nearDisplayed(doc,'model-margin',a.salesMarginPct,4);
+  nearDisplayed(doc,'model-profit',a.cashProfit);assert.equal(doc.getElementById('model-margin'),null);
   assert.match(h.recordDetailsText(),/99/);
   h.click('#details');assert.equal(doc.getElementById('drawer-title').textContent,'实测复算');h.click('#close-drawer');
   h.click('#cost-tab-theory');nearDisplayed(doc,'actual-cash',theory.cash);
   h.click('#details');assert.equal(doc.getElementById('drawer-title').textContent,'计算明细');h.click('#close-drawer');
   assert.deepEqual(plain(h.api.getState()),before,'basis is a view selection, not a pricing or evidence mutation');
   h.click('#cost-tab-actual');h.input('seconds','5');
-  assert.equal(selectedCostBasis(doc),'theory');assert.equal(actualCostUnavailable(doc),true);
+  assert.equal(selectedCostBasis(doc),'actual');assert.equal(actualCostUnavailable(doc),false);
 });
 
 test('actual cost without list price computes settlement but never invents target or equivalent discount',t=>{
@@ -2327,8 +2441,8 @@ test('actual cost without list price computes settlement but never invents targe
   h.manual('1.65');
   const manual=h.api.recalcRecord(h.api.getState().observations[0]),rawCash=E.mul(manual.raw,h.api.pricing().U);
   nearDisplayed(doc,'task-target-amount',rawCash);nearDisplayed(doc,'task-gap',E.sub(manual.cash,rawCash));assert.equal(displayText(doc,'task-effective'),'—');
-  h.update(s=>{s.observations=[];});assert.equal(selectedCostBasis(doc),'theory');
-  assert.equal(actualCostUnavailable(doc),true);nearDisplayed(doc,'actual-cash',h.api.current().x.cash);
+  h.update(s=>{s.observations=[];});assert.equal(selectedCostBasis(doc),'actual');
+  assert.equal(actualCostUnavailable(doc),false);assertPendingActual(doc);
   for(const id of ['record-raw','record-points','record-cash','record-settlement-row','theory-settlement-row'])assert.equal(doc.getElementById(id),null);
 });
 
@@ -2355,7 +2469,7 @@ test('inline actual cost enables the basis and settles the entered C once withou
   h.click('#cost-tab-theory');nearDisplayed(doc,'actual-cash',h.api.current().x.cash);
 });
 
-test('blank and invalid inline costs disable actual while zero remains usable and drafts persist by task and record',t=>{
+test('blank and invalid inline costs keep actual pending while zero remains usable and drafts persist by task and record',t=>{
   const h=boot(t),doc=h.w.document;
   h.update(s=>{s.observations=[{id:'inline-a',title:'记录A',params:{...s.task},P:'10',C:'3',N:'99',date:'',note:'fixture'},{id:'inline-b',title:'记录B',params:{...s.task},P:'20',C:'4',N:'88',date:'',note:'fixture'}];});
   const observations=plain(h.api.getState().observations),basis=doc.getElementById('cost-tab-actual');
@@ -2371,12 +2485,12 @@ test('blank and invalid inline costs disable actual while zero remains usable an
   assert.equal(secondRestored.w.document.getElementById('task-record-select').value,'inline-b');
   assert.equal(secondRestored.w.document.getElementById('record-cost').value,'9.87');
   for(const bad of ['', '-1','abc','1.123456789012345678901']){
-    h.input('record-cost',bad);assert.equal(basis.disabled,false);assert.equal(selectedCostBasis(doc),'theory');assert.equal(actualCostUnavailable(doc),true);
-    nearDisplayed(doc,'actual-cash',h.api.current().x.cash);
+    h.input('record-cost',bad);assert.equal(basis.disabled,false);assert.equal(selectedCostBasis(doc),'actual');assert.equal(actualCostUnavailable(doc),false);
+    assertPendingActual(doc);
   }
   h.input('record-cost','0');assert.equal(basis.disabled,false);h.click('#cost-tab-actual');
   for(const id of ['raw-points','integer-points','actual-cash'])equal(displayedNumeric(doc,id),0);
-  h.input('seconds','5');assert.equal(selectedCostBasis(doc),'theory');assert.equal(basis.disabled,false);assert.equal(doc.getElementById('record-cost').value,'');
+  h.input('seconds','5');assert.equal(selectedCostBasis(doc),'actual');assertPendingActual(doc);assert.equal(basis.disabled,false);assert.equal(doc.getElementById('record-cost').value,'');
   assert.deepEqual(plain(h.api.getState().observations),observations);
 });
 
@@ -2387,7 +2501,7 @@ test('inline cost correction resumes actual only when intended and restoring a r
   const original=plain(h.api.getState().observations),basis=doc.getElementById('cost-tab-actual');
   assert.equal(doc.getElementById('record-cost').value,'3');h.click('#details');assert.equal(doc.getElementById('restore-record-cost'),null);h.click('#close-drawer');
   h.input('record-cost','8');h.click('#details');assert.ok(doc.getElementById('restore-record-cost'));h.click('#close-drawer');
-  h.click('#cost-tab-actual');h.input('record-cost','');assert.equal(selectedCostBasis(doc),'theory');assert.equal(basis.disabled,false);
+  h.click('#cost-tab-actual');h.input('record-cost','');assert.equal(selectedCostBasis(doc),'actual');assertPendingActual(doc);assert.equal(basis.disabled,false);
   h.input('record-cost','9');assert.equal(selectedCostBasis(doc),'actual','correcting an interrupted actual draft resumes the selected basis');
   h.click('#cost-tab-theory');h.input('record-cost','bad');assert.equal(selectedCostBasis(doc),'theory');
   h.input('record-cost','7');assert.equal(selectedCostBasis(doc),'theory','explicit theory choice cancels automatic resumption');
@@ -2399,15 +2513,55 @@ test('inline cost correction resumes actual only when intended and restoring a r
 });
 
 
-test('missing actual cost tab explains its unavailable state and focuses the cost input',t=>{
+test('actual cost tab opens an inline editor without stealing focus and retains selection while its amount is missing',t=>{
   const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});
   const tab=doc.getElementById('cost-tab-actual');
-  assert.equal(tab.disabled,false);assert.equal(actualCostUnavailable(doc),true);
-  h.click('#cost-tab-actual');assert.match(doc.getElementById('toast').textContent,/请先录入立画成本/);
-  assert.equal(selectedCostBasis(doc),'theory');assert.equal(doc.activeElement.id,'record-cost');
+  assert.equal(tab.disabled,false);assert.equal(actualCostUnavailable(doc),false);
+  assert.ok(doc.getElementById('record-cost').closest('[hidden]'));
+  assert.equal(doc.getElementById('task-actual-cost').textContent.trim(),'—');
+  assert.equal(doc.getElementById('task-actual-cost').parentElement.getAttribute('aria-hidden'),'false');
+  tab.focus();h.click('#cost-tab-actual');assertPendingActual(doc);
+  assert.equal(doc.activeElement,tab);assert.equal(doc.getElementById('record-cost').closest('[hidden]'),null);
+  assert.equal(doc.getElementById('task-actual-cost').parentElement.getAttribute('aria-hidden'),'true','selected cost has a single accessible editable value');
+  assert.equal(doc.getElementById('record-cost-error').hidden,false);
   h.input('record-cost','2');assert.equal(actualCostUnavailable(doc),false);
-  assert.equal(selectedCostBasis(doc),'theory','editing cost does not itself select a tab');
+  assert.equal(selectedCostBasis(doc),'actual');assert.equal(doc.getElementById('record-cost-error').hidden,true);
+  h.input('record-cost','');assertPendingActual(doc);
+  h.input('record-cost','0');for(const id of ['raw-points','integer-points','actual-cash'])equal(displayedNumeric(doc,id),0);
+  h.click('#cost-tab-theory');assert.ok(doc.getElementById('record-cost').closest('[hidden]'));assert.equal(doc.getElementById('record-cost-error').hidden,true);
+  equal(displayedNumeric(doc,'task-actual-cost'),0);
   doc.getElementById('toast').textContent='';h.click('#cost-tab-actual');assert.equal(doc.getElementById('toast').textContent,'');assert.equal(selectedCostBasis(doc),'actual');
+});
+
+test('actual pending details and TXT never reuse a recorded or saved cost beneath an invalid inline draft',async t=>{
+  for(const recorded of [false,true]){
+    const h=boot(t),doc=h.w.document;
+    h.update(s=>{s.observations=recorded?[{id:'pending-record',title:'保留原始记录',params:{...s.task},P:'10',C:'3',N:'99',date:'',note:'fixture'}]:[];});
+    const observations=plain(h.api.getState().observations);
+    h.click('#cost-tab-actual');h.input('record-cost','7.123');
+    const validDraft=plain(h.api.getState().taskCostInput);
+    for(const bad of ['bad','-2','']){
+      h.input('record-cost',bad);assertPendingActual(doc);
+      assert.equal(doc.getElementById('record-cost-error').hidden,false);
+      if(bad!=='')assert.deepEqual(plain(h.api.getState().taskCostInput),validDraft,'invalid text remains a draft without overwriting saved valid data');
+      h.click('#details');
+      const body=doc.getElementById('drawer-body');assert.match(body.textContent,/录入|输入|缺少/);
+      for(const value of body.querySelectorAll('.pricing-detail-steps .detail-value'))assert.doesNotMatch(value.textContent,/7\.123/);
+      h.click('#export-calculation');const exported=await h.downloads.at(-1).blob.text();
+      assert.match(exported,/待录入|待输入|缺少/);
+      for(const label of ['取整前积分','核算扣分','折合金额']){
+        const line=exported.split('\n').find(line=>line.startsWith(label));assert.ok(line,'pending export retains '+label+' context');
+        assert.match(line,/未知|待录入|待输入|—|未录入/,'pending '+label+' never falls back to saved cost');
+      }
+      h.click('#close-drawer');assertPendingActual(doc);
+      assert.deepEqual(plain(h.api.getState().observations),observations);
+    }
+    h.input('record-cost','0');equal(displayedNumeric(doc,'actual-cash'),0);
+    h.input('seconds','5');assertPendingActual(doc);assert.equal(doc.getElementById('record-cost').value,'');
+    h.input('model','seedance-2.5','change');assertPendingActual(doc);assert.equal(actualCostUnavailable(doc),false);
+    h.input('record-cost','2');nearDisplayed(doc,'raw-points',E.mul(E.mul('2',h.api.pricing().usedM),10));
+    assert.equal(doc.getElementById('model-margin'),null);assert.match(doc.querySelector('.task-panel').textContent,/单次任务毛利/);
+  }
 });
 
 test('discount comparison has no CSV export surface or dispatch route while actual CSV remains available',async t=>{
@@ -2540,7 +2694,7 @@ test('list cost tab settles C equal to P using unchanged model pricing and share
   }
 });
 
-test('cost tabs expose one labelled panel, support keyboard selection and skip unavailable actual cost',t=>{
+test('cost tabs expose one labelled panel and keyboard selection includes actual even when its cost is missing',t=>{
   const h=boot(t),doc=h.w.document;h.update(s=>{s.observations=[];});
   const panel=doc.getElementById('task-basis-results');assert.equal(panel.getAttribute('role'),'tabpanel');
   const verify=mode=>{assert.equal(selectedCostBasis(doc),mode);assert.equal(panel.getAttribute('aria-labelledby'),'cost-tab-'+mode);
@@ -2548,10 +2702,10 @@ test('cost tabs expose one labelled panel, support keyboard selection and skip u
     for(const tab of tabs){assert.equal(tab.getAttribute('role'),'tab');assert.equal(tab.tabIndex,tab.dataset.costBasis===mode?0:-1);}};
   const key=(mode,key)=>{doc.getElementById('cost-tab-'+mode).dispatchEvent(new h.w.KeyboardEvent('keydown',{key,bubbles:true,cancelable:true}));h.good();};
   verify('theory');key('theory','ArrowLeft');verify('list');assert.equal(doc.activeElement.id,'cost-tab-list');
-  key('list','End');verify('theory');key('theory','ArrowRight');verify('list');
+  key('list','End');verify('actual');key('actual','ArrowRight');verify('list');
   h.input('record-cost','2');verify('list');doc.getElementById('record-cost').click();verify('list');
   key('list','End');verify('actual');key('actual','Home');verify('list');key('list','ArrowRight');verify('theory');key('theory','ArrowRight');verify('actual');
-  h.input('record-cost','');verify('theory');assert.equal(actualCostUnavailable(doc),true);
+  h.input('record-cost','');verify('actual');assertPendingActual(doc);assert.equal(actualCostUnavailable(doc),false);
   h.input('record-cost','3');verify('actual');
 });
 
@@ -2565,7 +2719,7 @@ test('list-cost details, usage return and export retain the selected basis acros
   assert.deepEqual(plain(h.api.getState().plan.modelPricing),profiles);equal(h.api.pricing().usedM,'1.65');
   const P=h.api.current().x.P;h.click('#details');
   const body=doc.getElementById('drawer-body'),steps=body.querySelectorAll('.pricing-detail-steps > li');
-  assert.equal(steps.length,6);assert.match(steps[1].textContent,/不应用采购折扣/);
+  assertCalculationFlow(doc);assert.match(steps[1].textContent,/不应用采购折扣/);
   equal(steps[1].querySelector('strong').title,P,'detail cost uses P rather than discounted C');
   const detailText=body.textContent;h.click('#detail-usage');h.click('#back-pricing-details');assert.equal(body.textContent,detailText);
   h.click('#export-calculation');assert.match(h.downloads.at(-1).name,/刊例成本/);assert.match(await h.downloads.at(-1).blob.text(),/采用火山刊例成本/);
@@ -2585,7 +2739,8 @@ test('entire cost tabs select their basis including amount children while the ac
   h.click('#task-list-cost');assert.equal(selectedCostBasis(doc),'list');
   h.click('#cost-c');assert.equal(selectedCostBasis(doc),'theory');
   h.click('#cost-tab-list');assert.equal(selectedCostBasis(doc),'list','clicking the button surface selects the same basis as its amount');
-  input.focus();h.click('#record-cost');h.input('record-cost','2.5');assert.equal(selectedCostBasis(doc),'list');assert.equal(doc.activeElement,input);
+  assert.ok(input.closest('[hidden]'));h.click('#task-actual-cost');assert.equal(selectedCostBasis(doc),'actual');
+  input.focus();h.click('#record-cost');h.input('record-cost','2.5');assert.equal(selectedCostBasis(doc),'actual');assert.equal(doc.activeElement,input);
   h.click('#cost-tab-actual');assert.equal(selectedCostBasis(doc),'actual');
   const expected=E.settle(h.api.current().x.P,E.dec('2.5'),h.api.pricing());nearDisplayed(doc,'actual-cash',expected.cash);
   h.click('#cost-tab-theory');assert.equal(selectedCostBasis(doc),'theory');nearDisplayed(doc,'actual-cash',h.api.current().x.cash);
@@ -2597,10 +2752,10 @@ test('record provenance and actions live in calculation details while main cost 
   h.update(s=>{s.observations=[{id:'context-first',title:'来源A',params:{...s.task},provider:'立画',P:'10',C:'3',N:'71',date:'',note:'fixture'},{id:'context-second',title:'来源B',params:{...s.task},P:'20',C:'6',N:'82',date:'',note:'fixture'}];});
   const original=plain(h.api.getState().observations),taskPanel=doc.querySelector('.task-panel');
   for(const id of ['task-record-context','task-record-note','task-record-history','task-record-link','task-record-add','restore-record-cost'])assert.equal(doc.getElementById(id),null);
-  const select=doc.getElementById('task-record-select');assert.ok(select.closest('.task-cost-editor'));assert.equal(select.closest('[hidden]'),null);
+  const select=doc.getElementById('task-record-select');assert.ok(select.closest('#task-basis-results .task-record-picker'));assert.ok(select.closest('[hidden]'));h.click('#cost-tab-actual');assert.equal(select.closest('[hidden]'),null);
   assert.doesNotMatch(taskPanel.textContent,/历史实扣|查看记录/);
   for(const basis of ['theory','list']){
-    h.click('#cost-tab-'+basis);h.click('#details');
+    h.click('#cost-tab-'+basis);assert.ok(select.closest('[hidden]'),'record choice only belongs to actual cost');h.click('#details');
     const context=doc.getElementById('detail-record-context');assert.ok(context);assert.match(context.textContent,/来源A/);assert.match(context.textContent,/71/);
     assert.ok(context.querySelector('[data-observation="context-first"]'));assert.ok(context.querySelector('[data-edit-observation="context-first"]'));assert.equal(context.querySelector('#detail-add-observation'),null);
     h.click('#detail-usage');h.click('#back-pricing-details');assert.match(doc.getElementById('detail-record-context').textContent,/来源A/);h.click('#close-drawer');assert.equal(selectedCostBasis(doc),basis);
@@ -2694,7 +2849,11 @@ test('manual and automatic detail TXT exports describe the correct cash benchmar
       P='10';C='3.125';h.click('#cost-tab-actual');
     }
     const observations=plain(h.api.getState().observations),expected=E.settle(P,C,p);
-    h.click('#details');h.click('#export-calculation');
+    h.click('#details');assertCalculationFlow(h.w.document);
+    for(const id of ['detail-multiplier','detail-profit','detail-variance','detail-unit-check']){
+      const section=h.w.document.getElementById(id);assert.ok(section?.closest('.pricing-detail-extra-grid'));assert.equal(section.closest('details,[hidden]'),null);
+    }
+    h.click('#export-calculation');
     const text=await h.downloads.at(-1).blob.text();
     const amount=label=>{const line=text.split('\n').find(line=>line.startsWith(label+' = '));assert.ok(line,mode+'/'+basis+' includes '+label);return line.slice((label+' = ').length);};
     if(mode==='manual'){

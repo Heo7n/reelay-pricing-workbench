@@ -1,0 +1,140 @@
+{
+  "source": "User-supplied Lihua platform test screenshot",
+  "receivedAt": "2026-10-22",
+  "measurementDate": null,
+  "image": "lihua-three-model-test.png",
+  "sha256": "4a236f3a26a5e002fbff1afa6d38ab02dfaa6cac351efa579b4680e25a9c8bad",
+  "historicalPricing": {
+    "procurementRatio": "1",
+    "multiplier": "1.65",
+    "recharge": null
+  },
+  "rows": [
+    {
+      "model": "seedance-2.5",
+      "res": "480p",
+      "ratio": "1:1",
+      "seconds": "4",
+      "video": false,
+      "vin": "2",
+      "actualCost": "2.716000",
+      "actualPoints": "45"
+    },
+    {
+      "model": "seedance-2.5",
+      "res": "1080p",
+      "ratio": "21:9",
+      "seconds": "30",
+      "video": false,
+      "vin": "2",
+      "actualCost": "113.14164",
+      "actualPoints": "1867"
+    },
+    {
+      "model": "seedance-2.5",
+      "res": "480p",
+      "ratio": "1:1",
+      "seconds": "4",
+      "video": true,
+      "vin": "2",
+      "actualCost": "2.824584",
+      "actualPoints": "47"
+    },
+    {
+      "model": "seedance-2.5",
+      "res": "1080p",
+      "ratio": "21:9",
+      "seconds": "30",
+      "video": true,
+      "vin": "30",
+      "actualCost": "133.483950",
+      "actualPoints": "2203"
+    },
+    {
+      "model": "seedance-2.0",
+      "res": "480p",
+      "ratio": "1:1",
+      "seconds": "4",
+      "video": false,
+      "vin": "2",
+      "actualCost": "1.784800",
+      "actualPoints": "30"
+    },
+    {
+      "model": "seedance-2.0",
+      "res": "1080p",
+      "ratio": "21:9",
+      "seconds": "15",
+      "video": false,
+      "vin": "2",
+      "actualCost": "37.520955",
+      "actualPoints": "620"
+    },
+    {
+      "model": "seedance-2.0",
+      "res": "480p",
+      "ratio": "1:1",
+      "seconds": "4",
+      "video": true,
+      "vin": "2",
+      "actualCost": "1.892800",
+      "actualPoints": "32"
+    },
+    {
+      "model": "seedance-2.0",
+      "res": "1080p",
+      "ratio": "21:9",
+      "seconds": "15",
+      "video": true,
+      "vin": "15",
+      "actualCost": "45.550532",
+      "actualPoints": "752"
+    },
+    {
+      "model": "seedance-2.0-fast",
+      "res": "480p",
+      "ratio": "1:1",
+      "seconds": "4",
+      "video": false,
+      "vin": "2",
+      "actualCost": "1.435600",
+      "actualPoints": "24"
+    },
+    {
+      "model": "seedance-2.0-fast",
+      "res": "720p",
+      "ratio": "4:3",
+      "seconds": "15",
+      "video": false,
+      "vin": "2",
+      "actualCost": "12.097039",
+      "actualPoints": "200"
+    },
+    {
+      "model": "seedance-2.0-fast",
+      "res": "480p",
+      "ratio": "1:1",
+      "seconds": "4",
+      "video": true,
+      "vin": "2",
+      "actualCost": "1.487200",
+      "actualPoints": "25"
+    },
+    {
+      "model": "seedance-2.0-fast",
+      "res": "720p",
+      "ratio": "4:3",
+      "seconds": "15",
+      "video": true,
+      "vin": "15",
+      "actualCost": "14.365758",
+      "actualPoints": "238"
+    }
+  ],
+  "notes": [
+    "Actual cost and actual points are independently transcribed. Do not replace historical points with recalculated points.",
+    "The four 2.5 and four Fast rows match their respective four quick presets exactly. All task parameters must match before applying a sample.",
+    "The 2.0 rows confirm the earlier original costs and points. Only untouched built-in derived records are corrected to direct actual costs; supplier comparisons and user edits are preserved.",
+    "At measurement procurement ratio was 1, so the recorded undiscounted cost P equals actual cost C; neither is populated from the estimated column."
+  ]
+}

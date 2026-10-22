@@ -221,21 +221,33 @@
 .currency-symbol{font:inherit;color:inherit}.metric-unit{margin-left:5px;font-size:12px;color:var(--muted);font-weight:400;white-space:nowrap}
 .task-cost-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0;isolation:isolate}.task-cost-tabs{display:contents}.task-cost-tab{grid-row:1;position:relative;display:flex;flex-direction:column;gap:8px;min-width:0;min-height:86px;margin:0 0 -1px;padding:12px 14px 13px;border:1px solid transparent;border-bottom-color:#dbe2ed;border-radius:8px 8px 0 0;background:#f5f7fa;color:var(--sub);font-size:12px;font-weight:500;text-align:left;line-height:20px;cursor:pointer}.task-cost-tab[data-cost-basis=list]{grid-column:1}.task-cost-tab[data-cost-basis=theory]{grid-column:2}.task-cost-tab[data-cost-basis=actual]{grid-column:3}.task-cost-tab:hover{background:#edf2fa;color:var(--accent)}.task-cost-tab[aria-selected=true]{z-index:1;color:var(--accent);font-weight:600;background:white;border-color:#dbe2ed;border-bottom-color:white;box-shadow:inset 0 2px 0 var(--accent)}.task-cost-tab[aria-disabled=true]{color:#9ba3af}.task-cost-tab:disabled{cursor:not-allowed}.task-cost-tab:focus-visible{outline-offset:-4px;z-index:2}.task-cost-name{display:block;min-height:20px}
 .task-cost-editor{display:flex;flex-direction:column;gap:6px;grid-column:3;grid-row:1;align-self:end;min-width:0;margin:0 14px 13px;position:relative;z-index:3;pointer-events:none}.task-cost-input{display:flex;align-items:center;gap:4px;margin:0;border:1px solid #dce2eb;border-radius:5px;background:white;padding:0 7px;min-height:32px;pointer-events:auto;cursor:text}.task-cost-input .currency-symbol{font-size:15px;color:var(--sub)}.task-cost-input #record-cost{height:30px;border:0;padding:0;background:transparent;font-size:17px;box-shadow:none;outline:none;min-width:0}.task-cost-input:focus-within{border-color:#9fb3e6;box-shadow:0 0 0 2px #355cca14}.task-cost-input:has([aria-invalid=true]){border-color:var(--red);background:#fff7f7}.task-cost-input input::placeholder{font-size:12px;color:var(--muted)}.cost-input-error{font-size:11px;line-height:1.6;color:var(--red);margin:0 0 12px}#task-basis-results{border:1px solid #dbe2ed;border-radius:0 0 8px 8px;background:white;padding:20px 14px 14px}
-.task-cost-strip.has-multiple-records .task-cost-tab{min-height:116px}.task-cost-editor #task-record-select{width:100%;height:24px;min-width:0;pointer-events:auto;border:1px solid #dce2eb;border-radius:4px;background:white;font-size:10px;color:var(--sub);padding:0 4px;text-overflow:ellipsis;cursor:pointer}
+.task-cost-tab.is-editing .settlement-value{visibility:hidden}.task-record-picker{display:flex;align-items:center;gap:12px;margin:0 0 14px;font-size:11px;color:var(--muted)}.task-record-picker label{flex:none}.task-record-picker select{width:auto;max-width:100%;min-width:0;flex:1;height:30px;border:1px solid #dce2eb;border-radius:5px;background:white;font:inherit;color:var(--sub);padding:0 8px;text-overflow:ellipsis;cursor:pointer}.cost-input-error.is-pending{color:var(--sub)}
 .task-billing-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin:0;padding:0;align-items:start}.task-billing-strip dl{min-width:0;margin:0}.task-panel dt{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-bottom:7px}.task-panel .settlement-value{display:flex;align-items:baseline;min-width:0;margin:0;font-size:18px;font-weight:450;line-height:1.5;color:var(--ink);white-space:nowrap;overflow-x:auto;scrollbar-width:thin}.task-panel .settlement-value .num{flex:none}.settlement-value[data-empty=true]>.currency-symbol,.settlement-value[data-empty=true]>.metric-unit{visibility:hidden}.task-cost-strip .settlement-value{min-height:32px;align-items:center;font-size:17px;color:var(--sub)}.task-billing-strip .settlement-value{min-height:34px;align-items:center}.task-billing-strip .task-deduction .settlement-value{color:var(--accent);font-size:23px;font-weight:550;line-height:34px}
 .task-payment-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin:18px 0 0;padding-top:16px;border-top:1px solid #edf0f4}.task-billing-strip .task-final-amount .settlement-value{font-size:23px;font-weight:550;line-height:34px}.task-payment-strip .settlement-value{line-height:26px;font-size:16px;color:var(--sub)}.task-payment-strip dt{font-size:11px;margin-bottom:4px}
 @container task-panel (max-width:540px){.task-billing-strip,.task-payment-strip{gap:12px}.task-panel .settlement-value{font-size:16px}.task-billing-strip .task-deduction .settlement-value{font-size:22px}.task-cost-tab{padding-left:10px;padding-right:10px}.task-cost-editor{margin-left:10px;margin-right:10px}#task-basis-results{padding-left:10px;padding-right:10px}}
 @container task-panel (max-width:360px){.task-cost-tab{font-size:11px;padding:11px 6px 12px;min-height:85px}.task-cost-editor{margin:0 6px 12px}.task-cost-input{padding:0 4px;gap:2px}.task-cost-input #record-cost,.task-cost-strip .settlement-value{font-size:14px}.task-billing-strip,.task-payment-strip{grid-template-columns:minmax(0,1fr);gap:12px}#task-basis-results{padding:16px 10px 12px}}
-.task-profit-summary{display:flex;align-items:baseline;justify-content:flex-start;gap:8px 28px;flex-wrap:wrap;margin:14px 0 0;padding:10px 12px;border:0;border-radius:6px;background:#f7f9fc}.task-profit-summary>div{display:flex;align-items:baseline;gap:8px;min-width:0}.task-panel .task-profit-summary dt{margin:0;font-size:11px}.task-profit-summary dt{font-size:11px;color:var(--muted)}.task-profit-summary dd{margin:0;font-size:14px;color:var(--sub);overflow-wrap:anywhere}.task-profit-summary .loss{color:var(--red)}
+.task-profit-summary{display:flex;align-items:baseline;justify-content:flex-start;gap:8px 28px;flex-wrap:wrap;margin:14px 0 0;padding:10px 12px;border:0;border-radius:6px;background:#f7f9fc}.task-profit-summary>div{display:flex;align-items:baseline;justify-content:space-between;gap:16px;min-width:0;width:100%}.task-panel .task-profit-summary dt{margin:0;font-size:11px}.task-profit-summary dt{font-size:11px;color:var(--muted)}.task-profit-summary dd{margin:0;font-size:16px;color:var(--sub);overflow-wrap:anywhere}.task-profit-summary .loss{color:var(--red)}
 @container pricing (max-width:519px){.pricing-rule-section{grid-template-columns:minmax(0,1fr);padding:12px 16px}.pricing-policy-outcome{grid-column:1;grid-row:auto;margin-top:12px;padding:12px 0 0;border-top:1px solid #e1e6ef}.plan .plan-principle>span{display:flex;flex-direction:row;justify-content:space-between;align-items:baseline;gap:12px}.plan .plan-principle b{font-size:18px}}
 @media print{.quiet-icon,.multiplier-edit>.bi,.restore-auto{display:none!important}}
 /* Shared centered calculation and model overview content. */
 .pricing-detail-context{display:flex;flex-wrap:wrap;gap:5px 22px;padding:0 0 16px;margin-bottom:18px;border-bottom:1px solid var(--line);font-size:11px;color:var(--sub)}
-.pricing-details{max-width:100%;margin:auto}.pricing-details .pricing-detail-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:32px;list-style:none;margin:0;padding:0}.pricing-detail-steps>li{display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;min-width:0;gap:9px;padding:16px 0;border-bottom:1px solid #edf0f4}.pricing-detail-steps>li:nth-child(-n+2){padding-top:0}.pricing-detail-steps h3{margin:0 0 4px;font-size:13px;font-weight:550;line-height:1.6;color:var(--ink)}.pricing-detail-steps .detail-formula{margin:0;font-size:11px;color:var(--muted);line-height:1.7}.pricing-detail-steps .detail-value{display:flex;align-items:baseline;justify-content:flex-start;flex-wrap:wrap;gap:3px 6px;font-size:13px;line-height:1.8;color:var(--ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.detail-value .detail-substitution{color:var(--sub)}.detail-value .detail-equals{color:var(--muted)}.detail-value strong{font-size:17px;font-weight:500}.detail-value .detail-deduction{color:var(--accent)}.detail-value .link{margin-left:8px;text-align:left;font-size:11px}.pricing-detail-footer{margin-top:20px;display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px 20px}.pricing-detail-footer>.footnote{margin:0 auto 0 0}.pricing-detail-footer .link{font-size:11px}.pricing-detail-extra-grid,.pricing-detail-evidence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 32px;margin-top:24px;padding-top:22px;border-top:1px solid var(--line)}.pricing-detail-extra{min-width:0}.drawer-body .pricing-detail-extra h3{margin:0 0 12px;font-size:13px;font-weight:600}.pricing-detail-extra .formula{overflow-wrap:anywhere}.pricing-detail-extra .formula strong{font-weight:550}.pricing-detail-caption{display:block;margin-bottom:4px;font-size:11px;color:var(--muted)}.pricing-detail-extra .fact{gap:12px;font-size:12px}.pricing-detail-extra .fact>b{min-width:0;overflow-wrap:anywhere;text-align:right}.pricing-detail-extra .footnote{font-size:11px;color:var(--muted);line-height:1.8}.pricing-detail-source{margin:0 0 6px;font-size:12px;color:var(--sub);line-height:1.8;overflow-wrap:anywhere}.pricing-details .pricing-detail-api.detail-section{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 32px;border:0;margin:0;padding:0}.pricing-detail-api>h3{grid-column:1/-1}.pricing-detail-api>.formula,.pricing-detail-api>.footnote{margin:0}.unit-check-input{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.unit-check-input .fieldlabel{margin:0;font-size:11px}.drawer-body .unit-check-input .input{max-width:180px;width:45%;height:34px}
+.pricing-details{max-width:100%;margin:auto}
+.pricing-calculation-flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch}
+.pricing-calculation-stage{min-width:0;padding:17px 18px 15px;border:1px solid #e4e9f1;border-radius:10px;background:#fbfcfe}
+.drawer-body .pricing-calculation-stage>h3{display:flex;align-items:center;gap:9px;margin:0 0 16px;font-size:13px;font-weight:600;line-height:1.5}.pricing-calculation-stage>h3>span{font:500 11px/1 Inter,'Segoe UI',sans-serif;color:#8b9bb3;letter-spacing:.5px}
+.pricing-details .pricing-detail-steps{display:grid;grid-template-columns:minmax(0,1fr);list-style:none;margin:0;padding:0}.pricing-detail-steps>li{display:flex;flex-direction:column;align-items:stretch;min-width:0;gap:8px;padding:14px 0 0}.pricing-detail-steps>li+li{margin-top:14px;border-top:1px solid #e6ebf3}.pricing-detail-steps>li:first-child{padding-top:0}
+.pricing-detail-steps h4{margin:0 0 4px;font-size:12px;font-weight:550;line-height:1.6;color:var(--ink)}.pricing-detail-steps .detail-formula{margin:0;font-size:11px;color:var(--muted);line-height:1.7}.pricing-detail-steps .detail-value{display:flex;align-items:baseline;justify-content:flex-start;flex-wrap:wrap;gap:3px 5px;font-size:12px;line-height:1.8;color:var(--ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.detail-value .detail-substitution{color:var(--sub)}.detail-value .detail-equals{color:var(--muted)}.detail-value strong{font-size:17px;font-weight:550;max-width:100%;overflow-wrap:anywhere}.detail-value .detail-deduction{color:var(--accent)}.detail-value .link{font-size:11px;margin-left:5px;text-align:left}
+.pricing-detail-footer{margin-top:20px;display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px 20px}.pricing-detail-footer>.footnote{margin:0 auto 0 0}.pricing-detail-footer .link{font-size:11px}
+.pricing-detail-extra-grid,.pricing-detail-evidence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 36px;margin-top:28px;padding-top:24px;border-top:1px solid var(--line)}.pricing-detail-extra{min-width:0}.drawer-body .pricing-detail-extra h3{margin:0 0 12px;font-size:13px;font-weight:600}.pricing-detail-extra .formula{overflow-wrap:anywhere}.pricing-detail-extra .formula strong{font-weight:550}.pricing-detail-caption{display:block;margin-bottom:4px;font-size:11px;color:var(--muted)}.pricing-detail-extra .fact{gap:12px;font-size:12px;padding:9px 0}.pricing-detail-extra .fact>b{min-width:0;overflow-wrap:anywhere;text-align:right}.pricing-detail-extra .footnote{font-size:11px;color:var(--muted);line-height:1.8;margin-top:10px}.pricing-detail-source{margin:0 0 6px;font-size:12px;color:var(--sub);line-height:1.8;overflow-wrap:anywhere}
+.pricing-details .pricing-detail-api.detail-section{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 32px;border:0;margin:0;padding:0}.pricing-detail-api>h3{grid-column:1/-1}.pricing-detail-api>.formula,.pricing-detail-api>.footnote{margin:0}.unit-check-input{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.unit-check-input .fieldlabel{margin:0;font-size:11px}.drawer-body .unit-check-input .input{max-width:180px;width:45%;height:34px}
+.pricing-pending{display:flex;align-items:center;gap:14px;padding:22px;background:#f7f9fc;border-radius:10px}.pricing-pending>.bi{font-size:22px;color:#8b9bb3}.pricing-pending>div{flex:1;min-width:0}.drawer-body .pricing-pending h3{font-size:14px;margin:0 0 4px}.drawer-body .pricing-pending p{margin:0;font-size:12px;color:var(--muted)}.pricing-pending>.link{flex:none;font-size:12px}
 
 .pricing-record-context{margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}.pricing-record-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 20px}.drawer-body .pricing-record-heading h3{margin:0;font-size:13px;font-weight:550}.pricing-record-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px}.pricing-record-actions .link{font-size:11px}.pricing-record-meta{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:5px 24px;margin-top:10px;color:var(--sub);font-size:12px;line-height:1.8}.pricing-record-meta p{margin:0;overflow-wrap:anywhere}.pricing-record-meta #detail-record-history{color:var(--muted)}.pricing-record-context>.footnote{margin-top:10px}.pricing-record-actions-only{justify-content:flex-end}
 .pricing-overview-table{min-width:650px}.pricing-overview-table th,.pricing-overview-table td{padding-top:13px;padding-bottom:13px}.pricing-overview-table td:first-child{font-weight:550}.pricing-overview-table .current-model{background:#f5f7fc}.pricing-overview-table .loss{color:var(--red)}
-@media(max-width:760px){.pricing-detail-extra-grid,.pricing-detail-evidence-grid{grid-template-columns:minmax(0,1fr);gap:22px}.pricing-details .pricing-detail-steps,.pricing-details .pricing-detail-api.detail-section{grid-template-columns:minmax(0,1fr)}.pricing-detail-api>.footnote{margin-top:8px}.pricing-detail-steps>li,.pricing-detail-steps>li:nth-child(2){gap:9px;padding:16px 0}.pricing-detail-steps>li:first-child{padding-top:0}}
+@media(max-width:900px){.pricing-calculation-flow{grid-template-columns:minmax(0,1fr)}.pricing-details .pricing-detail-steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.pricing-detail-steps>li+li{border:0;margin:0;padding:0}}
+@media(max-width:760px){.pricing-detail-extra-grid,.pricing-detail-evidence-grid{grid-template-columns:minmax(0,1fr);gap:22px}.pricing-details .pricing-detail-api.detail-section{grid-template-columns:minmax(0,1fr)}.pricing-detail-api>.footnote{margin-top:8px}}
+@media(max-width:520px){.pricing-details .pricing-detail-steps{grid-template-columns:minmax(0,1fr);gap:14px}.pricing-detail-steps>li+li{border-top:1px solid #e6ebf3;padding-top:14px}.pricing-pending{flex-wrap:wrap;padding:18px}.pricing-pending>.link{margin-left:36px}}
+
 .platform-comparison{display:block;padding:0;margin:20px 0;height:auto;min-height:0;align-self:start}
 .platform-comparison>h2{padding:16px 22px 10px;font-size:13px;font-weight:600;margin:0}
 .comparison-content{display:block;padding:0 22px 12px;min-height:0}.platform-comparison .table-tools{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 20px;padding:0 0 10px}.comparison-spec{min-width:0;max-width:100%;margin-left:auto;text-align:right;font-size:14px;font-weight:550;line-height:1.8;color:var(--ink)}.comparison-method{margin:0;font-size:11px;color:var(--muted)}.platform-comparison .table-end{padding:10px 0 0;border-top:0}.platform-comparison .table-end:empty,.platform-comparison .table-tools:empty{display:none}.platform-comparison .table-scroll{height:auto;min-height:0}.platform-comparison .mobile-hint{padding:0 0 8px}
@@ -338,16 +350,17 @@
 <div class="task-cost-tabs" role="tablist" aria-label="本次计价成本来源">
 <button type="button" class="task-cost-tab" id="cost-tab-list" data-cost-basis="list" role="tab" aria-controls="task-basis-results" aria-selected="false" tabindex="-1"><span class="task-cost-name">火山刊例成本</span><span class="settlement-value"><span class="currency-symbol">¥</span><span class="num" id="task-list-cost">—</span></span></button>
 <button type="button" class="task-cost-tab" id="cost-tab-theory" data-cost-basis="theory" role="tab" aria-controls="task-basis-results" aria-selected="true" tabindex="0"><span class="task-cost-name">理论采购成本</span><span class="settlement-value"><span class="currency-symbol">¥</span><span class="num" id="cost-c">—</span></span></button>
-<button type="button" class="task-cost-tab" id="cost-tab-actual" data-cost-basis="actual" role="tab" aria-controls="task-basis-results" aria-selected="false" aria-disabled="true" tabindex="-1"><span class="task-cost-name">立画实际成本</span></button>
+<button type="button" class="task-cost-tab" id="cost-tab-actual" data-cost-basis="actual" role="tab" aria-controls="task-basis-results" aria-selected="false" tabindex="-1"><span class="task-cost-name">立画实际成本</span><span class="settlement-value" data-empty="true"><span class="currency-symbol">¥</span><span class="num" id="task-actual-cost">—</span></span></button>
 </div>
-<div class="task-cost-editor"><label class="task-cost-input" for="record-cost"><span class="currency-symbol" aria-hidden="true">¥</span><input class="input num" id="record-cost" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="输入成本" aria-label="立画实际成本（元）" aria-describedby="record-cost-error"></label><select id="task-record-select" aria-label="选择同规格平台实测记录" hidden></select></div>
+<div class="task-cost-editor" hidden><label class="task-cost-input" for="record-cost"><span class="currency-symbol" aria-hidden="true">¥</span><input class="input num" id="record-cost" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="输入成本" aria-label="立画实际成本（元）" aria-describedby="record-cost-error"></label></div>
 </div>
 <div id="task-basis-results" role="tabpanel" aria-labelledby="cost-tab-theory" tabindex="0">
+<div class="task-record-picker" id="task-record-picker" hidden><label for="task-record-select">实测记录</label><select id="task-record-select" aria-label="选择同规格平台实测记录"></select></div>
 <p id="record-cost-error" class="cost-input-error" role="status" hidden></p>
 <div class="task-billing-strip"><dl><dt>取整前积分</dt><dd class="settlement-value"><span class="num" id="raw-points">—</span><span class="metric-unit">分</span></dd></dl><dl class="task-deduction"><dt>核算扣分</dt><dd class="settlement-value"><span class="num" id="integer-points">—</span><span class="metric-unit">分</span></dd></dl><dl class="task-final-amount"><dt>折合金额</dt><dd class="settlement-value"><span class="currency-symbol">¥</span><span class="num" id="actual-cash">—</span></dd></dl></div>
 <dl class="task-payment-strip"><div><dt id="task-target-label">目标售价</dt><dd class="settlement-value"><span class="currency-symbol">¥</span><span class="num" id="task-target-amount">—</span></dd></div><div><dt id="task-gap-label">与目标差额</dt><dd class="settlement-value num" id="task-gap">—</dd></div><div><dt>本次客户折扣</dt><dd class="settlement-value num" id="task-effective">—</dd></div></dl>
-<dl class="task-profit-summary"><div><dt>模型毛利</dt><dd class="num" id="model-profit">—</dd></div><div><dt>模型毛利率</dt><dd class="num" id="model-margin">—</dd></div></dl>
-<p id="pricing-loss" role="status" hidden>本次任务模型毛利为负</p>
+<dl class="task-profit-summary"><div><dt>单次任务毛利</dt><dd class="num" id="model-profit">—</dd></div></dl>
+<p id="pricing-loss" role="status" hidden>本次任务毛利为负</p>
 </div>
 
 
@@ -357,7 +370,7 @@
 <section class="card platform-comparison" id="platform-comparison" aria-labelledby="comparison-title"><h2 id="comparison-title">折扣测算</h2><div class="comparison-content"><div class="table-tools" id="table-tools"></div><div class="mobile-hint">左右滑动查看完整计算列 ↔</div><div class="table-scroll" id="table"></div><div class="table-end" id="table-end"></div></div></section>
 </section>
 <section id="actual-workspace" aria-label="实测对账" hidden><div class="card reconcile-card"><div class="sheet-intro"><div><h2 id="actual-title" tabindex="-1">实测对账</h2><p>对照原始账单与预估，按当前方案复算积分。</p></div><div class="action-wrap"><button class="btn" id="actual-export">导出实测对照</button><button class="btn primary" id="add-observation">＋ 录入实测</button></div></div><div class="independence">复算扣分不代表历史实扣；未记录项留空。</div><div class="table-scroll" id="actual-table"></div><div class="method-strip"><span>差额 = 平台实测 − 预估值</span></div><details class="record-notes"><summary>其他参考 · 官方预估转述</summary><div class="reference-other" id="other-references"></div></details></div><div class="workspace-foot"><span>差额原因需结合实际账单核对。</span><button class="link" id="back-theory">返回计算器 →</button></div></section>
-<footer class="bottom"><span id="storage-status"><i class="live-dot"></i>本地草稿</span><span><span class="app-version">V9.13.0</span><span class="rule-status" id="rule-status"></span><button class="link" style="font-size:10px;margin-left:12px" id="reset">重置</button></span></footer>
+<footer class="bottom"><span id="storage-status"><i class="live-dot"></i>本地草稿</span><span><span class="app-version">V9.14.0</span><span class="rule-status" id="rule-status"></span><button class="link" style="font-size:10px;margin-left:12px" id="reset">重置</button></span></footer>
 </main><div class="panel-bg" id="modal" hidden><section class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-describedby="drawer-sub"><div class="drawer-header"><div><h2 id="drawer-title"></h2><p id="drawer-sub"></p></div><button class="btn icon" id="close-drawer" aria-label="关闭面板">×</button></div><div class="drawer-body" id="drawer-body"></div><div class="drawer-footer" id="drawer-footer" hidden></div></section></div><section id="precision-popover" class="precision-popover" role="dialog" aria-label="倍率精度" hidden></section><div class="toast" id="toast" role="status"></div><input type="file" id="file" class="file-input" accept=".json,application/json">
 <script>
 /* Reelay V9 · Exact decimal/rational accounting engine.
@@ -18086,10 +18099,39 @@ const LEGACY_OBS=[
 {id:'s2',title:'平台实测 · 原表第2行',params:task('1080p','21:9','15',false,'2'),P:'37.520955',C:'27.577902',N:'',date:'',note:'原表平台实测成本。理论工作台不读取此金额。'},
 {id:'s3',title:'平台实测 · 原表第3行',params:task('480p','1:1','4',true,'2'),P:'1.892800',C:'1.391208',N:'',date:'',note:'平台实测值1.892800元。与转述的官方预估约1.88元是不同来源，分别保留。'},
 {id:'s4',title:'平台实测 · 原表第4行',params:task(),P:'45.550532',C:'33.479641',N:'',date:'',note:'视频输入15秒，输出1080p、21:9、15秒。平台实际成本只用于对照，不替代公式输出。'}];
-// The supplier column in the user's source table is a calculation, not a paid bill.
-const OBS=LEGACY_OBS.map((o,i)=>({...o,title:'立画实测 · 第'+(i+1)+'组',provider:'立画',C:'',N:['30','620','32','752'][i],costBasis:'platform-list',supplierReference:{q:'0.735',C:o.C},note:'用户提供的立画测试表。平台成本与实际积分为实测；新供应商成本列按平台成本 × 7.35折计算，仅作原表参考。'}));
+// Retain the prior built-in records solely to recognize untouched local drafts.
+const PRIOR_PLATFORM_OBS=LEGACY_OBS.map((o,i)=>({...o,title:'立画实测 · 第'+(i+1)+'组',provider:'立画',C:'',N:['30','620','32','752'][i],costBasis:'platform-list',supplierReference:{q:'0.735',C:o.C},note:'用户提供的立画测试表。平台成本与实际积分为实测；新供应商成本列按平台成本 × 7.35折计算，仅作原表参考。'}));
+const PLATFORM_SAMPLES_REVISION=1;
+const historicalPricing={q:'1',M:'1.65'};
+const sampleNote='用户提供的立画历史测试表；当时采购无折扣，因此折前成本与实际成本相同。成本和历史实扣分别按原表保存，预估列不参与实测。';
+const NEW_PLATFORM_OBS=[
+ ['s25-1','seedance-2.5','480p','1:1','4',false,'2','2.716000','45'],
+ ['s25-2','seedance-2.5','1080p','21:9','30',false,'2','113.14164','1867'],
+ ['s25-3','seedance-2.5','480p','1:1','4',true,'2','2.824584','47'],
+ ['s25-4','seedance-2.5','1080p','21:9','30',true,'30','133.483950','2203'],
+ ['fast-1','seedance-2.0-fast','480p','1:1','4',false,'2','1.435600','24'],
+ ['fast-2','seedance-2.0-fast','720p','4:3','15',false,'2','12.097039','200'],
+ ['fast-3','seedance-2.0-fast','480p','1:1','4',true,'2','1.487200','25'],
+ ['fast-4','seedance-2.0-fast','720p','4:3','15',true,'15','14.365758','238']
+].map(([id,model,res,ratio,seconds,video,vin,C,N])=>({id:'lihua-20261022-'+id,title:'立画实测 · '+M.get(model).label+' · '+(video?'有视频':'无视频')+' · '+res,params:task(res,ratio,seconds,video,vin,model),provider:'立画',costBasis:'recorded',P:C,C,N,date:'',note:sampleNote,historicalPricing:{...historicalPricing},usage:''}));
+const OBS=[...PRIOR_PLATFORM_OBS.map(o=>({...o,C:o.P,costBasis:'recorded',note:sampleNote+' 旧表的供应商折扣测算仍单独留存。',historicalPricing:{...historicalPricing}})),...NEW_PLATFORM_OBS];
+function untouchedSample(record,prior){
+ return Object.keys(record).every(k=>k in prior||k==='usage')&&!record.usage&&Object.keys(prior).every(k=>k==='params'?key(record.params)===key(prior.params):JSON.stringify(record[k])===JSON.stringify(prior[k]));
+}
+function upgradeSampleRecords(records){
+ const updated=records.map(o=>{
+  const index=PRIOR_PLATFORM_OBS.findIndex(prior=>untouchedSample(o,prior));
+  return index<0?o:{...o,...clone(OBS[index])};
+ });
+ for(const sample of NEW_PLATFORM_OBS){
+  if(updated.length>=200)break;
+  if(updated.some(o=>o.id===sample.id||key(o.params)===key(sample.params)&&o.C===sample.C&&o.N===sample.N))continue;
+  updated.push(clone(sample));
+ }
+ return updated;
+}
 function upgradePlatformRecords(records){return records.map(o=>{
- const index=LEGACY_OBS.findIndex(old=>!o.costBasis&&o.id===old.id&&o.title===old.title&&o.note===old.note&&o.date===old.date&&o.P===old.P&&o.C===old.C&&o.N===''&&key(o.params)===key(old.params));
+ const index=LEGACY_OBS.findIndex(old=>untouchedSample(o,old));
  return index<0?o:{...o,...clone(OBS[index])};
 });}
 const REFS=[{id:'reference-188',title:'转述的官方预估约值',params:task('480p','1:1','4',true,'2'),P:'1.88',C:'',note:'用户转述约1.88元，不是精确官方结果，也不是平台实测记录。不进入任何理论计算或实测汇总。'}];
@@ -18110,7 +18152,7 @@ for(const video of [false,true])for(const extreme of ['min','max']){
 }
 QUICK_TASKS[model]=presets;return presets;
 }
-function defaults(){return{schema:'reelay.pricing.v9',plan:{company:'积分定价方案',pay:'100',total:'1538',discount:'7.35',q:'0.735',procurementModel:'seedance-2.0',procurementByModel:defaultProcurement(),modelPricing:F.defaults(),pricingDefaultsRevision:F.DEFAULTS_REVISION,pricingModel:'seedance-2.0',limitPrecision:false,targetMode:'discount',margin:'8.125',giftMode:false,mode:'ideal',digits:12,round:'nearest',manualM:'1.538',basis:'本次充值含全部赠分；历史余额的现金价值须另行确认'},task:task('480p','1:1','4',true,'2'),rules:{version:R.VERSION,minima:R.buildMinima(),legacyMinima:{}},workspace:'theory',tab:'discounts',taskCostInput:null,tasks:[],observations:clone(OBS),references:clone(REFS),recharges:[{pay:'100',total:'1500'},{pay:'100',total:'1538'},{pay:'100',total:'1600'}],rechargeMode:'fixed',frozenM:null,matrixAxis:'specs',matrixMetric:'N'};}
+function defaults(){return{schema:'reelay.pricing.v9',platformSamplesRevision:PLATFORM_SAMPLES_REVISION,plan:{company:'积分定价方案',pay:'100',total:'1538',discount:'7.35',q:'0.735',procurementModel:'seedance-2.0',procurementByModel:defaultProcurement(),modelPricing:F.defaults(),pricingDefaultsRevision:F.DEFAULTS_REVISION,pricingModel:'seedance-2.0',limitPrecision:false,targetMode:'discount',margin:'8.125',giftMode:false,mode:'ideal',digits:12,round:'nearest',manualM:'1.538',basis:'本次充值含全部赠分；历史余额的现金价值须另行确认'},task:task('480p','1:1','4',true,'2'),rules:{version:R.VERSION,minima:R.buildMinima(),legacyMinima:{}},workspace:'theory',tab:'discounts',taskCostInput:null,tasks:[],observations:clone(OBS),references:clone(REFS),recharges:[{pay:'100',total:'1500'},{pay:'100',total:'1538'},{pay:'100',total:'1600'}],rechargeMode:'fixed',frozenM:null,matrixAxis:'specs',matrixMetric:'N'};}
 const KEY='reelay_pricing_v9_official' ;let state=defaults(),globalValid=true,modelValid=true,platformValid=true,tableRows=[],actualRows=[],drawerName='',lastFocus=null;
 function positive(x,zero=false,maxdigits=20){let s=String(x);return s.length<48&&/^\d+(\.\d+)?$/.test(s)&&(!s.includes('.')||s.split('.')[1].length<=maxdigits)&&(zero?+s>=0:+s>0)&&+s<1e12;}
 function validTask(t,allowAuto=true){try{
@@ -18118,7 +18160,7 @@ function validTask(t,allowAuto=true){try{
  return !!(spec.resolutions.includes(t.res)&&[...RATIOS,...(allowAuto?['auto']:[])].includes(t.ratio)&&(seconds!=='auto'||allowAuto&&t.seconds==='auto')&&typeof t.video==='boolean'&&(!t.video||positive(t.vin,false,4)&&+t.vin>=spec.inputSeconds.min&&+t.vin<=spec.inputSeconds.max));
 }catch(_){return false;}}
 function txt(s,n){return typeof s==='string'&&s.length<=n;}
-function validObservation(o){return !!(o&&txt(o.id,100)&&txt(o.title,100)&&validTask(o.params,false)&&txt(o.note,1000)&&txt(o.date,100)&&(o.P===''||positive(o.P))&&(o.C===''||positive(o.C,true))&&(o.P!==''||o.C!=='')&&(o.N===''||/^\d+$/.test(o.N)&&+o.N<1e12)&&(!o.usage||/^\d+$/.test(o.usage)&&+o.usage>0&&+o.usage<1e12)&&(o.costBasis===undefined||['recorded','platform-list'].includes(o.costBasis))&&(o.costBasis!=='platform-list'||o.P!==''&&o.C==='')&&(o.provider===undefined||txt(o.provider,60))&&(o.supplierReference===undefined||o.supplierReference&&positive(o.supplierReference.q,false,6)&&+o.supplierReference.q<=10&&positive(o.supplierReference.C,true)));}
+function validObservation(o){return !!(o&&(!o.historicalPricing||positive(o.historicalPricing.q,false,6)&&+o.historicalPricing.q<=10&&positive(o.historicalPricing.M,false,20))&&txt(o.id,100)&&txt(o.title,100)&&validTask(o.params,false)&&txt(o.note,1000)&&txt(o.date,100)&&(o.P===''||positive(o.P))&&(o.C===''||positive(o.C,true))&&(o.P!==''||o.C!=='')&&(o.N===''||/^\d+$/.test(o.N)&&+o.N<1e12)&&(!o.usage||/^\d+$/.test(o.usage)&&+o.usage>0&&+o.usage<1e12)&&(o.costBasis===undefined||['recorded','platform-list'].includes(o.costBasis))&&(o.costBasis!=='platform-list'||o.P!==''&&o.C==='')&&(o.provider===undefined||txt(o.provider,60))&&(o.supplierReference===undefined||o.supplierReference&&positive(o.supplierReference.q,false,6)&&+o.supplierReference.q<=10&&positive(o.supplierReference.C,true)));}
 function validReference(r){return !!(r&&txt(r.id,100)&&txt(r.title,100)&&(r.params===null||validTask(r.params))&&txt(r.note,1000)&&(r.P===''||positive(r.P))&&(r.C===''||positive(r.C,true)));}
 function validTarget(p){return p.targetMode==='margin'?positive(p.margin,true,4)&&+p.margin<100:positive(p.discount,false,4)&&+p.discount<=100;}
 function validPlan(p){return !!(p&&txt(p.company,60)&&positive(p.pay,false,2)&&positive(p.total,false,4)&&txt(p.discount,48)&&txt(p.margin,48)&&(p.mode==='manual'||validTarget(p))&&positive(p.q,false,6)&&+p.q<=10&&['discount','margin'].includes(p.targetMode)&&typeof p.giftMode==='boolean'&&['ideal','saved','manual'].includes(p.mode)&&Number.isInteger(p.digits)&&p.digits>=0&&p.digits<=20&&['nearest','truncate'].includes(p.round)&&txt(p.manualM,48)&&(p.mode!=='manual'||positive(p.manualM,false,20))&&txt(p.basis,500));}
@@ -18160,6 +18202,15 @@ function upgradeState(input,{refreshDefaults=false}={}){
  // Legacy gift entry stored the computed total already; retain that total unchanged.
  n.plan.giftMode=false;
  n.observations=upgradePlatformRecords(n.observations);
+ const sampleRevision=n.platformSamplesRevision??0;
+ if(!Number.isSafeInteger(sampleRevision)||sampleRevision<0)throw Error('实测样本版本无效');
+ if(refreshDefaults&&sampleRevision<PLATFORM_SAMPLES_REVISION){
+  const input=n.taskCostInput,hadRecord=input&&n.observations.some(o=>key(o.params)===input.taskKey);
+  n.observations=upgradeSampleRecords(n.observations);
+  // A new sample must not hide an existing inline cost on a formerly recordless task.
+  if(input?.recordId===''&&!hadRecord){const added=n.observations.find(o=>key(o.params)===input.taskKey);if(added)input.recordId=added.id;}
+ }
+ n.platformSamplesRevision=Math.max(PLATFORM_SAMPLES_REVISION,sampleRevision);
  if(old){n.rules={version:R.VERSION,minima:R.buildMinima(),legacyMinima:clone(n.rules.minima||{})};n.schema='reelay.pricing.v9';}
  else{
   if(n.rules.version!==R.VERSION){
@@ -18558,42 +18609,45 @@ function renderQuote(){
  $('cost-p').textContent=v.partial?'—':fixed(c.P,feeDisplayDigits);
  return v;
 }
-let selectedTaskRecordId='',selectedTaskRecordKey='',taskCostBasis='theory',costInputDraft=null,resumeInlineActual=false;
+let selectedTaskRecordId='',selectedTaskRecordKey='',taskCostBasis='theory',costInputDraft=null;
 function matchingCostInput(t=state.task,recordId=selectedTaskRecordId){
  const input=state.taskCostInput;return input&&input.taskKey===key(t)&&input.recordId===recordId?input:null;
 }
-function renderCostInput(record){
- const context=key(state.task)+'|'+selectedTaskRecordId;
- if(costInputDraft&&costInputDraft.context!==context)costInputDraft=null;
- const saved=matchingCostInput(),overridden=!!costInputDraft||!!saved;
- const value=costInputDraft?costInputDraft.value:saved?saved.value:record?.C!=null?num(record.C,20):'';
- if($('record-cost').value!==value)$('record-cost').value=value;
+function costInputState(t=state.task,recordId=selectedTaskRecordId,record=null){
+ const context=key(t)+'|'+recordId,draft=costInputDraft?.context===context?costInputDraft:null;
+ const saved=matchingCostInput(t,recordId),overridden=!!draft||!!saved;
+ const value=draft?draft.value:saved?saved.value:record?.C!=null?num(record.C,20):'';
  const invalid=value!==''&&!positive(value,true,20);
- $('record-cost').setAttribute('aria-invalid',String(invalid));$('record-cost-error').hidden=!invalid;
- $('record-cost-error').textContent=invalid?'请输入不小于 0 的金额，最多 20 位小数。':'';
+ return {value,overridden,invalid,valid:value!==''&&!invalid};
+}
+function renderCostInput(record){
+ const input=costInputState(state.task,selectedTaskRecordId,record),{value,overridden,invalid}=input;
+ if($('record-cost').value!==value)$('record-cost').value=value;
+ const editing=taskCostBasis==='actual';
+ $('record-cost').setAttribute('aria-invalid',String(invalid));
+ $('record-cost-error').hidden=!editing||input.valid;
+ $('record-cost-error').classList.toggle('is-pending',!invalid);
+ $('record-cost-error').textContent=invalid?'请输入不小于 0 的金额，最多 20 位小数。':'请录入立画实际成本';
  $('record-cost').title=overridden?'直接采用输入成本，不再乘采购折扣':record?.C!=null?'可直接修改；不改写原始记录':'';
- return {value,overridden,valid:value!==''&&!invalid};
+ taskAmount('task-actual-cost',input.valid?value:null);
+ return input;
 }
-let lastCostInputHint=0;
-function hintMissingCost(){
- const tab=$('cost-tab-actual');
- if(tab.disabled||tab.getAttribute('aria-disabled')!=='true')return;
- $('record-cost').focus();
- const now=Date.now();if(now-lastCostInputHint<500)return;lastCostInputHint=now;
- toast('请先录入立画成本');
-}
-function renderCostTabs(available,enabled=true){
+function renderCostTabs(enabled=true){
  for(const tab of document.querySelectorAll('[data-cost-basis]')){
   const selected=tab.dataset.costBasis===taskCostBasis;
-  tab.disabled=!enabled;tab.setAttribute('aria-disabled',String(!enabled||tab.dataset.costBasis==='actual'&&!available));
+  tab.disabled=!enabled;tab.setAttribute('aria-disabled',String(!enabled));
   tab.setAttribute('aria-selected',String(selected));tab.tabIndex=selected?0:-1;
  }
+ const editing=taskCostBasis==='actual'&&enabled;
+ document.querySelector('.task-cost-editor').hidden=!editing;
+ $('cost-tab-actual').classList.toggle('is-editing',editing);
+ $('task-actual-cost').parentElement.setAttribute('aria-hidden',String(editing));
+ $('task-record-picker').hidden=!editing||$('task-record-select').options.length<2;
  $('task-basis-results').setAttribute('aria-labelledby','cost-tab-'+taskCostBasis);
 }
 function selectCostBasis(basis){
  const tab=$('cost-tab-'+basis);if(!tab||tab.disabled)return;
- if(tab.getAttribute('aria-disabled')==='true'){hintMissingCost();return;}
- resumeInlineActual=false;taskCostBasis=basis;render();
+ taskCostBasis=basis;render();
 }
 function taskAmount(id,value,digits=6){
  const el=$(id),currency=el.parentElement.querySelector('.currency-symbol');
@@ -18604,14 +18658,13 @@ function taskAmount(id,value,digits=6){
 }
 function renderTaskRecord(p){
  const taskKey=key(state.task),matches=state.observations.filter(o=>key(o.params)===taskKey);
- if(selectedTaskRecordKey!==taskKey){selectedTaskRecordId=state.taskCostInput?.taskKey===taskKey?state.taskCostInput.recordId:'';selectedTaskRecordKey=taskKey;if(taskCostBasis==='actual')taskCostBasis='theory';resumeInlineActual=false;}
+ if(selectedTaskRecordKey!==taskKey){selectedTaskRecordId=state.taskCostInput?.taskKey===taskKey?state.taskCostInput.recordId:'';selectedTaskRecordKey=taskKey;}
  const record=matches.find(o=>o.id===selectedTaskRecordId)||matches[0]||null;
  selectedTaskRecordId=record?.id||'';
  const selector=$('task-record-select');
- selector.hidden=matches.length<2;
- selector.closest('.task-cost-strip').classList.toggle('has-multiple-records',matches.length>1);
  selector.innerHTML=matches.map(o=>`<option value="${esc(o.id)}" ${o.id===selectedTaskRecordId?'selected':''}>${esc(o.title)}${o.date?' · '+esc(o.date):''}</option>`).join('');
  selector.title=record?record.title+(record.date?' · '+record.date:''):'';
+ if(costInputDraft&&costInputDraft.context!==taskKey+'|'+selectedTaskRecordId)costInputDraft=null;
  return record?E.recalcRecord(record,p):null;
 }
 function renderResult(){const v=current(),x=v.x;
@@ -18619,24 +18672,22 @@ function renderResult(){const v=current(),x=v.x;
  $('details').disabled=false;
  const record=renderTaskRecord(x.p),input=renderCostInput(record),available=input.overridden?input.valid:record!==null&&record.C!==null;
  const entered=input.overridden&&input.valid?{...E.settle(x.P,input.value,x.p),inline:true}:null;
- if(resumeInlineActual&&input.overridden&&available){taskCostBasis='actual';resumeInlineActual=false;}
- if(!available&&taskCostBasis==='actual'){taskCostBasis='theory';toast('立画成本不可用，已切换理论采购成本。');}
- renderCostTabs(available);
- const actual=taskCostBasis==='actual',active=actual?(entered||record):taskCostBasis==='list'?E.settle(x.P,x.P,x.p):x;
- const profit=active.cashProfit,margin=active.salesMarginPct;
+ renderCostTabs();
+ const actual=taskCostBasis==='actual',active=actual?(available?(entered||record):null):taskCostBasis==='list'?E.settle(x.P,x.P,x.p):x;
+ const profit=active?.cashProfit??null;
  taskAmount('task-list-cost',x.P);taskAmount('cost-c',x.C);
- const manual=x.p.pricingMode==='manual',rawCash=active.raw===null?null:mul(active.raw,x.p.U);
+ const manual=x.p.pricingMode==='manual',rawCash=active?.raw==null?null:mul(active.raw,x.p.U);
  $('task-target-label').textContent=manual?'取整前金额':'目标售价';
  $('task-gap-label').textContent=manual?'取整差额':'与目标差额';
- taskAmount('task-target-amount',manual?rawCash:active.target);
- for(const [id,value,digits] of [['raw-points',active.raw,6],['integer-points',active.N,0],['actual-cash',active.cash,6]])taskAmount(id,value,digits);
- const benchmark=manual?rawCash:active.target,gap=benchmark===null||active.cash===null?null:sub(active.cash,benchmark),effective=active.P===null?null:mul(div(active.cash,active.P),10);
+ taskAmount('task-target-amount',manual?rawCash:active?.target??null);
+ for(const [id,value,digits] of [['raw-points',active?.raw??null,6],['integer-points',active?.N??null,0],['actual-cash',active?.cash??null,6]])taskAmount(id,value,digits);
+ const benchmark=manual?rawCash:active?.target??null,gap=benchmark===null||active?.cash==null?null:sub(active.cash,benchmark),effective=active?.P==null||active?.cash==null?null:mul(div(active.cash,active.P),10);
  $('task-gap').textContent=gap===null?'—':(cmp(gap,0)>0?'+':'')+num(gap,6)+' 元';
  $('task-effective').textContent=effective===null?'—':num(effective,4)+'折';
  $('task-gap').title=gap===null?'缺少金额计算依据':num(gap,20)+' 元'+(manual?' · 积分向上取整增加的金额':'');
  $('task-effective').title=effective===null?'缺少对应刊例成本':(actual&&!entered?'按实测记录刊例成本折算':'按火山刊例成本折算');
- $('model-profit').textContent=profit===null?'—':cash(profit);$('model-margin').textContent=margin===null?'未定义':num(margin,4)+'%';
- $('model-profit').classList.toggle('loss',profit!==null&&cmp(profit,0)<0);$('model-margin').classList.toggle('loss',margin!==null&&cmp(margin,0)<0);
+ $('model-profit').textContent=profit===null?'—':cash(profit);
+ $('model-profit').classList.toggle('loss',profit!==null&&cmp(profit,0)<0);
  $('pricing-loss').hidden=profit===null||cmp(profit,0)>=0;
 }
 
@@ -18688,8 +18739,8 @@ function render(keepPrecision=false){
   try{renderTable();}catch(e){tableRows=[];$('table').innerHTML='<div class="empty">'+esc(e.message)+'，请检查对比条件与倍率精度。</div>';$('table-end').textContent='';}
  }catch(e){
   $('platformError').hidden=false;$('platformError').textContent=e.message;
-  for(const id of ['task-list-cost','task-target-amount','cost-c','raw-points','integer-points','actual-cash','model-profit','model-margin']){taskAmount(id,null);$(id).classList.remove('loss');}
-  renderCostTabs(false,false);$('task-gap').textContent='—';$('task-effective').textContent='—';$('task-record-select').hidden=true;$('task-record-select').closest('.task-cost-strip').classList.remove('has-multiple-records');
+  for(const id of ['task-list-cost','task-actual-cost','task-target-amount','cost-c','raw-points','integer-points','actual-cash','model-profit']){taskAmount(id,null);$(id).classList.remove('loss');}
+  renderCostTabs(false);$('task-gap').textContent='—';$('task-effective').textContent='—';$('record-cost-error').hidden=true;
   $('pricing-loss').hidden=true;
   $('table').innerHTML='<div class="empty">平台参数待修正。</div>';$('actual-table').innerHTML='<div class="empty">请先修正平台定价参数后复算。</div>';
   if(!policyValid)$('policy-notice').hidden=true;
@@ -18735,12 +18786,14 @@ function detailSettlementText(p,cashValue,raw,target){
 }
 function detailRounding(cashValue,rawCash){
  const gap=cashValue===null||rawCash===null?null:sub(cashValue,rawCash);
- return `<section class="pricing-detail-extra" id="detail-variance"><h3>扣分取整</h3>${gap===null?'<p class="footnote">缺少计价成本，暂不能核算。</p>':`<div class="formula"><span class="pricing-detail-caption">取整差额 = 折合金额 − 取整前金额</span>${detailEquation(`${num(cashValue,8)} − ${num(rawCash,8)}`,gap,'元',[cashValue,rawCash])}</div>`}<p class="footnote">每次扣分向上取整。固定倍率未设目标售价，差额仅反映扣分取整的影响。</p></section>`;
+ return `<section class="pricing-detail-extra" id="detail-variance"><h3>扣分取整</h3>${detailFact('取整前金额',optionalCash(rawCash,8))}${gap===null?'<p class="footnote">缺少计价成本，暂不能核算。</p>':`<div class="formula"><span class="pricing-detail-caption">取整差额 = 折合金额 − 取整前金额</span>${detailEquation(`${num(cashValue,8)} − ${num(rawCash,8)}`,gap,'元',[cashValue,rawCash])}</div>`}<p class="footnote">每次扣分向上取整。固定倍率未设目标售价，差额仅反映扣分取整的影响。</p></section>`;
 }
 function detailVariance(x,scope,expanded=false){
  const heading='<h3>目标差额拆分</h3>';
  if(x.target===null)return expanded?detailRounding(x.cash,x.rawCash):'';
- const content=detailFact(expanded?'采购成本差额':scope==='actual'?'采购原值与约定采购比例的偏差影响':'采购比例差额（理论按约定比例）',cash(x.costGap,12))
+ const p=x.p,targetExpression=p.targetMode==='margin'?`${num(x.C,8)} ÷ (1 − ${num(p.targetMarginPct,4)}%)`:`${num(x.P,8)} × ${num(mul(p.d,10),6)} ÷ 10`;
+ const content=`<div class="formula"><span class="pricing-detail-caption">目标售价 · ${p.targetMode==='margin'?'计价成本 ÷（1 − 设定毛利率）':'刊例成本 × 设定客户折扣'}</span>${detailEquation(targetExpression,x.target,'元',p.targetMode==='margin'?[x.C,p.targetMarginPct]:[x.P,mul(p.d,10)])}</div>`
+ +detailFact(expanded?'采购成本差额':scope==='actual'?'采购原值与约定采购比例的偏差影响':'采购比例差额（理论按约定比例）',cash(x.costGap,12))
  +detailFact(expanded?'倍率精度差额':'倍率保存精度 / 指定倍率影响',cash(x.precisionGap,12))
  +detailFact(expanded?'扣分取整差额':'逐任务向上取整影响',cash(x.roundGap,12))
  +detailFact(expanded?'合计差额':'合计：扣分折合金额 − 目标金额',cash(x.gap,12),true)
@@ -18749,7 +18802,19 @@ function detailVariance(x,scope,expanded=false){
 }
 function displayed(value,d=12){const shown=num(value,d);return(cmp(value,decimalString(value,d))===0?'= ':'≈ ')+shown;}
 function pricingDetailRow(title,description,content,id=''){
- return `<li${id?' id="'+id+'"':''}><div><h3>${title}</h3><p class="detail-formula">${description}</p></div><div class="detail-value">${content}</div></li>`;
+ return `<li${id?' id="'+id+'"':''}><div><h4>${title}</h4><p class="detail-formula">${description}</p></div><div class="detail-value">${content}</div></li>`;
+}
+function pricingCalculationFlow(cost,points,amount){
+ return `<div class="pricing-calculation-flow">${[['计价成本',cost],['积分扣除',points],['折合金额',amount]].map(([title,rows],index)=>`<section class="pricing-calculation-stage"><h3><span aria-hidden="true">0${index+1}</span>${title}</h3><ol class="pricing-detail-steps">${rows}</ol></section>`).join('')}</div>`;
+}
+function detailPointValue(p){return pricingDetailRow('每积分金额','充值实付 ÷ 到账总积分',detailEquation(`${num(p.A,2)} ÷ ${num(p.T,4)}`,p.U,'元/分',[p.A,p.T]));}
+function detailUnitCheck(mode='theory'){
+ const label=mode==='theory'?'假设刊例费用（元）':mode==='list'?'假设刊例成本（元）':'假设立画成本（元）';
+ return `<section class="pricing-detail-extra" id="detail-unit-check"><h3>金额校验</h3><div class="unit-check-input"><label class="fieldlabel" for="unit-p">${label}</label><input class="input num" id="unit-p" value="1" inputmode="decimal"></div><div id="unit-result"></div><p class="footnote">独立假设，不修改本次任务。</p></section>`;
+}
+function missingCostBreakdown(record=null){
+ const action=record?`data-edit-observation="${esc(record.id)}"`:'id="detail-enter-cost"';
+ return {html:`<div class="pricing-pending"><i class="bi bi-input-cursor-text" aria-hidden="true"></i><div><h3>待录入立画实际成本</h3><p>录入有效成本后，计算本次扣分、折合金额与任务毛利。</p></div><button type="button" class="link" ${action}>${record?'补录':'录入'}成本 →</button></div>`,text:'待录入立画实际成本。\n计价成本 = —\n取整前积分 = —\n核算扣分 = —\n折合金额 = —\n单次任务毛利 = —'};
 }
 function detailEquation(expression,value,unit,operands=[]){
  if(value===null)return '—';
@@ -18760,70 +18825,62 @@ function theoryBreakdown(t,p){
  const v=theory(t,state.rules,p),x=v.x;
  if(!x)return{html:'<p class="notice">最低用量待补齐，暂不能计算平台收费。</p>',text:'最低用量待补齐。'};
  const q=num(mul(p.q,10),6);
- const targetTitle=x.target===null?'取整前金额':'目标售价';
- const targetDescription=x.target===null?'按当前倍率计算的取整前金额':'考虑折扣/毛利的设定售价';
- const targetExpression=x.target===null?`${num(x.raw,8)} × ${num(p.A,2)} ÷ ${num(p.T,4)}`:p.targetMode==='margin'?`${num(x.C,8)} ÷ (1 − ${num(p.targetMarginPct,4)}%)`:`${num(x.P,8)} × ${num(mul(p.d,10),6)} ÷ 10`;
- const targetOperands=x.target===null?[x.raw,p.A,p.T]:p.targetMode==='margin'?[x.C,p.targetMarginPct]:[x.P,mul(p.d,10)];
- const html=`<div class="pricing-details"><ol class="pricing-detail-steps">`
- +pricingDetailRow('火山刊例成本','官方计算公式 + 生成参数估算',`<strong class="num" title="${num(x.P,20)}">${displayed(x.P,8).replace(/^= /,'')} 元</strong><button class="link" id="detail-usage">用量明细 →</button>`)
- +pricingDetailRow('计价成本','火山刊例成本 × 采购折扣',detailEquation(`${num(x.P,8)} × ${q} ÷ 10`,x.C,'元',[x.P,mul(p.q,10)]),'procurement-equation')
- +pricingDetailRow('取整前积分','计价成本 × 成本定价倍率 × 10',detailEquation(`${num(x.C,8)} × ${num(p.usedM,8)} × 10`,x.raw,'分',[x.C,p.usedM]),'points-equation')
- +pricingDetailRow('核算扣分','取整前积分向上取整',`<span class="detail-substitution">${displayed(x.raw,8).replace(/^= /,'')} →</span><strong class="num detail-deduction">${num(x.N,0)} 分</strong>`)
- +pricingDetailRow('折合金额','核算扣分 × 每积分金额',detailEquation(`${num(x.N,0)} × (${num(p.A,2)} ÷ ${num(p.T,4)})`,x.cash,'元',[x.N,p.A,p.T]),'cash-equation')
- +pricingDetailRow(targetTitle,targetDescription,detailEquation(targetExpression,x.target??x.rawCash,'元',targetOperands))
- +`</ol><div class="pricing-detail-extra-grid">
+ const html=`<div class="pricing-details">`+pricingCalculationFlow(
+  pricingDetailRow('火山刊例成本','官方计算公式 + 生成参数估算',`<strong class="num" title="${num(x.P,20)}">${displayed(x.P,8).replace(/^= /,'')} 元</strong><button class="link" id="detail-usage">用量明细 →</button>`)
+  +pricingDetailRow('计价成本','火山刊例成本 × 采购折扣',detailEquation(`${num(x.P,8)} × ${q} ÷ 10`,x.C,'元',[x.P,mul(p.q,10)]),'procurement-equation'),
+  pricingDetailRow('取整前积分','计价成本 × 成本定价倍率 × 10',detailEquation(`${num(x.C,8)} × ${num(p.usedM,8)} × 10`,x.raw,'分',[x.C,p.usedM]),'points-equation')
+  +pricingDetailRow('核算扣分','取整前积分向上取整',`<span class="detail-substitution">${displayed(x.raw,8).replace(/^= /,'')} →</span><strong class="num detail-deduction">${num(x.N,0)} 分</strong>`),
+  detailPointValue(p)
+  +pricingDetailRow('折合金额','核算扣分 × 每积分金额',detailEquation(`${num(x.N,0)} × (${num(p.A,2)} ÷ ${num(p.T,4)})`,x.cash,'元',[x.N,p.A,p.T]),'cash-equation'))
+ +`<div class="pricing-detail-extra-grid">
  ${detailMultiplier(p,t.model)}
- <section class="pricing-detail-extra" id="detail-profit"><h3>模型毛利</h3><div class="formula" id="profit-equation"><span class="pricing-detail-caption">折合金额 − 计价成本</span>${detailEquation(`${num(x.cash,8)} − ${num(x.C,8)}`,x.profit,'元',[x.cash,x.C])}</div>
+ <section class="pricing-detail-extra" id="detail-profit"><h3>单次任务毛利</h3><div class="formula" id="profit-equation"><span class="pricing-detail-caption">折合金额 − 计价成本</span>${detailEquation(`${num(x.cash,8)} − ${num(x.C,8)}`,x.profit,'元',[x.cash,x.C])}</div>
  ${detailFact('模型毛利率',x.margin===null?'未定义':num(x.margin,8)+'%')}${detailFact('本次客户折扣',num(x.effective,6)+'折')}<p class="footnote">模型毛利率 = 模型毛利 ÷ 折合金额。仅扣除模型采购成本。</p></section>
  ${detailVariance(x,'theory',true)}
- <section class="pricing-detail-extra" id="detail-unit-check"><h3>金额校验</h3><div class="unit-check-input"><label class="fieldlabel" for="unit-p">假设刊例费用（元）</label><input class="input num" id="unit-p" value="1" inputmode="decimal"></div><div id="unit-result"></div></section>
+ ${detailUnitCheck()}
  </div></div>`;
  const text=[`任务：${label(t)} / ${vinLabel(t)}`,`刊例费用 = ${decimal(x.P)}`,`计价成本 = ${decimal(x.P)} × ${q} ÷ 10 = ${decimal(x.C)}`,`采用倍率 = ${decimal(p.usedM)}`,`取整前积分 = ${decimal(x.C)} × ${decimal(p.usedM)} × 10 = ${decimal(x.raw)}`,`核算扣分 = ${num(x.N,0)}`,`折合金额 = ${num(x.N,0)} × ${num(p.A,2)} ÷ ${num(p.T,4)} ≈ ${decimal(x.cash)}`,...detailSettlementText(p,x.cash,x.raw,x.target),`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 ≈ ${decimal(x.margin)}%`].join('\n');
  return{html,text};
 }
 function actualBreakdown(o,p){
- if(!o)return{html:'<div class="notice neutral"><b>这个规格没有平台实测记录。</b><br>不会使用其他规格的金额，也不会把理论计算写成实测记录。</div>',text:'无匹配实测记录。'};
+ if(!o)return missingCostBreakdown();
  const a=E.recalcRecord(o,p),x=a.x,derived=o.costBasis==='platform-list';
  const q=num(mul(p.q,10),6),rawCash=a.raw===null?null:mul(a.raw,p.U),manual=p.targetAvailable===false;
  const targetTitle=manual?'取整前金额':'目标售价';
  const targetDescription=manual?'取整前积分 × 每积分金额':p.targetMode==='margin'?'计价成本 ÷（1 − 设定模型毛利率）':'记录折前成本 × 设定客户折扣';
- const targetValue=manual?rawCash:a.target;
+ const targetValue=a.C===null?null:manual?rawCash:a.target;
  const targetEquation=targetValue===null?'—':manual?detailEquation(`${num(a.raw,8)} × (${num(p.A,2)} ÷ ${num(p.T,4)})`,rawCash,'元',[a.raw,p.A,p.T]):p.targetMode==='margin'?detailEquation(`${num(a.C,8)} ÷ (1 − ${num(p.targetMarginPct,4)}%)`,a.target,'元',[a.C,p.targetMarginPct]):detailEquation(`${num(a.P,8)} × ${num(mul(p.d,10),6)} ÷ 10`,a.target,'元',[a.P,mul(p.d,10)]);
- const integral=`<ol class="pricing-detail-steps">`
- +pricingDetailRow('记录折前成本','平台原始记录；用于客户折扣对照',a.P===null?'未录入':`<strong class="num" title="${esc(o.P)}">${displayed(a.P,8).replace(/^= /,'')} 元</strong>`)
- +pricingDetailRow('计价成本',derived?'记录折前成本 × 当前采购折扣':'直接采用记录的实际成本，不再乘采购折扣',a.C===null?'未录入':derived?detailEquation(`${num(a.P,8)} × ${q} ÷ 10`,a.C,'元',[a.P,mul(p.q,10)]):`<strong class="num" title="${esc(o.C)}">${displayed(a.C,8).replace(/^= /,'')} 元</strong>`)
- +pricingDetailRow('取整前积分','计价成本 × 成本定价倍率 × 10',a.raw===null?'—':detailEquation(`${num(a.C,8)} × ${num(p.usedM,8)} × 10`,a.raw,'分',[a.C,p.usedM]))
- +pricingDetailRow('核算扣分','取整前积分向上取整',a.N===null?'—':`<span class="detail-substitution">${displayed(a.raw,8).replace(/^= /,'')} →</span><strong class="num detail-deduction">${num(a.N,0)} 分</strong>`)
- +pricingDetailRow('折合金额','核算扣分 × 当前每积分金额',a.cash===null?'—':detailEquation(`${num(a.N,0)} × (${num(p.A,2)} ÷ ${num(p.T,4)})`,a.cash,'元',[a.N,p.A,p.T]))
- +pricingDetailRow(targetTitle,targetDescription,targetEquation)+`</ol>`;
- const profit=`<section class="pricing-detail-extra" id="detail-profit"><h3>模型毛利</h3>${a.cash===null?'<p class="footnote">缺少计价成本，暂不能核算模型毛利。</p>':`<div class="formula" id="profit-equation"><span class="pricing-detail-caption">折合金额 − 计价成本</span>${detailEquation(`${num(a.cash,8)} − ${num(a.C,8)}`,a.cashProfit,'元',[a.cash,a.C])}</div>${detailFact('模型毛利率',a.salesMarginPct===null?'未定义':num(a.salesMarginPct,8)+'%')}`}${detailFact('本次客户折扣',x?num(x.effective,8)+'折':'—')}<p class="footnote">模型毛利率 = 模型毛利 ÷ 折合金额。客户折扣以记录折前成本为基准。</p></section>`;
- const variance=x?detailVariance(x,'actual',true):manual?detailRounding(a.cash,rawCash):`<section class="pricing-detail-extra" id="detail-variance"><h3>目标对照</h3>${a.cash!==null&&a.target!==null?detailFact('与目标差额',cash(sub(a.cash,a.target),12))+'<p class="footnote">与目标差额 = 折合金额 − 目标售价。</p>':`<p class="footnote">${manual?'手动倍率未设目标售价，无目标差额。':a.C===null?'缺少计价成本，暂不能对照。':'未录入折前成本，暂不能计算客户折扣和折扣目标。'}</p>`}</section>`;
+ const integral=pricingCalculationFlow(
+  pricingDetailRow('记录折前成本','平台原始记录；用于客户折扣对照',a.P===null?'未录入':`<strong class="num" title="${esc(o.P)}">${displayed(a.P,8).replace(/^= /,'')} 元</strong>`)
+  +pricingDetailRow('计价成本',derived?'记录折前成本 × 当前采购折扣':'直接采用记录的实际成本，不再乘采购折扣',a.C===null?'未录入':derived?detailEquation(`${num(a.P,8)} × ${q} ÷ 10`,a.C,'元',[a.P,mul(p.q,10)]):`<strong class="num" title="${esc(o.C)}">${displayed(a.C,8).replace(/^= /,'')} 元</strong>`),
+  pricingDetailRow('取整前积分','计价成本 × 成本定价倍率 × 10',a.raw===null?'—':detailEquation(`${num(a.C,8)} × ${num(p.usedM,8)} × 10`,a.raw,'分',[a.C,p.usedM]))
+  +pricingDetailRow('核算扣分','取整前积分向上取整',a.N===null?'—':`<span class="detail-substitution">${displayed(a.raw,8).replace(/^= /,'')} →</span><strong class="num detail-deduction">${num(a.N,0)} 分</strong>`),
+  detailPointValue(p)
+  +pricingDetailRow('折合金额','核算扣分 × 当前每积分金额',a.cash===null?'—':detailEquation(`${num(a.N,0)} × (${num(p.A,2)} ÷ ${num(p.T,4)})`,a.cash,'元',[a.N,p.A,p.T])));
+ const profit=`<section class="pricing-detail-extra" id="detail-profit"><h3>单次任务毛利</h3>${a.cash===null?'<p class="footnote">缺少计价成本，暂不能核算模型毛利。</p>':`<div class="formula" id="profit-equation"><span class="pricing-detail-caption">折合金额 − 计价成本</span>${detailEquation(`${num(a.cash,8)} − ${num(a.C,8)}`,a.cashProfit,'元',[a.cash,a.C])}</div>${detailFact('模型毛利率',a.salesMarginPct===null?'未定义':num(a.salesMarginPct,8)+'%')}`}${detailFact('本次客户折扣',x?num(x.effective,8)+'折':'—')}<p class="footnote">模型毛利率 = 模型毛利 ÷ 折合金额。客户折扣以记录折前成本为基准。</p></section>`;
+ const variance=x?detailVariance(x,'actual',true):manual?detailRounding(a.cash,rawCash):`<section class="pricing-detail-extra" id="detail-variance"><h3>目标对照</h3><div class="formula"><span class="pricing-detail-caption">${targetTitle} · ${targetDescription}</span>${targetEquation}</div>${a.cash!==null&&a.target!==null?detailFact('与目标差额',cash(sub(a.cash,a.target),12))+'<p class="footnote">与目标差额 = 折合金额 − 目标售价。</p>':`<p class="footnote">${manual?'手动倍率未设目标售价，无目标差额。':a.C===null?'缺少计价成本，暂不能对照。':'未录入折前成本，暂不能计算客户折扣和折扣目标。'}</p>`}</section>`;
  const reference=o.supplierReference?`${detailFact('原表供应商测算（'+num(mul(o.supplierReference.q,10),4)+'折）','¥'+esc(o.supplierReference.C))}<p class="footnote">仅留存原表参考，不作为本次计价成本。</p>`:'';
  const source=`<section class="pricing-detail-extra" id="detail-record-source"><h3>实测来源</h3><p class="pricing-detail-source">${esc(o.title)}${o.provider?' · '+esc(o.provider):''}${o.date?' · '+esc(o.date):''}</p>${o.note?`<p class="footnote">${esc(o.note)}</p>`:''}${reference}</section>`;
- const historical=`<section class="pricing-detail-extra" id="detail-record-history"><h3>历史实际扣分</h3>${detailFact(esc(o.provider||'平台')+'原记录',o.N!==''?esc(o.N)+' 分':'未录入')}<p class="footnote">历史值保持原样。上方核算扣分采用当前方案；核对历史差异需使用当时的充值与定价设置。</p></section>`;
+ const historical=`<section class="pricing-detail-extra" id="detail-record-history"><h3>历史实际扣分</h3>${o.historicalPricing?detailFact('当时定价',`采购 ${num(mul(o.historicalPricing.q,10),4)}折 · 倍率 ${esc(o.historicalPricing.M)}`):''}${detailFact(esc(o.provider||'平台')+'原记录',o.N!==''?esc(o.N)+' 分':'未录入')}<p class="footnote">历史值保持原样。上方核算扣分采用当前方案；核对历史差异需使用当时的充值与定价设置。</p></section>`;
  const usage=o.usage?`<section class="pricing-detail-extra detail-section pricing-detail-api"><h3>API 用量核对</h3><div class="formula">completion_tokens = ${esc(o.usage)}<br>按当前官方刊例费率折算 = ${cash(M.fromUsage(o.params,o.usage),12)}</div><p class="footnote">仅作独立核对，不回填成本。completion_tokens 已含最低用量；不与 total_tokens 相加，也不再次应用门槛。</p></section>`:'';
- const html=`<div class="pricing-details">${integral}<div class="pricing-detail-extra-grid">${detailMultiplier(p,o.params.model||'seedance-2.0')}${profit}${variance}${historical}</div><div class="pricing-detail-evidence-grid">${source}${usage}</div></div>`;
- const text=[`记录：${o.title}`,`任务：${label(o.params)} / ${vinLabel(o.params)}`,`来源：${o.note}`,`记录折前成本P = ${o.P||'未录入'}`,`记录实际成本C = ${o.C!==''?o.C:'未录入'}`,`成本口径：${derived?'记录折前成本 × 当前采购折扣':'直接采用记录实际成本'}`,`计价成本 = ${a.C===null?'未知':decimal(a.C)}`,...(o.supplierReference?[`原表供应商参考：采购比例 ${o.supplierReference.q}；测算成本 ${o.supplierReference.C}`]:[]),`API completion_tokens = ${o.usage||'未录入'}`,`取整前积分 = ${a.raw===null?'未知':decimal(a.raw)}`,`核算扣分 = ${a.N===null?'未知':num(a.N,0)}`,`折合金额 = ${a.cash===null?'未知':decimal(a.cash)}`,...detailSettlementText(p,a.cash,a.raw,a.target),`模型毛利 = ${a.cashProfit===null?'未知':decimal(a.cashProfit)}`,`模型毛利率 = ${a.salesMarginPct===null?'未定义':decimal(a.salesMarginPct)+'%'}`,`本次客户折扣 = ${x?decimal(x.effective)+'折':'未知'}`,`历史实际扣分 = ${o.N!==''?o.N:'未知；不得由复算补填'}`].join('\n');
+ const html=`<div class="pricing-details">${a.C===null?missingCostBreakdown(o).html:integral+`<div class="pricing-detail-extra-grid">${detailMultiplier(p,o.params.model||'seedance-2.0')}${profit}${variance}${detailUnitCheck('actual')}</div>`}<div class="pricing-detail-evidence-grid">${source}${historical}${usage}</div></div>`;
+ const text=[`记录：${o.title}`,`任务：${label(o.params)} / ${vinLabel(o.params)}`,`来源：${o.note}`,`记录折前成本P = ${o.P||'未录入'}`,`记录实际成本C = ${o.C!==''?o.C:'未录入'}`,`成本口径：${derived?'记录折前成本 × 当前采购折扣':'直接采用记录实际成本'}`,`计价成本 = ${a.C===null?'未知':decimal(a.C)}`,...(o.supplierReference?[`原表供应商参考：采购比例 ${o.supplierReference.q}；测算成本 ${o.supplierReference.C}`]:[]),`API completion_tokens = ${o.usage||'未录入'}`,`取整前积分 = ${a.raw===null?'未知':decimal(a.raw)}`,`核算扣分 = ${a.N===null?'未知':num(a.N,0)}`,`折合金额 = ${a.cash===null?'未知':decimal(a.cash)}`,...detailSettlementText(p,a.cash,a.raw,a.C===null?null:a.target),`模型毛利 = ${a.cashProfit===null?'未知':decimal(a.cashProfit)}`,`模型毛利率 = ${a.salesMarginPct===null?'未定义':decimal(a.salesMarginPct)+'%'}`,`本次客户折扣 = ${x?decimal(x.effective)+'折':'未知'}`,`历史实际扣分 = ${o.N!==''?o.N:'未知；不得由复算补填'}`,...(o.historicalPricing?[`历史采购比例 = ${o.historicalPricing.q}`,`历史成本定价倍率 = ${o.historicalPricing.M}`]:[])].join('\n');
  return{html,text};
 }
 function inlineCostBreakdown(t,p,recordId,costMode='inline'){
- const list=costMode==='list',input=list?null:matchingCostInput(t,recordId);
- if(!list&&(!input||!positive(input.value,true,20)))return {html:'<p class="notice neutral">请先填写有效的立画成本。</p>',text:'未填写有效成本。'};
+ const list=costMode==='list',input=list?null:costInputState(t,recordId);
+ if(!list&&!input.valid)return missingCostBreakdown();
  const base=theory(t,state.rules,p).x;
  if(!base)return {html:'<p class="notice neutral">当前任务的刊例成本尚不能估算。</p>',text:'刊例成本未确定。'};
- const cost=list?base.P:input.value,x=E.settle(base.P,cost,p),manual=p.targetAvailable===false;
- const targetTitle=manual?'取整前金额':'目标售价';
- const targetDescription=manual?'取整前积分 × 每积分金额':p.targetMode==='margin'?'计价成本 ÷（1 − 设定模型毛利率）':'火山刊例成本 × 设定客户折扣';
- const targetExpression=manual?`${num(x.raw,8)} × (${num(p.A,2)} ÷ ${num(p.T,4)})`:p.targetMode==='margin'?`${num(x.C,8)} ÷ (1 − ${num(p.targetMarginPct,4)}%)`:`${num(x.P,8)} × ${num(mul(p.d,10),6)} ÷ 10`;
- const targetOperands=manual?[x.raw,p.A,p.T]:p.targetMode==='margin'?[x.C,p.targetMarginPct]:[x.P,mul(p.d,10)];
- const html=`<div class="pricing-details"><ol class="pricing-detail-steps">`
- +pricingDetailRow('火山刊例成本','当前任务参数估算；用于客户折扣对照',`<strong class="num" title="${num(x.P,20)}">${displayed(x.P,8).replace(/^= /,'')} 元</strong><button class="link" id="detail-usage">用量明细 →</button>`)
- +pricingDetailRow('计价成本',list?'采用火山刊例成本，不应用采购折扣':'直接采用本次输入的立画实际成本',`<strong class="num" title="${num(x.C,20)}">${displayed(x.C,8).replace(/^= /,'')} 元</strong>`)
- +pricingDetailRow('取整前积分','计价成本 × 成本定价倍率 × 10',detailEquation(`${num(x.C,8)} × ${num(p.usedM,8)} × 10`,x.raw,'分',[x.C,p.usedM]))
- +pricingDetailRow('核算扣分','取整前积分向上取整',`<span class="detail-substitution">${displayed(x.raw,8).replace(/^= /,'')} →</span><strong class="num detail-deduction">${num(x.N,0)} 分</strong>`)
- +pricingDetailRow('折合金额','核算扣分 × 每积分金额',detailEquation(`${num(x.N,0)} × (${num(p.A,2)} ÷ ${num(p.T,4)})`,x.cash,'元',[x.N,p.A,p.T]))
- +pricingDetailRow(targetTitle,targetDescription,detailEquation(targetExpression,x.target??x.rawCash,'元',targetOperands))
- +`</ol><div class="pricing-detail-extra-grid"><section class="pricing-detail-extra" id="detail-profit"><h3>模型毛利</h3><div class="formula" id="profit-equation"><span class="pricing-detail-caption">折合金额 − 计价成本</span>${detailEquation(`${num(x.cash,8)} − ${num(x.C,8)}`,x.profit,'元',[x.cash,x.C])}</div>${detailFact('模型毛利率',x.margin===null?'未定义':num(x.margin,8)+'%')}${detailFact('本次客户折扣',num(x.effective,8)+'折')}<p class="footnote">模型毛利率 = 模型毛利 ÷ 折合金额。客户折扣以火山刊例成本为基准。</p></section>${detailVariance(x,'actual',true)}</div></div>`;
+ const cost=list?base.P:input.value,x=E.settle(base.P,cost,p);
+ const html=`<div class="pricing-details">`+pricingCalculationFlow(
+  pricingDetailRow('火山刊例成本','当前任务参数估算；用于客户折扣对照',`<strong class="num" title="${num(x.P,20)}">${displayed(x.P,8).replace(/^= /,'')} 元</strong><button class="link" id="detail-usage">用量明细 →</button>`)
+  +pricingDetailRow('计价成本',list?'采用火山刊例成本，不应用采购折扣':'直接采用本次输入的立画实际成本',`<strong class="num" title="${num(x.C,20)}">${displayed(x.C,8).replace(/^= /,'')} 元</strong>`),
+  pricingDetailRow('取整前积分','计价成本 × 成本定价倍率 × 10',detailEquation(`${num(x.C,8)} × ${num(p.usedM,8)} × 10`,x.raw,'分',[x.C,p.usedM]))
+  +pricingDetailRow('核算扣分','取整前积分向上取整',`<span class="detail-substitution">${displayed(x.raw,8).replace(/^= /,'')} →</span><strong class="num detail-deduction">${num(x.N,0)} 分</strong>`),
+  detailPointValue(p)
+  +pricingDetailRow('折合金额','核算扣分 × 每积分金额',detailEquation(`${num(x.N,0)} × (${num(p.A,2)} ÷ ${num(p.T,4)})`,x.cash,'元',[x.N,p.A,p.T])))
+ +`<div class="pricing-detail-extra-grid">${detailMultiplier(p,t.model)}<section class="pricing-detail-extra" id="detail-profit"><h3>单次任务毛利</h3><div class="formula" id="profit-equation"><span class="pricing-detail-caption">折合金额 − 计价成本</span>${detailEquation(`${num(x.cash,8)} − ${num(x.C,8)}`,x.profit,'元',[x.cash,x.C])}</div>${detailFact('模型毛利率',x.margin===null?'未定义':num(x.margin,8)+'%')}${detailFact('本次客户折扣',num(x.effective,8)+'折')}<p class="footnote">模型毛利率 = 模型毛利 ÷ 折合金额。客户折扣以火山刊例成本为基准。</p></section>${detailVariance(x,'actual',true)}${detailUnitCheck(costMode)}</div></div>`;
  const text=[`计价成本（${list?'采用火山刊例成本':'直接输入立画成本'}） = ${decimal(x.C)}`,`火山刊例成本（理论） = ${decimal(x.P)}`,`取整前积分 = ${decimal(x.raw)}`,`核算扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,...detailSettlementText(p,x.cash,x.raw,x.target),`本次客户折扣 = ${decimal(x.effective)}折`,`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`].join('\n');
  return {html,text};
 }
@@ -18852,9 +18909,9 @@ function openDetails(mode='theory',recordId='',contextTask=null){
  const selector=chosen==='actual'&&matches.length>1?`<div class="detail-selector"><label class="fieldlabel" for="details-record">实测记录</label><select class="input" id="details-record">${matches.map(r=>`<option value="${esc(r.id)}" ${r.id===selected.id?'selected':''}>${esc(r.title)}${r.date?' · '+esc(r.date):''}</option>`).join('')}</select></div>`:'';
  const view=chosen==='list'||chosen==='inline'?inlineCostBreakdown(t,p,recordId,chosen):chosen==='actual'?actualBreakdown(selected,p):theoryBreakdown(t,p);
  const recordContext=recordDetailContext(t,selected,chosen);
- const content=(chosen==='actual'?detailPlan(p,t.model||'seedance-2.0'):'')+selector+view.html+recordContext.html+`<div class="pricing-detail-footer"><button class="link" id="export-calculation">导出计算明细 ↓</button></div>`;
- detailContext.text=[`Reelay V9.13.0 · ${chosen==='list'?'火山刊例成本测算':chosen==='inline'?'立画录入成本测算':chosen==='actual'?'平台实测金额复算':'理论采购成本测算'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text,...(recordContext.text?['',recordContext.text]:[])].join('\n');
- openDrawer('calculation',chosen==='actual'?'实测复算':'计算明细',label(t)+' / '+vinLabel(t)+' · '+(chosen==='list'?'火山刊例成本':chosen==='theory'?'理论采购成本':'立画成本'),content,true);if(chosen==='theory'&&$('unit-p'))unitPreview();
+ const content=detailPlan(p,t.model||'seedance-2.0')+selector+view.html+recordContext.html+`<div class="pricing-detail-footer"><button class="link" id="export-calculation">导出计算明细 ↓</button></div>`;
+ detailContext.text=[`Reelay V9.14.0 · ${chosen==='list'?'火山刊例成本测算':chosen==='inline'?'立画录入成本测算':chosen==='actual'?'平台实测金额复算':'理论采购成本测算'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text,...(recordContext.text?['',recordContext.text]:[])].join('\n');
+ openDrawer('calculation',chosen==='actual'?'实测复算':'计算明细',label(t)+' / '+vinLabel(t)+' · '+(chosen==='list'?'火山刊例成本':chosen==='theory'?'理论采购成本':'立画成本'),content,true);if($('unit-p'))unitPreview();
 }
 let ruleContext=null;
 function openRules(ruleTask=state.task){
@@ -18894,7 +18951,15 @@ function openModelPricing(){
  });
  openDrawer('profiles','模型定价',`充值 ${num(state.plan.pay,2)} 元 → ${num(state.plan.total,4)} 积分`,'<div class="table-scroll">'+table(['模型','采购折扣','定价依据','采用倍率','客户折扣','模型毛利率'],rows,'pricing-overview-table')+'</div>'+'<p class="footnote">折扣与毛利率未计每次扣分取整。点击模型名称配置该模型。</p>',true);
 }
-function unitPreview(){try{const P=$('unit-p').value.trim();if(!positive(P))throw Error('请输入正数金额');const p=drawerName==='calculation'?pricingForModel(detailContext.task.model):pricing(),x=E.settle(P,mul(P,p.q),p);$('unit-result').innerHTML=`<div class="fact"><span>假设采购成本</span><b>${cash(x.C,9)}</b></div>${x.target===null?'':`<div class="fact"><span>目标金额</span><b>${cash(x.target,9)}</b></div>`}<div class="fact"><span>取整前积分</span><b>${num(x.raw,12)}</b></div><div class="fact emph"><span>向上取整预计扣分</span><b>${num(x.N,0)} 积分</b></div><div class="fact"><span>折合金额</span><b>${cash(x.cash,9)}</b></div>`;}catch(e){$('unit-result').innerHTML='<div class="notice red">'+esc(e.message)+'</div>';}}
+function unitPreview(){
+ try{
+  const value=$('unit-p').value.trim(),mode=drawerName==='calculation'?detailContext.mode:'theory',direct=mode==='actual'||mode==='inline';
+  if(!positive(value,direct))throw Error(direct?'请输入不小于 0 的金额':'请输入正数金额');
+  const p=drawerName==='calculation'?pricingForModel(detailContext.task.model):pricing();
+  const x=direct?E.recalcRecord({P:'',C:value,N:'',costBasis:'recorded'},p):E.settle(value,mode==='list'?value:mul(value,p.q),p);
+  $('unit-result').innerHTML=`<div class="fact"><span>假设计价成本</span><b>${cash(x.C,9)}</b></div>${x.target===null?'':`<div class="fact"><span>目标金额</span><b>${cash(x.target,9)}</b></div>`}<div class="fact"><span>取整前积分</span><b>${num(x.raw,12)}</b></div><div class="fact emph"><span>向上取整预计扣分</span><b>${num(x.N,0)} 积分</b></div><div class="fact"><span>折合金额</span><b>${cash(x.cash,9)}</b></div>`;
+ }catch(e){$('unit-result').innerHTML='<div class="notice red">'+esc(e.message)+'</div>';}
+}
 function observationDetail(id){openDetails('actual',id);}
 let observationContext=null;
 function observationEditor(id='',contextTask=null,contextRecordId=selectedTaskRecordId){
@@ -18977,12 +19042,12 @@ function saveObservation(id){const old=state.observations.find(r=>r.id===id),o={
 }
 function download(name,text,type='text/plain;charset=utf-8'){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 const filename=()=>state.plan.company.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,50)||'Reelay方案';
-function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.13.0 · 视频定价工作台','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,...detailSettlementText(p,x.cash,x.raw,x.target),`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
+function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.14.0 · 视频定价工作台','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,...detailSettlementText(p,x.cash,x.raw,x.target),`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
 function exportJSON(){
  const procurementProfiles=Object.keys(PROCUREMENT_MODELS).map(model=>procurementInfo(model));
  const pricingProfiles=Object.keys(PROCUREMENT_MODELS).map(model=>{const p=pricingForModel(model),outcome=policyOutcome(p);return {model,...state.plan.modelPricing[model],adoptedMultiplier:decimal(p.usedM),customerDiscount:decimal(outcome.discount),unroundedMargin:decimal(outcome.margin)};});
  const taskEstimates=state.tasks.map(row=>{const v=theory(row.params);return v.x?exportRow(row.title,v,v.x,row.qty):{model:row.params.model,...procurementInfo(row.params.model),scope:'规则缺项，未生成收费估算'};});
- download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.13.0',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,pricingProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
+ download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.14.0',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,pricingProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
 }
 function csvCell(x){let s=String(x??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
 function exportActualCSV(){const rows=actualRows;if(!rows.length)return toast('没有可导出记录。');const titles={scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',procurementRatio:'当前复算采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',record:'记录',params:'规格',coverage:'估算依据',theoryP:'刊例费用P',recordedP:'平台记录P',deltaP:'实测P减估算P',theoryC:'采购成本C',recordedC:'已记录采购C_推算记录为空',costBasis:'成本口径',recalcC:'当前复算采购C',supplierReferenceC:'原表供应商测算C_非实付',supplierReferenceQ:'原表供应商测算比例',provider:'实测平台',deltaC:'实测C减估算C',recordedN:'平台实际扣分_空白为未知',recalcN:'当前复算扣分_非历史',recalcCash:'当前复算金额',recalcProfit:'当前复算模型毛利',pay:'当前充值实付',total:'当前到账积分',M:'当前倍率',targetMode:'当前目标模式',usage:'API_completion_tokens_原记录',note:'备注'};const ks=Object.keys(titles),csv='\ufeff'+[ks.map(k=>csvCell(titles[k])).join(','),...rows.map(r=>ks.map(k=>csvCell(r[k])).join(','))].join('\r\n');download(filename()+'_实测对照'+'.csv',csv,'text/csv;charset=utf-8');}
@@ -19014,10 +19079,11 @@ case'close-drawer':case'close-only':closeDrawer();break;
 case'open-rules':case'task-rule':case'open-rule-from-formula':openRules();break;
 case'show-formula':formulaDetails();break;
 case'usage-help':openUsage();break;
-case'details':openDetails(taskCostBasis==='actual'?(matchingCostInput()?'inline':'actual'):taskCostBasis,selectedTaskRecordId);break;
+case'details':openDetails(taskCostBasis==='actual'?(costInputState().overridden?'inline':'actual'):taskCostBasis,selectedTaskRecordId);break;
+case'detail-enter-cost':{const {task:t,recordId}=detailContext;closeDrawer();state.task=clone(t);state.workspace='theory';selectedTaskRecordKey=key(t);selectedTaskRecordId=recordId;taskCostBasis='actual';render();$('record-cost').focus();break;}
 case'detail-usage':{const t=detailContext.task;openDrawer('usage','用量说明',label(t),'<button class="link" id="back-pricing-details">← 返回计算明细</button>'+usageExplanation(quote(t),t,true));break;}
 case'back-pricing-details':openDetails(detailContext.mode,detailContext.recordId,detailContext.task);break;
-case'restore-record-cost':{const {mode,task:t,recordId}=detailContext,context=key(t)+'|'+recordId;if(matchingCostInput(t,recordId))state.taskCostInput=null;if(costInputDraft?.context===context)costInputDraft=null;resumeInlineActual=false;render();openDetails(mode==='inline'?'actual':mode,recordId,t);break;}
+case'restore-record-cost':{const {mode,task:t,recordId}=detailContext,context=key(t)+'|'+recordId;if(matchingCostInput(t,recordId))state.taskCostInput=null;if(costInputDraft?.context===context)costInputDraft=null;render();openDetails(mode==='inline'?'actual':mode,recordId,t);break;}
 case'model-pricing-overview':if(platformValid)openModelPricing();else toast('请先修正定价输入。');break;
 case'export-calculation':download(filename()+'_计算展开_'+({actual:'实测复算',inline:'立画成本',list:'刊例成本',theory:'理论采购'}[detailContext.mode])+'.txt',detailContext.text);break;
 case'detail-open-rule':openRules(detailContext.task||state.task);break;
@@ -19036,17 +19102,17 @@ case'export-summary':if(globalValid)download(filename()+'_理论方案说明.txt
 case'actual-export':case'export-actual':if(validPlan(state.plan))exportActualCSV();break;
 case'import':$('file').click();break;
 case'reset':openReset();break;
-case'confirm-reset':cancelMultiplierEdit();costInputDraft=null;resumeInlineActual=false;taskCostBasis='theory';state=defaults();closeDrawer();render();toast('已恢复默认方案。');break;
+case'confirm-reset':cancelMultiplierEdit();costInputDraft=null;taskCostBasis='theory';state=defaults();closeDrawer();render();toast('已恢复默认方案。');break;
 }
 });
-document.addEventListener('input',e=>{const el=e.target,id=el.id;if(id==='record-cost'){resumeInlineActual=resumeInlineActual||taskCostBasis==='actual';const value=el.value.trim();if(!validTask(state.task,false))return;costInputDraft={context:key(state.task)+'|'+selectedTaskRecordId,value};if(value===''||positive(value,true,20)){state.taskCostInput={taskKey:key(state.task),recordId:selectedTaskRecordId,value};costInputDraft=null;}render();return;}if(['pay','total','discount','target-margin','purchase-discount'].includes(id)){if(id==='discount'||id==='target-margin')useAutomaticPricing(id==='discount'?'discount':'margin');if(id==='target-margin')state.plan.margin=el.value;else if(id==='purchase-discount'){state.plan.q=positive(el.value,false,4)?num(div(el.value,10),6):'';}else if(id==='pay')state.plan.pay=el.value;else if(id==='total')state.plan.total=el.value;else state.plan.discount=el.value;render();return;}
+document.addEventListener('input',e=>{const el=e.target,id=el.id;if(id==='record-cost'){const value=el.value.trim();if(!validTask(state.task,false))return;costInputDraft={context:key(state.task)+'|'+selectedTaskRecordId,value};if(value===''||positive(value,true,20)){state.taskCostInput={taskKey:key(state.task),recordId:selectedTaskRecordId,value};costInputDraft=null;}render();return;}if(['pay','total','discount','target-margin','purchase-discount'].includes(id)){if(id==='discount'||id==='target-margin')useAutomaticPricing(id==='discount'?'discount':'margin');if(id==='target-margin')state.plan.margin=el.value;else if(id==='purchase-discount'){state.plan.q=positive(el.value,false,4)?num(div(el.value,10),6):'';}else if(id==='pay')state.plan.pay=el.value;else if(id==='total')state.plan.total=el.value;else state.plan.discount=el.value;render();return;}
 if(id==='vin-slider'){if(state.task.video)changeTask({vin:el.value});return;}if(id==='manual-m'){if(multiplierEdit)validateMultiplierEdit();return;}if(id==='vin'){
  const entered=el.value;
  try{state.task.vin=wholeInputSeconds(entered);el.value=state.task.vin;if(cmp(entered,state.task.vin)!==0)toast('已向上取整：'+entered+' → '+state.task.vin+' 秒。');}
  catch(_){state.task.vin=entered;}
  render();return;
 }if(id==='seconds'){state.task.seconds=el.value;render();return;}if(id==='unit-p'){unitPreview();return;}});
-document.addEventListener('change',e=>{const el=e.target,id=el.id;if(id==='model'){changeModel(el.value);return;}if(id==='pricing-basis'){if(!['discount','margin'].includes(el.value))return;useAutomaticPricing(el.value);render();return;}if(id==='task-record-select'){resumeInlineActual=false;selectedTaskRecordId=el.value;render();return;}if(id==='seconds'&&validTask(state.task)){state.task=normalizeTask(state.task);render();return;}if(id==='details-record'){const context=detailContext.task,recordId=el.value;if(globalValid&&key(context)===key(state.task)){selectedTaskRecordId=recordId;renderResult();}openDetails('actual',recordId,context);return;}if(['plan-digits','plan-round'].includes(id)){applyPlanPrecision();return;}});
+document.addEventListener('change',e=>{const el=e.target,id=el.id;if(id==='model'){changeModel(el.value);return;}if(id==='pricing-basis'){if(!['discount','margin'].includes(el.value))return;useAutomaticPricing(el.value);render();return;}if(id==='task-record-select'){selectedTaskRecordId=el.value;render();return;}if(id==='seconds'&&validTask(state.task)){state.task=normalizeTask(state.task);render();return;}if(id==='details-record'){const context=detailContext.task,recordId=el.value;if(globalValid&&key(context)===key(state.task)){selectedTaskRecordId=recordId;renderResult();}openDetails('actual',recordId,context);return;}if(['plan-digits','plan-round'].includes(id)){applyPlanPrecision();return;}});
 $('fee-digits').addEventListener('click',e=>{
  feeDisplayDigits=feeDisplayDigits===2?6:2;
  const hint='当前显示 '+feeDisplayDigits+' 位小数，点击切换为 '+(feeDisplayDigits===2?6:2)+' 位';
@@ -19094,14 +19160,14 @@ document.addEventListener('keydown',e=>{
  if(e.target===$('quick-toggle')&&['ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();openQuickOptions();return;}
  if(quickIsOpen()&&e.key==='Escape'){e.preventDefault();closeQuickOptions(true);return;}
  if($('modal').hidden)return;if(e.key==='Escape'){e.preventDefault();closeDrawer();}if(e.key==='Tab'){const els=[...$('drawer').querySelectorAll('button,input,select,textarea,a[href],summary')].filter(x=>!x.disabled&&x.getClientRects().length);if(!els.length)return;const first=els[0],last=els.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
-$('file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>3e6)throw Error('文件超过3MB，请检查是否为方案JSON。');const loaded=migrate(JSON.parse(await f.text()));cancelMultiplierEdit();costInputDraft=null;resumeInlineActual=false;taskCostBasis='theory';state=loaded.value;closeDrawer();render();toast(loaded.note);}catch(err){toast('导入失败：'+err.message);}finally{e.target.value='';}});
+$('file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>3e6)throw Error('文件超过3MB，请检查是否为方案JSON。');const loaded=migrate(JSON.parse(await f.text()));cancelMultiplierEdit();costInputDraft=null;taskCostBasis='theory';state=loaded.value;closeDrawer();render();toast(loaded.note);}catch(err){toast('导入失败：'+err.message);}finally{e.target.value='';}});
 
 function targetLabel(p){if(p.targetAvailable===false)return '指定倍率';return p.targetMode==='margin'?'采购成本 ÷ (1 − 目标毛利率)':'刊例费用 × '+num(mul(p.d,10),6)+'折';}
 function targetSummary(p){if(p.targetAvailable===false)return '指定倍率 '+num(p.usedM,12);return p.targetMode==='margin'?'目标毛利率 '+num(p.targetMarginPct,4)+'%':'目标客户折扣 '+num(mul(p.d,10),6)+'折';}
 
 
 // Exposed for transparent regression tests. Theory takes no observations argument.
-window.ReelayApp={getState:()=>clone(state),setState:s=>{costInputDraft=null;resumeInlineActual=false;const draft=clone(s);if(draft.plan.modelPricing){if(draft.plan.mode!=='manual')draft.plan.limitPrecision=draft.plan.mode==='saved';captureProfile(draft.plan);}state=upgradeState(draft);render();},defaults,validState,upgradeState,normalizeTask,reset:()=>{costInputDraft=null;resumeInlineActual=false;taskCostBasis='theory';state=defaults();render();},pricing,pricingForModel,procurementInfo,quote,theory,theoryOne,current,summary,key,minimumKey,normalizeMinimumKeys,openDetails,recalcRecord:(record,p=pricingForModel(record.params?.model||'seedance-2.0'))=>E.recalcRecord(record,p),migrate,OBS,REFS,getTheoryRows:()=>clone(tableRows),getActualRows:()=>clone(actualRows)};
+window.ReelayApp={getState:()=>clone(state),setState:s=>{costInputDraft=null;const draft=clone(s);if(draft.plan.modelPricing){if(draft.plan.mode!=='manual')draft.plan.limitPrecision=draft.plan.mode==='saved';captureProfile(draft.plan);}state=upgradeState(draft);render();},defaults,validState,upgradeState,normalizeTask,reset:()=>{costInputDraft=null;taskCostBasis='theory';state=defaults();render();},pricing,pricingForModel,procurementInfo,quote,theory,theoryOne,current,summary,key,minimumKey,normalizeMinimumKeys,openDetails,recalcRecord:(record,p=pricingForModel(record.params?.model||'seedance-2.0'))=>E.recalcRecord(record,p),migrate,OBS,REFS,getTheoryRows:()=>clone(tableRows),getActualRows:()=>clone(actualRows)};
 render();
 if(taskMigrationNotice)toast(taskMigrationNotice);
 })();
