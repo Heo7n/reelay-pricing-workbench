@@ -57,8 +57,8 @@ test('only standard 2.0 starts with discounted procurement and switching restore
   h.select('seedance-2.0');equal(h.api.getState().plan.q,'0.735');
   h.input('purchase-discount','6');equal(h.api.getState().plan.q,'0.6');
   h.select('seedance-2.5');h.input('purchase-discount','8');
-  assert.equal(h.w.document.getElementById('procurement-status').textContent,'模拟');
-  assert.equal(h.w.document.getElementById('procurement-status').classList.contains('is-simulation'),true);
+  assert.equal(h.w.document.getElementById('procurement-status').hidden,true);
+  assert.equal(h.w.document.getElementById('procurement-status').classList.contains('is-simulation'),false);
   h.select('seedance-2.0-fast');h.input('purchase-discount','9');
   for(const [model,q] of [['seedance-2.0','0.6'],['seedance-2.5','0.8'],['seedance-2.0-fast','0.9']]){
     h.select(model);equal(h.api.getState().plan.q,q);
@@ -67,6 +67,21 @@ test('only standard 2.0 starts with discounted procurement and switching restore
   h.select('seedance-2.5');h.input('purchase-discount','10');
   assert.equal(h.w.document.getElementById('procurement-status').classList.contains('is-simulation'),false);
   h.select('seedance-2.0-fast');equal(h.api.getState().plan.q,'0.9');
+});
+
+test('2.5 offers the confirmed 7.35 procurement option without resetting its multiplier or historical records',t=>{
+ const h=boot(t);h.select('seedance-2.5');
+ const before=plain(h.api.getState()),P=h.api.current().x.P;
+ assert.ok(h.w.document.querySelector('#purchase-picks [data-purchase="7.35"]'));
+ h.click('#purchase-picks [data-purchase="7.35"]');
+ equal(h.api.getState().plan.q,'0.735');equal(h.api.pricing().usedM,'1.65');
+ equal(h.api.current().x.C,E.mul(P,'0.735'));
+ assert.equal(h.api.procurementInfo('seedance-2.5','0.735').procurementSimulated,false);
+ assert.deepEqual(plain(h.api.getState().observations),before.observations);
+ h.select('seedance-2.0-fast');assert.equal(h.w.document.querySelector('#purchase-picks [data-purchase="7.35"]'),null);
+ equal(h.api.getState().plan.q,'1');h.input('purchase-discount','7.35');
+ assert.equal(h.api.procurementInfo('seedance-2.0-fast','0.735').procurementSimulated,true);
+ h.select('seedance-2.5');equal(h.api.getState().plan.q,'0.735');
 });
 
 test('current task record comparison follows the selected model policy without carrying another model record or discount',t=>{
@@ -174,7 +189,7 @@ test('cross-model quotes use their own procurement and pricing policy while expl
   for(const [i,v] of quotes().entries()){equal(v.x.C,before[i].x.C);equal(v.x.p.usedM,before[i].x.p.usedM);}
   const explicit=E.plan({pay:'100',total:'2000',q:'0.5',discount:'9',appliedM:'2.5'});
   const quoted=h.api.theory(task('seedance-2.5'),h.api.getState().rules,explicit);
-  equal(quoted.x.C,E.mul(quoted.x.P,'0.5'));equal(quoted.x.p.usedM,'2.5');assert.equal(quoted.procurement.procurementSimulated,true);
+  equal(quoted.x.C,E.mul(quoted.x.P,'0.5'));equal(quoted.x.p.usedM,'2.5');assert.equal(quoted.procurement.procurementSimulated,false);
 });
 
 test('each model retains its own basis, target, manual multiplier and precision',t=>{
@@ -241,9 +256,9 @@ test('JSON and CSV exports retain model-specific procurement and label simulated
   assert.equal(payload.pricingProfiles.length,3);
   assert.deepEqual(payload.state.plan.modelPricing,plain(h.api.getState().plan.modelPricing));
   assert.equal(payload.taskEstimates.length,3);
-  const simulated=payload.procurementProfiles.find(row=>row.model==='seedance-2.5');
-  equal(simulated.procurementRatio,'0.85');assert.equal(simulated.procurementSimulated,true);
-  assert.equal(simulated.supplierAvailable,false);
+  const available=payload.procurementProfiles.find(row=>row.model==='seedance-2.5');
+  equal(available.procurementRatio,'0.85');assert.equal(available.procurementSimulated,false);
+  assert.equal(available.supplierAvailable,true);
   assert.ok(payload.taskEstimates.every(row=>row.model&&row.procurementRatio));
   assert.ok(payload.recordRecalculations.every(row=>row.model&&row.procurementRatio));
   assert.deepEqual(payload.state.observations,observations);

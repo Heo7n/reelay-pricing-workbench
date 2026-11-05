@@ -6,7 +6,7 @@ const num=(x,d=8)=>trim(x,d),cash=(x,d=6)=>'¥'+fixed(x,d),decimal=(x,d=20)=>dec
 const RES=Object.keys(E.DIMS),RATIOS=['21:9','16:9','4:3','1:1','3:4','9:16'],DISCOUNTS=['7.35','7.5','7.8','8','8.2','8.5','8.8','9','10'];
 const PROCUREMENT_MODELS=Object.freeze({
  'seedance-2.0':Object.freeze({defaultQ:'0.735',supplierAvailable:true}),
- 'seedance-2.5':Object.freeze({defaultQ:'1',supplierAvailable:false}),
+ 'seedance-2.5':Object.freeze({defaultQ:'1',supplierAvailable:true}),
  'seedance-2.0-fast':Object.freeze({defaultQ:'1',supplierAvailable:false})
 });
 const defaultProcurement=()=>Object.fromEntries(Object.entries(PROCUREMENT_MODELS).map(([model,spec])=>[model,spec.defaultQ]));
