@@ -8,7 +8,9 @@
 
 2026-11-05 已创建独立免费项目 `Reelay_Pricing`（`fkdljkabuxopizsnawci`，新加坡区域），应用 `20261105040019_public_measurements` 迁移并设置用户指定的管理员邮箱。公开记录当前为空，未自动上传本地记录。真实 PostgREST 检查已确认匿名读取可用、匿名写入被拒、私有 schema 不暴露；完整 SQL 权限断言在该项目内执行并回滚通过。
 
-登录邮件配置仍需通过已授权的 Supabase CLI 或控制台完成。`supabase/config.toml` 已准备生产站点 URL、邮箱确认开启、6 位验证码、10 分钟有效期，以及首次注册和再次登录的两份邮件模板；不要在 CLI 未授权时声称它们已推送。Supabase CLI 本机版本为 2.116.0，新版本 3.x 的远程目标语义不同，切换版本前重新核对。
+2026-11-05 Supabase CLI 已完成登录并验证可访问独立项目。控制台已保存正式站点和唯一允许回跳地址 `https://reelay-pricing-v9.vercel.app/`，已确认邮箱验证开启，并将验证码有效期设为 10 分钟，保留云端默认的 8 位长度。前端接受 6–10 位数字验证码，由 Supabase 按实际配置验证，不再截断为 6 位。自定义 SMTP 和首次注册、再次登录的两份邮件模板仍未启用，真实收信登录尚未验收，云端功能未发布到正式站点。Supabase CLI 本机版本为 2.116.0，新版本 3.x 的远程目标语义不同，切换版本前重新核对。
+
+**邮件上线前置条件：** Supabase 自 2026-06-03 起，禁止新建免费项目在使用默认邮件服务时修改 Auth 邮件模板；本项目属于受影响范围。必须先配置自定义 SMTP，再应用并核验两份验证码模板。默认邮件服务还只向 Supabase 组织成员邮箱发送邮件，计算器的录入成员名单不等于组织成员。CLI 登录完成不能替代发信服务配置，不得通过关闭邮箱确认或将录入者加入 Supabase 管理组织来绕过这些限制。依据：[邮件模板变更公告](https://supabase.com/changelog/46599-changes-to-email-template-customisation-on-free-tier)、[SMTP 文档](https://supabase.com/docs/guides/auth/auth-smtp)。
 
 当前安全检查的四项 `rls_enabled_no_policy` 提示属于私有表的默认拒绝设计：客户端没有直接表权限，访问由经过身份检查的函数执行。不能为消除提示添加允许所有人访问的策略。
 

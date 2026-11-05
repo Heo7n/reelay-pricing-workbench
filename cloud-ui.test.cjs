@@ -108,6 +108,20 @@ test('guest login and denied enrollment do not grant writes or disturb the calcu
   h.good();
 });
 
+test('login form accepts a complete eight-digit email code and forwards it unchanged', async t => {
+  const h = await boot(t);
+  h.ui.saveCurrent();
+  h.input('cloud-email', 'owner@example.com'); h.submit('cloud-login-form'); await flush();
+  const code = h.doc.getElementById('cloud-code');
+  h.input('cloud-code', '01234567');
+  assert.ok(code.maxLength >= code.value.length, 'the input must not truncate the hosted OTP');
+  assert.equal(code.checkValidity(), true);
+  h.submit('cloud-verify-form'); await flush();
+  assert.deepEqual(h.calls.find(([method]) => method === 'verifyCode'), ['verifyCode', 'owner@example.com', '01234567']);
+  assert.equal(h.ui.canWrite(), true);
+  h.good();
+});
+
 test('saving an edited managed record uses the new amount and version from the public list', async t => {
   const h = await boot(t, {identity: admin});
   await h.manage(); h.click('[data-cloud-action="edit"]');
@@ -219,11 +233,12 @@ test('authentication and member secrets are absent from calculator JSON export',
   h.good();
 });
 
-test('implicit form submissions do not throw and OTP field matches the six-digit client contract', async t => {
+test('implicit form submissions do not throw and supported legacy codes still work', async t => {
   const h = await boot(t);
   h.ui.saveCurrent(); h.input('cloud-email', 'owner@example.com'); h.submit('cloud-login-form', true); await flush();
-  assert.equal(h.doc.getElementById('cloud-code').maxLength, 6);
-  h.input('cloud-code', '123456'); h.submit('cloud-verify-form', true); await flush();
+  h.input('cloud-code', '123456');
+  assert.equal(h.doc.getElementById('cloud-code').checkValidity(), true);
+  h.submit('cloud-verify-form', true); await flush();
   assert.ok(h.doc.getElementById('cloud-record-form'));
   h.input('cloud-cost', '2'); h.submit('cloud-record-form', true); await flush();
   assert.equal(h.calls.filter(([method]) => method === 'save').length, 1);

@@ -41,7 +41,7 @@ root.ReelayCloudUI={mount(host,client){
   $('cloud-email').focus();
  }
  function verify(){
-  const token=open('cloud-login','输入验证码','',`<p class="cloud-login-copy">验证码已发送至 ${esc(loginEmail)}。请输入邮件中的验证码。</p><form id="cloud-verify-form" class="cloud-form"><label>验证码<input class="input num" id="cloud-code" inputmode="numeric" autocomplete="one-time-code" required pattern="[0-9]{6}" maxlength="6"></label><p id="cloud-error" class="cloud-form-error" role="status" tabindex="-1"></p><button class="btn primary" type="submit">登录</button><button class="link" type="button" data-cloud-action="login">更换邮箱或重新发送</button></form>`);
+  const token=open('cloud-login','输入验证码','',`<p class="cloud-login-copy">验证码已发送至 ${esc(loginEmail)}。请输入邮件中的验证码。</p><form id="cloud-verify-form" class="cloud-form"><label>验证码<input class="input num" id="cloud-code" inputmode="numeric" autocomplete="one-time-code" required pattern="[0-9]{6,10}" maxlength="10"></label><p id="cloud-error" class="cloud-form-error" role="status" tabindex="-1"></p><button class="btn primary" type="submit">登录</button><button class="link" type="button" data-cloud-action="login">更换邮箱或重新发送</button></form>`);
   $('cloud-verify-form').addEventListener('submit',async e=>{e.preventDefault();const button=e.submitter||e.target.querySelector('[type="submit"]');button.disabled=true;try{await client.verifyCode(loginEmail,$('cloud-code').value.trim());await refreshIdentity();if(!current(token))return;if(!canWrite()){feedback('该账号尚未获得录入权限，请联系管理员添加此邮箱。');button.disabled=false;return;}const draft=pendingRecord;pendingRecord=null;if(draft)editor(draft);else library(true);}catch(error){if(current(token)){feedback(errorText(error));button.disabled=false;}}});
   $('cloud-code').focus();
  }

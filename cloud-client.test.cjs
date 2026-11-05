@@ -85,6 +85,18 @@ test('OTP flows normalize email and never return session tokens or private ident
   assert.equal(h.authCalls.length, 3);
 });
 
+test('OTP accepts the hosted eight-digit default and supported lengths without truncation', async () => {
+  const h = fake();
+  for (const token of ['123456', '12345678', '0123456789']) {
+    assert.deepEqual(await h.client.verifyCode('owner@example.com', token), {authenticated: true});
+    assert.equal(h.authCalls.at(-1)[1].token, token);
+  }
+  for (const token of ['12345', '12345678901', '1234abcd', '1234 5678']) {
+    await assert.rejects(h.client.verifyCode('owner@example.com', token), {code: 'INVALID_CODE'});
+  }
+  assert.equal(h.authCalls.length, 3);
+});
+
 test('auth-change callbacks run outside the SDK auth lock and unsubscribe cancels queued work', async () => {
   const h = fake();
   let inside = false;

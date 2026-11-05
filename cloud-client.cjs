@@ -183,7 +183,7 @@ function createCloudClient(config, options = {}) {
     },
     async verifyCode(email, code, requestOptions) {
       const value = emailValue(email), token = String(code || '').trim();
-      if (!/^\d{6}$/.test(token)) throw problem('INVALID_CODE', '请输入邮件中的六位验证码。');
+      if (!/^\d{6,10}$/.test(token)) throw problem('INVALID_CODE', '请输入邮件中的完整数字验证码。');
       const data = await request(() => sdk.auth.verifyOtp({email: value, token, type: 'email'}), requestOptions);
       if (!data?.session || !data?.user) throw problem('INVALID_RESPONSE', '登录尚未完成，请重新验证。');
       return {authenticated: true};
