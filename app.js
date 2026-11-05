@@ -94,6 +94,20 @@ QUICK_TASKS[model]=presets;return presets;
 }
 function defaults(){return{schema:'reelay.pricing.v9',platformSamplesRevision:PLATFORM_SAMPLES_REVISION,plan:{company:'积分定价方案',pay:'100',total:'1538',discount:'7.35',q:'0.735',procurementModel:'seedance-2.0',procurementByModel:defaultProcurement(),modelPricing:F.defaults(),pricingDefaultsRevision:F.DEFAULTS_REVISION,pricingModel:'seedance-2.0',limitPrecision:false,targetMode:'discount',margin:'8.125',giftMode:false,mode:'ideal',digits:12,round:'nearest',manualM:'1.538',basis:'本次充值含全部赠分；历史余额的现金价值须另行确认'},task:task('480p','1:1','4',true,'2'),rules:{version:R.VERSION,minima:R.buildMinima(),legacyMinima:{}},workspace:'theory',tab:'discounts',taskCostInput:null,tasks:[],observations:clone(OBS),references:clone(REFS),recharges:[{pay:'100',total:'1500'},{pay:'100',total:'1538'},{pay:'100',total:'1600'}],rechargeMode:'fixed',frozenM:null,matrixAxis:'specs',matrixMetric:'N'};}
 const KEY='reelay_pricing_v9_official' ;let state=defaults(),globalValid=true,modelValid=true,platformValid=true,tableRows=[],actualRows=[],drawerName='',lastFocus=null;
+// Public data is never persisted into the user's private record collection implicitly.
+let cloudUI=null,cloudRecords=[],selectedCloudSnapshot=null;
+function allObservations(){
+ const local=[...state.observations,...(state.publicRecordSnapshots||[]).filter(o=>!state.observations.some(r=>r.id===o.id))];
+ const localIds=new Set(local.map(o=>o.id));
+ const records=[...local,...cloudRecords.filter(o=>!localIds.has(o.id))];
+ if(selectedCloudSnapshot&&validTask(state.task,false)&&key(selectedCloudSnapshot.params)===key(state.task)){
+  const index=records.findIndex(o=>o.id===selectedCloudSnapshot.id);
+  if(index>=0)records[index]=selectedCloudSnapshot;else records.push(selectedCloudSnapshot);
+ }
+ return records;
+}
+function cloudObservation(row){return {...clone(row.record),id:'cloud:'+row.id,_cloud:{id:row.id,version:row.version,updatedAt:row.updated_at}};}
+function snapshotObservation(record){const {_cloud,...value}=clone(record);return value;}
 function positive(x,zero=false,maxdigits=20){let s=String(x);return s.length<48&&/^\d+(\.\d+)?$/.test(s)&&(!s.includes('.')||s.split('.')[1].length<=maxdigits)&&(zero?+s>=0:+s>0)&&+s<1e12;}
 function validTask(t,allowAuto=true){try{
  const spec=M.get(t?.model),seconds=M.normalizeSeconds(t.seconds,t.model);
@@ -177,6 +191,7 @@ function upgradeState(input,{refreshDefaults=false}={}){
  if(!validState(n))throw Error('方案参数无效');validateModelPricing(n.plan);return n;
 }
 function validState(s){if(!(s&&s.schema==='reelay.pricing.v9'&&validPlan(s.plan)&&validTask(s.task,false)&&s.rules&&s.rules.version===R.VERSION&&s.rules.minima&&typeof s.rules.minima==='object'&&!Array.isArray(s.rules.minima)&&['theory','actual'].includes(s.workspace)&&['discounts','tasks','matrix','recharges'].includes(s.tab)&&Array.isArray(s.tasks)&&s.tasks.length<=100&&Array.isArray(s.observations)&&s.observations.length<=200&&Array.isArray(s.references)&&s.references.length<=200&&Array.isArray(s.recharges)&&s.recharges.length<=50&&['reprice','fixed'].includes(s.rechargeMode)&&['specs','ratios'].includes(s.matrixAxis)&&['N','raw','P','C','cash'].includes(s.matrixMetric)))return false;
+if(s.publicRecordSnapshots!==undefined&&!(Array.isArray(s.publicRecordSnapshots)&&s.publicRecordSnapshots.length<=200&&s.publicRecordSnapshots.every(validObservation)))return false;
 if(s.taskCostInput!=null&&!(s.taskCostInput&&txt(s.taskCostInput.taskKey,160)&&txt(s.taskCostInput.recordId,100)&&txt(s.taskCostInput.value,48)&&(s.taskCostInput.value===''||positive(s.taskCostInput.value,true,20))))return false;
 if(!F.valid(s.plan)||!validProcurementMap(s.plan.procurementByModel)||!PROCUREMENT_MODELS[s.plan.procurementModel]||!s.tasks.every(t=>t&&txt(t.id,100)&&txt(t.title,100)&&validTask(t.params,false)&&/^\d+$/.test(String(t.qty))&&+t.qty>=1&&+t.qty<=100000)||!s.observations.every(validObservation)||!s.references.every(validReference)||!s.recharges.every(r=>positive(r.pay,false,2)&&positive(r.total,false,4)))return false;
 if(Object.keys(s.rules.minima).length>2000)return false;for(const [k,r] of Object.entries(s.rules.minima)){if(!txt(k,120)||!r||!positive(r.tokens,false,12)||!txt(r.note,500)||!r.note.trim())return false;}
@@ -223,7 +238,7 @@ function persist(){
  F.normalize(saved.plan,state.task.model);
  try{localStorage.setItem(KEY,JSON.stringify(saved));$('storage-status').innerHTML='<i class="live-dot"></i>'+ (platformValid?'本地草稿已保存':'输入待修正 · 已保存有效设置');}catch(_){$('storage-status').textContent='浏览器未保存草稿，请导出方案留存。';}
 }
-function openDrawer(name,title,subtitle,html,wide=false){closePlan();closeQuickOptions();if($('modal').hidden)lastFocus=document.activeElement;drawerName=name;$('drawer-title').textContent=title;$('drawer-sub').textContent=subtitle;$('drawer-sub').hidden=!subtitle;$('drawer-body').innerHTML=html;$('drawer-footer').replaceChildren();$('drawer-footer').hidden=true;$('drawer').classList.toggle('wide',wide);$('modal').dataset.panel=name;$('modal').classList.toggle('centered',['usage','calculation','profiles','plan'].includes(name));$('modal').hidden=false;document.body.classList.add('modal-open');if(name==='usage'){usageJumpPosition=null;setUsageSection('usage-calculation');$('drawer-body').scrollTop=0;}$('close-drawer').focus();}
+function openDrawer(name,title,subtitle,html,wide=false){closePlan();closeQuickOptions();if($('modal').hidden)lastFocus=document.activeElement;drawerName=name;$('drawer-title').textContent=title;$('drawer-sub').textContent=subtitle;$('drawer-sub').hidden=!subtitle;$('drawer-body').innerHTML=html;$('drawer-footer').replaceChildren();$('drawer-footer').hidden=true;$('drawer').classList.toggle('wide',wide);$('modal').dataset.panel=name;$('modal').classList.toggle('centered',(['usage','calculation','profiles','plan'].includes(name)||name.startsWith('cloud-')));$('modal').hidden=false;document.body.classList.add('modal-open');if(name==='usage'){usageJumpPosition=null;setUsageSection('usage-calculation');$('drawer-body').scrollTop=0;}$('close-drawer').focus();}
 function closeDrawer(){if($('modal').hidden)return;$('modal').hidden=true;document.body.classList.remove('modal-open');drawerName='';if(lastFocus?.isConnected)lastFocus.focus();}
 function table(headers,rows,cls=''){return'<table class="'+cls+'"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>';}
 const td=(s,cls='number')=>'<td class="'+cls+'">'+s+'</td>',minus=(a,b)=>{const d=sub(a,b);return(cmp(d,0)>0?'+':'')+num(d,10);};
@@ -584,6 +599,11 @@ function renderCostTabs(enabled=true){
  $('task-actual-cost').parentElement.setAttribute('aria-hidden',String(editing));
  $('task-record-picker').hidden=!editing||$('task-record-select').options.length<2;
  $('task-basis-results').setAttribute('aria-labelledby','cost-tab-'+taskCostBasis);
+ const saveActions=$('task-cloud-actions');
+ saveActions.hidden=!editing;
+ const record=allObservations().find(o=>o.id===selectedTaskRecordId);
+ $('task-record-origin').textContent=record?`${record._cloud?'公共实测':'本地记录'}${record.date?' · '+record.date:''}`:'仅本次试算';
+ $('save-task-measurement').disabled=!enabled||!positive($('record-cost').value,true,20);
 }
 function selectCostBasis(basis){
  const tab=$('cost-tab-'+basis);if(!tab||tab.disabled)return;
@@ -597,12 +617,14 @@ function taskAmount(id,value,digits=6){
  if(value===null)el.removeAttribute('title');else el.title=num(value,20);
 }
 function renderTaskRecord(p){
- const taskKey=key(state.task),matches=state.observations.filter(o=>key(o.params)===taskKey);
+ const taskKey=key(state.task),matches=allObservations().filter(o=>key(o.params)===taskKey);
  if(selectedTaskRecordKey!==taskKey){selectedTaskRecordId=state.taskCostInput?.taskKey===taskKey?state.taskCostInput.recordId:'';selectedTaskRecordKey=taskKey;}
- const record=matches.find(o=>o.id===selectedTaskRecordId)||matches[0]||null;
- selectedTaskRecordId=record?.id||'';
+ const hasInput=!!matchingCostInput(),local=matches.filter(o=>!o._cloud);
+ const record=matches.find(o=>o.id===selectedTaskRecordId)||local[0]||(hasInput?null:matches.length===1?matches[0]:null);
+ if(record)selectedTaskRecordId=record.id;else if(!hasInput)selectedTaskRecordId='';
+ if(record?._cloud&&!selectedCloudSnapshot)selectedCloudSnapshot=clone(record);
  const selector=$('task-record-select');
- selector.innerHTML=matches.map(o=>`<option value="${esc(o.id)}" ${o.id===selectedTaskRecordId?'selected':''}>${esc(o.title)}${o.date?' · '+esc(o.date):''}</option>`).join('');
+ selector.innerHTML=(!record&&matches.length?'<option value="">选择实测记录</option>':'')+matches.map(o=>`<option value="${esc(o.id)}" ${o.id===selectedTaskRecordId?'selected':''}>${o._cloud?'公共 · ':''}${esc(o.title)}${o.date?' · '+esc(o.date):''}</option>`).join('');
  selector.title=record?record.title+(record.date?' · '+record.date:''):'';
  if(costInputDraft&&costInputDraft.context!==taskKey+'|'+selectedTaskRecordId)costInputDraft=null;
  return record?E.recalcRecord(record,p):null;
@@ -638,7 +660,7 @@ tools=`<p class="comparison-spec">${esc(label(state.task))} · ${esc(vinLabel(st
 $('table-tools').innerHTML=tools;$('table').innerHTML=html;$('table-end').innerHTML=end;}
 function renderActual(){
  actualRows=[];
- $('actual-table').innerHTML=table(['实测记录 / 规格','刊例费用估算 P','平台成本基准 P','差额 ΔP','采购成本估算 C','复算采购成本 C','当前复算扣分','复算模型毛利','历史实扣积分',''],state.observations.map(o=>{
+ $('actual-table').innerHTML=table(['实测记录 / 规格','刊例费用估算 P','平台成本基准 P','差额 ΔP','采购成本估算 C','复算采购成本 C','当前复算扣分','复算模型毛利','历史实扣积分',''],allObservations().map(o=>{
   const model=o.params.model||'seedance-2.0',p=pricingForModel(model),v=quote(o.params),P=v.partial?null:v.calc.P,C=P===null?null:mul(P,p.q),a=E.recalcRecord(o,p),profit=a.cash===null?null:sub(a.cash,a.C);
   actualRows.push({scope:'实测对照',model,modelRuleVersion:v.calc.ruleVersion,...procurementInfo(model,p.q),record:o.title,params:label(o.params)+' / '+vinLabel(o.params),coverage:coverage(v),theoryP:P===null?'':decimal(P),recordedP:o.P,deltaP:P!==null&&o.P!==''?decimal(sub(o.P,P)):'',theoryC:C===null?'':decimal(C),recordedC:o.C,costBasis:o.costBasis||'recorded',recalcC:a.C===null?'':decimal(a.C),supplierReferenceC:o.supplierReference?.C||'',supplierReferenceQ:o.supplierReference?.q||'',provider:o.provider||'',deltaC:C!==null&&o.C!==''?decimal(sub(o.C,C)):'',recordedN:o.N,usage:o.usage||'',recalcN:a.N===null?'':num(a.N,0),recalcCash:a.cash===null?'':decimal(a.cash),recalcProfit:profit===null?'':decimal(profit),pay:state.plan.pay,total:state.plan.total,M:decimal(p.usedM),targetMode:p.pricingMode==='manual'?'manual':p.targetMode,note:o.note});
   return '<tr>'+td(`<b>${esc(o.title)}</b><span class="second">${esc(label(o.params))} / ${esc(vinLabel(o.params))}</span><span class="second">复算采购设置 ${num(mul(p.q,10),4)}折${procurementInfo(model,p.q).procurementSimulated?' · 模拟':''}</span>`)+td(P===null?'待补齐':num(P,8))+td(o.P!==''?esc(o.P):'—')+td(P!==null&&o.P!==''?minus(o.P,P):'—')+td(C===null?'—':num(C,8))+td(a.C===null?'—':num(a.C,8)+(a.procurementDerived?'<span class="second">按当前折扣推算</span>':''))+td(a.N===null?'—':`<b>${num(a.N,0)}</b>`)+td(profit===null?'—':cash(profit))+td(o.N!==''?esc(o.N):'未知')+td(`<button class="link" data-observation="${esc(o.id)}">计算展开</button><br><button class="link" data-edit-observation="${esc(o.id)}">编辑</button>`)+'</tr>';
@@ -692,8 +714,9 @@ function render(keepPrecision=false){
  if(validPlan(state.plan)){try{renderActual();}catch(e){$('actual-table').innerHTML='<div class="empty">'+esc(e.message)+'</div>';actualRows=[];}}
  globalValid=modelValid&&platformValid;positionQuickOptions();persist();
 }
-function changeTask(patch){state.task={...state.task,...patch};if(validTask(state.task))state.task=normalizeTask(state.task);render();}
+function changeTask(patch){const previous=validTask(state.task,false)?key(state.task):null;state.task={...state.task,...patch};if(validTask(state.task))state.task=normalizeTask(state.task);if(!validTask(state.task,false)||key(state.task)!==previous)selectedCloudSnapshot=null;render();}
 function changeModel(model){
+ selectedCloudSnapshot=null;
  const spec=M.get(model),previous=state.task,changes=[],discarded=!captureProfile(state.plan);
  const next={...previous,model};
  if(!spec.resolutions.includes(next.res)){next.res=spec.resolutions.at(-1);changes.push('分辨率 '+next.res);}
@@ -830,7 +853,7 @@ function recordDetailContext(t,record,mode){
  const input=costInputDraft?.context===context?costInputDraft:matchingCostInput(t,recordId);
  const actions=[];
  if(record&&mode!=='actual')actions.push(`<button class="link" data-observation="${esc(record.id)}">${input?'查看原记录':'查看记录'}</button>`);
- if(record)actions.push(`<button class="link" data-edit-observation="${esc(record.id)}">编辑记录</button>`);
+ if(record&&!record._cloud)actions.push(`<button class="link" data-edit-observation="${esc(record.id)}">编辑记录</button>`);
  if(record&&input)actions.push('<button class="link" id="restore-record-cost">恢复记录值</button>');
  if(!record||input)actions.push(`<button class="link" id="detail-add-observation">${input&&positive(input.value,true,20)?record?'另存为实测':'保存为实测':'录入实测'}</button>`);
  const buttons='<div class="pricing-record-actions">'+actions.join('')+'</div>';
@@ -840,18 +863,18 @@ function recordDetailContext(t,record,mode){
  return {html:`<section class="pricing-record-context" id="detail-record-context"><div class="pricing-record-heading"><h3>同规格实测</h3>${buttons}</div>${metadata}</section>`,text:record?`同规格实测（独立记录）：${record.title}${record.provider?' / '+record.provider:''}\n历史实扣：${history}`:''};
 }
 function openDetails(mode='theory',recordId='',contextTask=null){
- const targetRecord=state.observations.find(r=>r.id===recordId);
+ const targetRecord=allObservations().find(r=>r.id===recordId);
  if(!validPlan(state.plan)||mode!=='actual'&&!validTask(contextTask||targetRecord?.params||state.task,false)){toast('请先修正相关输入。');return;}
- const record=targetRecord,t=clone(contextTask||record?.params||(mode==='actual'&&!validTask(state.task,false)?state.observations[0]?.params||defaults().task:state.task)),p=pricingForModel(t.model||'seedance-2.0');
- const matches=state.observations.filter(r=>key(r.params)===key(t));
- const selected=matches.find(r=>r.id===recordId)||matches[0]||null;
+ const record=targetRecord,t=clone(contextTask||record?.params||(mode==='actual'&&!validTask(state.task,false)?allObservations()[0]?.params||defaults().task:state.task)),p=pricingForModel(t.model||'seedance-2.0');
+ const matches=allObservations().filter(r=>key(r.params)===key(t));
+ const selected=matches.find(r=>r.id===recordId)||matches.find(r=>!r._cloud)||(matches.length===1?matches[0]:null);
  const chosen=['list','inline','actual'].includes(mode)?mode:'theory';
  detailContext={mode:chosen,task:t,recordId:chosen==='inline'?recordId:selected?.id||'',text:''};
- const selector=chosen==='actual'&&matches.length>1?`<div class="detail-selector"><label class="fieldlabel" for="details-record">实测记录</label><select class="input" id="details-record">${matches.map(r=>`<option value="${esc(r.id)}" ${r.id===selected.id?'selected':''}>${esc(r.title)}${r.date?' · '+esc(r.date):''}</option>`).join('')}</select></div>`:'';
+ const selector=chosen==='actual'&&matches.length>1?`<div class="detail-selector"><label class="fieldlabel" for="details-record">实测记录</label><select class="input" id="details-record">${selected?'':'<option value="">选择实测记录</option>'}${matches.map(r=>`<option value="${esc(r.id)}" ${r.id===selected?.id?'selected':''}>${esc(r.title)}${r.date?' · '+esc(r.date):''}</option>`).join('')}</select></div>`:'';
  const view=chosen==='list'||chosen==='inline'?inlineCostBreakdown(t,p,recordId,chosen):chosen==='actual'?actualBreakdown(selected,p):theoryBreakdown(t,p);
  const recordContext=recordDetailContext(t,selected,chosen);
  const content=detailPlan(p,t.model||'seedance-2.0')+selector+view.html+recordContext.html+`<div class="pricing-detail-footer"><button class="link" id="export-calculation">导出计算明细 ↓</button></div>`;
- detailContext.text=[`Reelay V9.14.4 · ${chosen==='list'?'官方刊例成本测算':chosen==='inline'?'立画录入成本测算':chosen==='actual'?'平台实测金额复算':'预计采购成本测算'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text,...(recordContext.text?['',recordContext.text]:[])].join('\n');
+ detailContext.text=[`Reelay V9.15.0 · ${chosen==='list'?'官方刊例成本测算':chosen==='inline'?'立画录入成本测算':chosen==='actual'?'平台实测金额复算':'预计采购成本测算'}`,`企业：${state.plan.company}`,`模型：${M.get(t.model).label}；采购比例 ${num(p.q,6)}；${procurementInfo(t.model||'seedance-2.0',p.q).procurementStatus}`,`实付 ${state.plan.pay}元 / 到账 ${state.plan.total}积分 / ${targetSummary(p)}`,`定价倍率 = ${decimal(p.usedM)}（显示值；内部精确计算）`,`充值核算口径：${state.plan.basis}`,'',view.text,...(recordContext.text?['',recordContext.text]:[])].join('\n');
  openDrawer('calculation',chosen==='actual'?'实测复算':'计算明细',label(t)+' / '+vinLabel(t)+' · '+(chosen==='list'?'官方刊例成本':chosen==='theory'?'预计采购成本':'立画成本'),content,true);if($('unit-p'))unitPreview();
 }
 let ruleContext=null;
@@ -904,6 +927,7 @@ function unitPreview(){
 function observationDetail(id){openDetails('actual',id);}
 let observationContext=null;
 function observationEditor(id='',contextTask=null,contextRecordId=selectedTaskRecordId){
+ if(allObservations().find(o=>o.id===id)?._cloud){cloudUI?.edit(id);return;}
  const old=state.observations.find(o=>o.id===id);
  const editorTask=contextTask||state.task,editorValid=validTask(editorTask,false);
  const currentValid=editorValid&&validTask(state.task,false)&&key(editorTask)===key(state.task),context=currentValid?key(editorTask)+'|'+contextRecordId:null,saved=currentValid?matchingCostInput(editorTask,contextRecordId):null;
@@ -983,12 +1007,15 @@ function saveObservation(id){const old=state.observations.find(r=>r.id===id),o={
 }
 function download(name,text,type='text/plain;charset=utf-8'){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 const filename=()=>state.plan.company.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,50)||'Reelay方案';
-function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.14.4 · 视频定价工作台','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`预计采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,...detailSettlementText(p,x.cash,x.raw,x.target),`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
+function summary(){const p=pricing(),v=current(),x=v.x;return ['Reelay V9.15.0 · 视频定价工作台','',state.plan.company,`规则：${M.get(state.task.model).version}；核验日期${R.VERIFIED_AT}；模型 ${M.get(state.task.model).label}。`,`采购比例 ${num(p.q,6)}；${procurementInfo(state.task.model,p.q).procurementStatus}；积分换算常数10。`,`充值方案：${state.plan.basis}`,`实付 ${state.plan.pay} 元 / 到账 ${state.plan.total} 积分 / ${targetSummary(p)}`,`定价倍率 M = ${decimal(p.usedM)}`,`保本倍率 = ${decimal(p.breakEvenM)}`,`任务：${label(state.task)} / ${vinLabel(state.task)}`,`估算依据：${coverage(v)}`,...(x?[`刊例费用 P = ${decimal(x.P)}`,`预计采购成本 C = ${decimal(x.C)}`,`取整前积分 = ${decimal(x.raw)}`,`预计扣分 = ${num(x.N,0)}`,`折合金额 = ${decimal(x.cash)}`,...detailSettlementText(p,x.cash,x.raw,x.target),`模型毛利 = ${decimal(x.profit)}`,`模型毛利率 = ${x.margin===null?'未定义':decimal(x.margin)+'%'}`]:['当前参数无法计算，请检查输入。']),'','费用为官方规则估算，API实际usage或账单可能有差异。毛利仅扣模型采购成本，不是净利润。','平台实测和历史扣分分别保存；不会用于替换理论公式。',`任务清单 ${state.tasks.length}种规格；实测记录 ${state.observations.length}条。`].join('\n');}
 function exportJSON(){
  const procurementProfiles=Object.keys(PROCUREMENT_MODELS).map(model=>procurementInfo(model));
  const pricingProfiles=Object.keys(PROCUREMENT_MODELS).map(model=>{const p=pricingForModel(model),outcome=policyOutcome(p);return {model,...state.plan.modelPricing[model],adoptedMultiplier:decimal(p.usedM),customerDiscount:decimal(outcome.discount),unroundedMargin:decimal(outcome.margin)};});
  const taskEstimates=state.tasks.map(row=>{const v=theory(row.params);return v.x?exportRow(row.title,v,v.x,row.qty):{model:row.params.model,...procurementInfo(row.params.model),scope:'规则缺项，未生成收费估算'};});
- download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.14.4',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,pricingProfiles,taskEstimates,recordRecalculations:actualRows,state},null,2),'application/json');
+ const snapshots=[...(state.publicRecordSnapshots||[])];
+ if(selectedCloudSnapshot){const snapshot=snapshotObservation(selectedCloudSnapshot),index=snapshots.findIndex(o=>o.id===snapshot.id);if(index>=0)snapshots[index]=snapshot;else if(snapshots.length<200)snapshots.push(snapshot);else return toast('公开记录快照已满，请先分别导出留存。');}
+ const exportedState=snapshots.length?{...state,publicRecordSnapshots:snapshots}:state;
+ download(filename()+'_V9方案.json',JSON.stringify({format:'reelay.pricing.v9',appVersion:'9.15.0',exportedAt:new Date().toISOString(),ruleVersion:R.VERSION,scope:'theory and observations stored separately',procurementProfiles,pricingProfiles,taskEstimates,recordRecalculations:actualRows,state:exportedState},null,2),'application/json');
 }
 function csvCell(x){let s=String(x??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
 function exportActualCSV(){const rows=actualRows;if(!rows.length)return toast('没有可导出记录。');const titles={scope:'数据域',model:'模型',modelRuleVersion:'模型规则版本',procurementRatio:'当前复算采购比例',supplierAvailable:'有折扣供应商',procurementSimulated:'采购折扣为模拟',procurementStatus:'采购状态',record:'记录',params:'规格',coverage:'估算依据',theoryP:'刊例费用P',recordedP:'平台记录P',deltaP:'实测P减估算P',theoryC:'预计采购成本C',recordedC:'已记录采购C_推算记录为空',costBasis:'成本口径',recalcC:'当前复算采购C',supplierReferenceC:'原表供应商测算C_非实付',supplierReferenceQ:'原表供应商测算比例',provider:'实测平台',deltaC:'实测C减估算C',recordedN:'平台实际扣分_空白为未知',recalcN:'当前复算扣分_非历史',recalcCash:'当前复算金额',recalcProfit:'当前复算模型毛利',pay:'当前充值实付',total:'当前到账积分',M:'当前倍率',targetMode:'当前目标模式',usage:'API_completion_tokens_原记录',note:'备注'};const ks=Object.keys(titles),csv='\ufeff'+[ks.map(k=>csvCell(titles[k])).join(','),...rows.map(r=>ks.map(k=>csvCell(r[k])).join(','))].join('\r\n');download(filename()+'_实测对照'+'.csv',csv,'text/csv;charset=utf-8');}
@@ -1010,6 +1037,8 @@ if(d.usageSection){goToUsageSection(d.usageSection);return;}
 if(d.workspace){showWorkspace(d.workspace);return;}if(d.example){if(!quickIsOpen())return;const preset=quickTasks(state.task.model)[d.example];if(preset){closeQuickOptions(true);changeTask(clone(preset));}return;}if(d.video){const video=d.video==='true';if(video!==state.task.video)changeTask({video});return;}if(d.res){changeTask({res:d.res});return;}if(d.ratio){changeTask({ratio:d.ratio});return;}if(d.seconds){changeTask({seconds:d.seconds});return;}if(d.discount){useAutomaticPricing('discount');state.plan.discount=d.discount;render();return;}if(d.margin){useAutomaticPricing('margin');state.plan.margin=d.margin;render();return;}if(d.observation){observationDetail(d.observation);return;}if(d.editObservation){observationEditor(d.editObservation);return;}if(d.deleteObservation){state.observations=state.observations.filter(o=>o.id!==d.deleteObservation);closeDrawer();render();toast('已删除实测记录，理论结果未变。');return;}
 if(!globalValid&&!(['actual-export','add-observation','plan-settings'].includes(id)&&validPlan(state.plan))&&['details','show-formula','plan-settings','task-rule','open-rules','add-observation','actual-export'].includes(id)){toast('请先修正顶部定价或任务输入。');return;}
 switch(id){
+case'open-cloud':cloudUI?.open();break;
+case'save-task-measurement':if(cloudUI)cloudUI.saveCurrent();else observationEditor();break;
 case'edit-multiplier':beginMultiplierEdit();break;
 case'save-multiplier':saveMultiplierEdit();break;
 case'cancel-multiplier':cancelMultiplierEdit(true);break;
@@ -1043,7 +1072,7 @@ case'export-summary':if(globalValid)download(filename()+'_理论方案说明.txt
 case'actual-export':case'export-actual':if(validPlan(state.plan))exportActualCSV();break;
 case'import':$('file').click();break;
 case'reset':openReset();break;
-case'confirm-reset':cancelMultiplierEdit();costInputDraft=null;taskCostBasis='theory';state=defaults();closeDrawer();render();toast('已恢复默认方案。');break;
+case'confirm-reset':cancelMultiplierEdit();costInputDraft=null;selectedCloudSnapshot=null;selectedTaskRecordId='';selectedTaskRecordKey='';taskCostBasis='theory';state=defaults();closeDrawer();render();toast('已恢复默认方案。');break;
 }
 });
 document.addEventListener('input',e=>{const el=e.target,id=el.id;if(id==='record-cost'){const value=el.value.trim();if(!validTask(state.task,false))return;costInputDraft={context:key(state.task)+'|'+selectedTaskRecordId,value};if(value===''||positive(value,true,20)){state.taskCostInput={taskKey:key(state.task),recordId:selectedTaskRecordId,value};costInputDraft=null;}render();return;}if(['pay','total','discount','target-margin','purchase-discount'].includes(id)){if(id==='discount'||id==='target-margin')useAutomaticPricing(id==='discount'?'discount':'margin');if(id==='target-margin')state.plan.margin=el.value;else if(id==='purchase-discount'){state.plan.q=positive(el.value,false,4)?num(div(el.value,10),6):'';}else if(id==='pay')state.plan.pay=el.value;else if(id==='total')state.plan.total=el.value;else state.plan.discount=el.value;render();return;}
@@ -1053,7 +1082,7 @@ if(id==='vin-slider'){if(state.task.video)changeTask({vin:el.value});return;}if(
  catch(_){state.task.vin=entered;}
  render();return;
 }if(id==='seconds'){state.task.seconds=el.value;render();return;}if(id==='unit-p'){unitPreview();return;}});
-document.addEventListener('change',e=>{const el=e.target,id=el.id;if(id==='model'){changeModel(el.value);return;}if(id==='pricing-basis'){if(!['discount','margin'].includes(el.value))return;useAutomaticPricing(el.value);render();return;}if(id==='task-record-select'){selectedTaskRecordId=el.value;render();return;}if(id==='seconds'&&validTask(state.task)){state.task=normalizeTask(state.task);render();return;}if(id==='details-record'){const context=detailContext.task,recordId=el.value;if(globalValid&&key(context)===key(state.task)){selectedTaskRecordId=recordId;renderResult();}openDetails('actual',recordId,context);return;}if(['plan-digits','plan-round'].includes(id)){applyPlanPrecision();return;}});
+document.addEventListener('change',e=>{const el=e.target,id=el.id;if(id==='model'){changeModel(el.value);return;}if(id==='pricing-basis'){if(!['discount','margin'].includes(el.value))return;useAutomaticPricing(el.value);render();return;}if(id==='task-record-select'){selectedTaskRecordId=el.value;selectedCloudSnapshot=clone(cloudRecords.find(o=>o.id===el.value)||null);render();return;}if(id==='seconds'&&validTask(state.task)){state.task=normalizeTask(state.task);render();return;}if(id==='details-record'){const context=detailContext.task,recordId=el.value;if(globalValid&&key(context)===key(state.task)){selectedTaskRecordId=recordId;selectedCloudSnapshot=clone(cloudRecords.find(o=>o.id===recordId)||null);renderResult();}openDetails('actual',recordId,context);return;}if(['plan-digits','plan-round'].includes(id)){applyPlanPrecision();return;}});
 $('fee-digits').addEventListener('click',e=>{
  feeDisplayDigits=feeDisplayDigits===2?6:2;
  const hint='当前显示 '+feeDisplayDigits+' 位小数，点击切换为 '+(feeDisplayDigits===2?6:2)+' 位';
@@ -1101,14 +1130,40 @@ document.addEventListener('keydown',e=>{
  if(e.target===$('quick-toggle')&&['ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();openQuickOptions();return;}
  if(quickIsOpen()&&e.key==='Escape'){e.preventDefault();closeQuickOptions(true);return;}
  if($('modal').hidden)return;if(e.key==='Escape'){e.preventDefault();closeDrawer();}if(e.key==='Tab'){const els=[...$('drawer').querySelectorAll('button,input,select,textarea,a[href],summary')].filter(x=>!x.disabled&&x.getClientRects().length);if(!els.length)return;const first=els[0],last=els.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
-$('file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>3e6)throw Error('文件超过3MB，请检查是否为方案JSON。');const loaded=migrate(JSON.parse(await f.text()));cancelMultiplierEdit();costInputDraft=null;taskCostBasis='theory';state=loaded.value;closeDrawer();render();toast(loaded.note);}catch(err){toast('导入失败：'+err.message);}finally{e.target.value='';}});
+$('file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>3e6)throw Error('文件超过3MB，请检查是否为方案JSON。');const loaded=migrate(JSON.parse(await f.text()));cancelMultiplierEdit();costInputDraft=null;taskCostBasis='theory';state=loaded.value;selectedCloudSnapshot=null;selectedTaskRecordId='';selectedTaskRecordKey='';closeDrawer();render();toast(loaded.note);}catch(err){toast('导入失败：'+err.message);}finally{e.target.value='';}});
 
 function targetLabel(p){if(p.targetAvailable===false)return '指定倍率';return p.targetMode==='margin'?'采购成本 ÷ (1 − 目标毛利率)':'刊例费用 × '+num(mul(p.d,10),6)+'折';}
 function targetSummary(p){if(p.targetAvailable===false)return '指定倍率 '+num(p.usedM,12);return p.targetMode==='margin'?'目标毛利率 '+num(p.targetMarginPct,4)+'%':'目标客户折扣 '+num(mul(p.d,10),6)+'折';}
 
 
 // Exposed for transparent regression tests. Theory takes no observations argument.
-window.ReelayApp={getState:()=>clone(state),setState:s=>{costInputDraft=null;const draft=clone(s);if(draft.plan.modelPricing){if(draft.plan.mode!=='manual')draft.plan.limitPrecision=draft.plan.mode==='saved';captureProfile(draft.plan);}state=upgradeState(draft);render();},defaults,validState,upgradeState,normalizeTask,reset:()=>{costInputDraft=null;taskCostBasis='theory';state=defaults();render();},pricing,pricingForModel,procurementInfo,quote,theory,theoryOne,current,summary,key,minimumKey,normalizeMinimumKeys,openDetails,recalcRecord:(record,p=pricingForModel(record.params?.model||'seedance-2.0'))=>E.recalcRecord(record,p),migrate,OBS,REFS,getTheoryRows:()=>clone(tableRows),getActualRows:()=>clone(actualRows)};
+window.ReelayApp={getState:()=>clone(state),setState:s=>{costInputDraft=null;const draft=clone(s);if(draft.plan.modelPricing){if(draft.plan.mode!=='manual')draft.plan.limitPrecision=draft.plan.mode==='saved';captureProfile(draft.plan);}state=upgradeState(draft);render();},defaults,validState,upgradeState,normalizeTask,reset:()=>{costInputDraft=null;selectedCloudSnapshot=null;selectedTaskRecordId='';selectedTaskRecordKey='';taskCostBasis='theory';state=defaults();render();},pricing,pricingForModel,procurementInfo,quote,theory,theoryOne,current,summary,key,minimumKey,normalizeMinimumKeys,openDetails,recalcRecord:(record,p=pricingForModel(record.params?.model||'seedance-2.0'))=>E.recalcRecord(record,p),migrate,OBS,REFS,getTheoryRows:()=>clone(tableRows),getActualRows:()=>clone(actualRows)};
 render();
+if(window.ReelayCloudUI&&window.ReelayCloud?.enabled){
+ cloudUI=window.ReelayCloudUI.mount({
+  openDrawer,closeDrawer,toast,isCloudDialog:()=>!$('modal').hidden&&drawerName.startsWith('cloud-'),
+  getTask:()=>clone(state.task),getCost:()=>positive($('record-cost').value,true,20)?$('record-cost').value:'',
+  label,videoLabel:vinLabel,models:()=>Object.values(M.MODELS),validRecord:validObservation,validTask:t=>validTask(t,false),
+  formatAmount:value=>num(value,20),discountRatio:value=>decimal(div(value,10)),discountNumber:value=>num(mul(value,10),6),
+  onIdentity:()=>{},
+  onRecords:rows=>{
+   const previous=allObservations().find(o=>o.id===selectedTaskRecordId);
+   if(previous?._cloud)selectedCloudSnapshot=clone(previous);
+   cloudRecords=rows.map(cloudObservation);render();
+  },
+  useRecord:row=>{
+   const record=cloudObservation(row);if(!validObservation(record))throw Error('记录参数不兼容。');
+   selectedCloudSnapshot=clone(record);state.task=clone(record.params);state.workspace='theory';
+   selectedTaskRecordKey=key(state.task);selectedTaskRecordId=record.id;costInputDraft=null;state.taskCostInput=null;taskCostBasis='actual';
+   if(!cloudRecords.some(o=>o.id===record.id))cloudRecords.push(record);render();
+  },
+  saveLocalCopy:record=>{
+   const local={...clone(record),id:uid()};if(!validObservation(local)||local.C==='')throw Error('请先修正录入内容，并填写实际成本。');
+   if(state.observations.length>=200)throw Error('最多保留 200 条本地实测，请先导出整理。');
+   state.observations.push(local);render();toast('已另存到本地，尚未公开。');
+  }
+ },window.ReelayCloud);
+ $('open-cloud').hidden=false;
+}
 if(taskMigrationNotice)toast(taskMigrationNotice);
 })();
