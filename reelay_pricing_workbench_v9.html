@@ -18159,7 +18159,7 @@ root.ReelayCloudUI={mount(host,client){
     if(!!$('cloud-history-q').value.trim()!==!!$('cloud-history-m').value.trim())throw Error('历史折扣与倍率请同时填写；未知时两项均留空。');
     if(!host.validRecord({...draft.record,id:'cloud:'+draft.id})||draft.record.C==='')throw Error('请检查金额、积分与历史定价：成本须为非负数，历史积分须为整数。');
     const generation=sessionGeneration,saved=await client.saveRecord(draft);readGeneration++;if(generation!==sessionGeneration)return;if(JSON.stringify(pendingRecord)===JSON.stringify(draft))pendingRecord=null;
-    rows=[saved,...rows.filter(x=>x.id!==saved.id)];managed=managed.map(x=>x.id===saved.id?{...saved,can_edit:true,archived:false}:x);host.onRecords(copy(rows));
+    rows=[saved,...rows.filter(x=>x.id!==saved.id)];status=rows.length+' 条公共实测';managed=managed.map(x=>x.id===saved.id?{...saved,can_edit:true,archived:false}:x);host.onRecords(copy(rows));
     if(current(token)){host.toast('已保存到云端，所有访客可查看。');scope='public';library();}
    }catch(error){if(current(token)){feedback(errorText(error));lockForm(form,false);if((error.code==='CONFLICT'||error.code==='PT409')&&!form.querySelector('[data-cloud-action="new-from-draft"]'))form.querySelector('.cloud-actions').insertAdjacentHTML('afterbegin','<button class="link" type="button" data-cloud-action="new-from-draft">将填写内容另存为新记录</button>');}}
   });

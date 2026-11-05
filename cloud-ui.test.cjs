@@ -122,6 +122,26 @@ test('login form accepts a complete eight-digit email code and forwards it uncha
   h.good();
 });
 
+test('first successful public save updates the empty-library count immediately and ignores a late empty read', async t => {
+  const stale = deferred();
+  const h = await boot(t, {identity: admin, rows: [], readPublic: (count, rows) => count === 1 ? stale.promise : rows});
+  await h.library();
+  assert.equal(h.doc.getElementById('cloud-status').textContent, '0 条公共实测');
+  assert.equal(h.doc.querySelectorAll('.cloud-record').length, 0);
+  const publicReads = h.calls.filter(([method]) => method === 'public').length;
+  h.click('[data-cloud-action="new"]');
+  h.input('cloud-cost', '3.25'); h.submit('cloud-record-form'); await flush();
+  assert.equal(h.doc.getElementById('cloud-status').textContent, '1 条公共实测');
+  assert.equal(h.doc.querySelectorAll('.cloud-record').length, 1);
+  assert.equal(h.doc.querySelector('.cloud-record-head .num').textContent, '3.25');
+  assert.equal(h.calls.filter(([method]) => method === 'public').length, publicReads, 'the acknowledged save updates the count without another read');
+  stale.resolve([]); await flush();
+  assert.equal(h.doc.getElementById('cloud-status').textContent, '1 条公共实测');
+  assert.equal(h.doc.querySelectorAll('.cloud-record').length, 1);
+  assert.equal(h.ui.getRecords()[0].record.C, '3.25', 'a late empty read cannot roll back the first saved record');
+  h.good();
+});
+
 test('saving an edited managed record uses the new amount and version from the public list', async t => {
   const h = await boot(t, {identity: admin});
   await h.manage(); h.click('[data-cloud-action="edit"]');
