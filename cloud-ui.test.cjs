@@ -12,15 +12,17 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 12));
 const flush = async () => { await tick(); await tick(); };
 const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return {promise, resolve, reject}; };
 const uuid = index => '00000000-0000-4000-8000-' + String(index).padStart(12, '0');
-const guest = {role: null, authenticated: false, display_name: ''};
-const admin = {role: 'admin', authenticated: true, display_name: 'Owner'};
+const guest = {role: null, authenticated: false, display_name: '', key_id: null, expires_at: null};
+const admin = {role: 'admin', authenticated: true, display_name: 'Owner', key_id: uuid(900), expires_at: '2099-11-19T00:00:00.000Z'};
+const accessKey = 'rk_' + 'a'.repeat(64), rotatedAccessKey = 'rk_' + 'c'.repeat(64), sessionToken = 'rs_' + 'b'.repeat(64);
+const keyFixture = (index = 101, display_name = 'Private contributor') => ({id: uuid(index), display_name, role: index === 900 ? 'admin' : 'editor', active: true, created_at: '2026-11-12T00:00:00Z', updated_at: '2026-11-12T00:00:00Z'});
 const params = {model: 'seedance-2.0', res: '480p', ratio: '1:1', seconds: '4', video: true, vin: '2'};
 function fixture(index = 1, cost = '1') {
   return {id: uuid(index), version: 1, record: {title: '公共测试记录 ' + index, params: copy(params), provider: '立画', costBasis: 'recorded', P: '', C: cost, N: '', usage: '', date: '2026-11-05', note: '公开来源'}, created_at: '2026-11-05T01:00:00Z', updated_at: '2026-11-05T01:00:00Z', archived: false, can_edit: true};
 }
 
 async function boot(t, setup = {}) {
-  const errors = [], downloads = [], blobs = new Map(), calls = [], subscribers = [];
+  const errors = [], downloads = [], blobs = new Map(), calls = [], subscribers = [], clipboardWrites = [];
   const virtualConsole = new VirtualConsole();
   virtualConsole.on('jsdomError', error => errors.push(error.message));
   const dom = new JSDOM(read('template.html'), {url: 'https://reelay-cloud-test.invalid/', runScripts: 'outside-only', virtualConsole});
@@ -30,18 +32,26 @@ async function boot(t, setup = {}) {
   w.URL.revokeObjectURL = () => {};
   w.HTMLAnchorElement.prototype.click = function () { downloads.push({name: this.download, blob: blobs.get(this.href)}); };
   w.HTMLElement.prototype.scrollIntoView = () => {};
-  w.navigator.clipboard = {writeText: async () => {}};
+  w.navigator.clipboard = {writeText: async value => { clipboardWrites.push(value); }};
   w.localStorage.setItem('reelay_cloud_auth_v1', JSON.stringify({access_token: 'sensitive-test-access-token', refresh_token: 'sensitive-test-refresh-token', user: {email: 'private-login@example.com'}}));
+  w.localStorage.setItem('reelay_cloud_key_session_v1', JSON.stringify({token: sessionToken, expires_at: admin.expires_at}));
   let identity = copy(setup.identity || guest), rows = copy(setup.rows || [fixture()]);
+  let keyRows = copy(setup.keyRows || [keyFixture(900, 'Owner'), keyFixture()]);
   let publicCalls = 0;
   const client = {
     enabled: true,
-    onAuthChange(callback) { subscribers.push(callback); setTimeout(() => callback('INITIAL_SESSION', {userId: identity.authenticated ? uuid(900) : null}), 0); return () => {}; },
+    onAuthChange(callback) { subscribers.push(callback); setTimeout(() => callback('INITIAL_SESSION', {userId: identity.key_id}), 0); return () => {}; },
     async identity() { calls.push(['identity']); return setup.identityRead ? setup.identityRead(copy(identity)) : copy(identity); },
     async publicRecords() { publicCalls++; calls.push(['public', publicCalls]); return setup.readPublic ? setup.readPublic(publicCalls, copy(rows)) : copy(rows.filter(row => !row.archived)); },
     async manageRecords() { calls.push(['manage']); return setup.readManaged ? setup.readManaged(copy(rows)) : copy(rows); },
-    async sendCode(email) { calls.push(['sendCode', email]); return {sent: true}; },
-    async verifyCode(email, token) { calls.push(['verifyCode', email, token]); identity = copy(setup.verifiedIdentity || admin); return {authenticated: true}; },
+    async unlock(value) {
+      calls.push(['unlock', value]);
+      identity = copy(setup.unlock ? await setup.unlock(value) : setup.unlockedIdentity || admin);
+      if (setup.emitUnlockEvent) setTimeout(() => {
+        for (const callback of subscribers) callback('SIGNED_IN', {userId: identity.key_id, reason: 'unlocked'});
+      }, 0);
+      return copy(identity);
+    },
     async signOut() { calls.push(['logout']); identity = copy(guest); return {signedOut: true}; },
     async saveRecord(draft) {
       calls.push(['save', copy(draft)]);
@@ -51,8 +61,22 @@ async function boot(t, setup = {}) {
       return copy(saved);
     },
     async archiveRecord(value) { calls.push(['archive', copy(value)]); const row = rows.find(row => row.id === value.id); Object.assign(row, {version: row.version + 1, archived: value.archived}); return copy(row); },
-    async members() { calls.push(['members']); return setup.members ? setup.members() : [{id: uuid(101), email: 'private-member@example.com', display_name: 'Member', role: 'editor', active: true}]; },
-    async setMember(member) { calls.push(['setMember', copy(member)]); return {...member, id: member.id || uuid(102)}; },
+    async keys() { calls.push(['keys']); return setup.keys ? setup.keys() : copy(keyRows); },
+    async createKey(value) {
+      calls.push(['createKey', copy(value)]);
+      if (setup.createKey) return setup.createKey(copy(value));
+      const key = {...keyFixture(102), ...value}; keyRows.push(key); return {key: copy(key), access_key: accessKey};
+    },
+    async setKey(value) {
+      calls.push(['setKey', copy(value)]);
+      if (setup.setKey) return setup.setKey(copy(value));
+      const key = keyRows.find(row => row.id === value.id); Object.assign(key, value); return copy(key);
+    },
+    async rotateKey(value) {
+      calls.push(['rotateKey', copy(value)]);
+      if (setup.rotateKey) return setup.rotateKey(copy(value));
+      return {key: copy(keyRows.find(row => row.id === value.id)), access_key: rotatedAccessKey};
+    },
     async history(id) { calls.push(['history', id]); return [{version: 1, record: fixture().record, archived: false, changed_at: '2026-11-05T00:00:00Z'}]; },
   };
   w.ReelayCloud = setup.offline ? {enabled: false} : client;
@@ -70,8 +94,8 @@ async function boot(t, setup = {}) {
   async function library() { await ui.open(); await flush(); }
   async function manage() { await library(); click('[data-cloud-action="scope"]'); await flush(); }
   good();
-  return {w, doc, ui, api: w.ReelayApp, calls, client, errors, downloads, good, input, click, submit, library, manage,
-    async emit(event, nextIdentity = guest, hint = {userId: nextIdentity.authenticated ? uuid(900) : null}) { identity = copy(nextIdentity); for (const callback of subscribers) callback(event, hint); await flush(); },
+  return {w, doc, ui, api: w.ReelayApp, calls, client, errors, downloads, clipboardWrites, good, input, click, submit, library, manage,
+    async emit(event, nextIdentity = guest, hint = {userId: nextIdentity.key_id || null}) { identity = copy(nextIdentity); for (const callback of subscribers) callback(event, hint); await flush(); },
     setRows(value) { rows = copy(value); },
   };
 }
@@ -92,33 +116,111 @@ test('guests read and use public costs without changing local observations or th
   h.good();
 });
 
-test('guest login and denied enrollment do not grant writes or disturb the calculator', async t => {
-  const h = await boot(t, {verifiedIdentity: {...guest, authenticated: true}});
+test('an invalid access key grants no writes and leaves the calculator and pending recording intact', async t => {
+  const h = await boot(t, {unlock: async () => { throw Object.assign(new Error('录入凭证无效或已停用。'), {code: 'FORBIDDEN'}); }});
   const before = copy(h.api.getState()), estimate = h.doc.getElementById('cost-p').textContent;
   h.ui.saveCurrent();
-  assert.ok(h.doc.getElementById('cloud-login-form'));
+  assert.ok(h.doc.getElementById('cloud-unlock-form'));
+  assert.equal(h.doc.getElementById('cloud-access-key').type, 'password');
+  assert.equal(h.doc.getElementById('cloud-email'), null);
+  assert.equal(h.doc.getElementById('cloud-code'), null);
   assert.equal(h.doc.getElementById('cloud-record-form'), null);
-  h.input('cloud-email', 'outside@example.com'); h.submit('cloud-login-form'); await flush();
-  h.input('cloud-code', '123456'); h.submit('cloud-verify-form'); await flush();
-  assert.match(h.doc.getElementById('cloud-error').textContent, /未获得录入权限/);
+  h.input('cloud-access-key', accessKey); h.submit('cloud-unlock-form'); await flush();
+  assert.match(h.doc.getElementById('cloud-error').textContent, /凭证无效|停用/);
+  assert.equal(h.ui.canWrite(), false);
   assert.equal(h.doc.getElementById('cloud-record-form'), null);
+  assert.equal(h.doc.querySelector('#cloud-unlock-form [type="submit"]').disabled, false);
   assert.equal(h.calls.filter(([method]) => method === 'save').length, 0);
   assert.deepEqual(copy(h.api.getState()), before);
   assert.equal(h.doc.getElementById('cost-p').textContent, estimate);
   h.good();
 });
 
-test('login form accepts a complete eight-digit email code and forwards it unchanged', async t => {
+test('one access-key entry resumes the pending recording directly from the server unlock identity', async t => {
   const h = await boot(t);
   h.ui.saveCurrent();
-  h.input('cloud-email', 'owner@example.com'); h.submit('cloud-login-form'); await flush();
-  const code = h.doc.getElementById('cloud-code');
-  h.input('cloud-code', '01234567');
-  assert.ok(code.maxLength >= code.value.length, 'the input must not truncate the hosted OTP');
-  assert.equal(code.checkValidity(), true);
-  h.submit('cloud-verify-form'); await flush();
-  assert.deepEqual(h.calls.find(([method]) => method === 'verifyCode'), ['verifyCode', 'owner@example.com', '01234567']);
+  const identityReads = h.calls.filter(([method]) => method === 'identity').length;
+  h.input('cloud-access-key', accessKey); h.submit('cloud-unlock-form'); await flush();
+  assert.deepEqual(h.calls.find(([method]) => method === 'unlock'), ['unlock', accessKey]);
+  assert.equal(h.calls.filter(([method]) => method === 'unlock').length, 1);
+  assert.equal(h.calls.filter(([method]) => method === 'identity').length, identityReads, 'unlock already returns authoritative identity without a racing second query');
   assert.equal(h.ui.canWrite(), true);
+  assert.ok(h.doc.getElementById('cloud-record-form'));
+  assert.equal(h.doc.getElementById('cloud-access-key'), null, 'the secret input is discarded after successful unlock');
+  assert.doesNotMatch(JSON.stringify(h.api.getState()), /rk_|rs_|key_id|expires_at/);
+  h.good();
+});
+
+test('the authoritative unlock event does not recheck permissions or lose the just-opened recording', async t => {
+  const h = await boot(t, {emitUnlockEvent: true, identityRead: value => {
+    if (value.authenticated) throw Object.assign(new Error('无法连接云端，请检查网络后重试。'), {code: 'NETWORK'});
+    return value;
+  }});
+  h.click('#cost-tab-actual'); h.input('record-cost', '4.33');
+  h.ui.saveCurrent();
+  const identityReads = h.calls.filter(([method]) => method === 'identity').length;
+  h.input('cloud-access-key', accessKey); h.submit('cloud-unlock-form'); await flush();
+  assert.equal(h.calls.filter(([method]) => method === 'identity').length, identityReads, 'the deferred notification represents the same successful server unlock');
+  assert.equal(h.ui.canWrite(), true);
+  assert.ok(h.doc.getElementById('cloud-record-form'));
+  assert.equal(h.doc.getElementById('cloud-cost').value, '4.33');
+  assert.equal(h.calls.filter(([method]) => method === 'unlock').length, 1);
+  h.good();
+});
+
+test('closing and reopening the library retains the established unexpired key session', async t => {
+  const h = await boot(t);
+  await h.library();
+  assert.match(h.doc.querySelector('[data-cloud-action="login"]').textContent, /解锁录入/);
+  h.click('[data-cloud-action="login"]');
+  h.input('cloud-access-key', accessKey); h.submit('cloud-unlock-form'); await flush();
+  assert.equal(h.ui.canWrite(), true);
+  h.click('#close-drawer');
+  await h.library();
+  assert.equal(h.ui.canWrite(), true);
+  assert.ok(h.doc.querySelector('[data-cloud-action="new"]'));
+  assert.equal(h.doc.getElementById('cloud-unlock-form'), null);
+  assert.equal(h.calls.filter(([method]) => method === 'unlock').length, 1, 'reopening verifies the saved session instead of requiring or replaying the access key');
+  h.good();
+});
+
+test('a network unlock failure keeps the pending task and can be retried without resetting the calculator', async t => {
+  let attempts = 0;
+  const h = await boot(t, {unlock: async () => {
+    if (++attempts === 1) throw Object.assign(new Error('无法连接云端，请检查网络后重试。'), {code: 'NETWORK'});
+    return admin;
+  }});
+  h.input('seconds', '5'); h.click('#cost-tab-actual'); h.input('record-cost', '4.33');
+  const before = copy(h.api.getState());
+  h.ui.saveCurrent(); h.input('cloud-access-key', accessKey); h.submit('cloud-unlock-form'); await flush();
+  assert.equal(h.ui.canWrite(), false);
+  assert.match(h.doc.getElementById('cloud-error').textContent, /网络|连接/);
+  assert.doesNotMatch(h.doc.getElementById('cloud-error').textContent, /未获得录入权限/);
+  assert.deepEqual(copy(h.api.getState()), before);
+  h.input('cloud-access-key', accessKey); h.submit('cloud-unlock-form'); await flush();
+  assert.equal(h.ui.canWrite(), true);
+  assert.equal(h.doc.getElementById('cloud-cost').value, '4.33');
+  assert.equal(h.doc.getElementById('cloud-task-seconds').value, '5');
+  assert.equal(h.calls.filter(([method]) => method === 'unlock').length, 2);
+  h.good();
+});
+
+test('a failed saved-session identity check reports the real error and retries without an access-key replay', async t => {
+  let offline = false;
+  const h = await boot(t, {identity: admin, identityRead: value => {
+    if (offline) throw Object.assign(new Error('无法连接云端，请检查网络后重试。'), {code: 'NETWORK'});
+    return value;
+  }});
+  offline = true; await h.library();
+  assert.equal(h.ui.canWrite(), false, 'unknown current permissions fail closed');
+  assert.match(h.doc.getElementById('cloud-error').textContent, /网络|连接/);
+  assert.doesNotMatch(h.doc.getElementById('cloud-error').textContent, /未获得录入权限/);
+  assert.ok(h.doc.querySelector('[data-cloud-action="retry-identity"]'));
+  offline = false;
+  h.click('[data-cloud-action="retry-identity"]'); await flush();
+  assert.equal(h.ui.canWrite(), true);
+  assert.ok(h.doc.querySelector('[data-cloud-action="new"]'));
+  assert.equal(h.calls.filter(([method]) => method === 'unlock').length, 0);
   h.good();
 });
 
@@ -181,28 +283,123 @@ test('saving the current task opens its own parameters instead of an abandoned d
   h.good();
 });
 
-test('cross-tab sign-out clears the visible private member panel and privileged controls', async t => {
+test('cross-tab sign-out clears the visible private key panel and privileged controls', async t => {
   const h = await boot(t, {identity: admin});
-  await h.library(); h.click('[data-cloud-action="members"]'); await flush();
-  assert.match(h.doc.getElementById('drawer-body').textContent, /private-member@example\.com/);
+  await h.library(); h.click('[data-cloud-action="keys"]'); await flush();
+  assert.match(h.doc.getElementById('drawer-body').textContent, /Private contributor/);
   await h.emit('SIGNED_OUT');
-  assert.doesNotMatch(h.doc.getElementById('drawer-body').textContent, /private-member@example\.com/);
-  assert.equal(h.doc.querySelector('[data-cloud-action="toggle-member"]'), null);
+  assert.doesNotMatch(h.doc.getElementById('drawer-body').textContent, /Private contributor/);
+  assert.equal(h.doc.querySelector('[data-cloud-action="toggle-key"]'), null);
   assert.equal(h.ui.canWrite(), false);
   h.ui.saveCurrent();
-  assert.ok(h.doc.getElementById('cloud-login-form'));
+  assert.ok(h.doc.getElementById('cloud-unlock-form'));
   h.good();
 });
 
-test('private reads completing after sign-out cannot restore member data', async t => {
+test('session expiry locks writes while preserving the unsaved recording for an explicit key unlock', async t => {
+  const h = await boot(t, {identity: admin});
+  h.ui.saveCurrent();
+  h.input('cloud-cost', '0.12345678901234567890'); h.input('cloud-note', 'Keep my unsubmitted facts');
+  await h.emit('SIGNED_OUT', guest, {userId: null, reason: 'expired'});
+  assert.equal(h.ui.canWrite(), false);
+  assert.equal(h.calls.filter(([method]) => method === 'save').length, 0, 'expiry never submits or publishes the pending record');
+  if (!h.doc.getElementById('cloud-unlock-form')) {
+    assert.ok(h.doc.querySelector('[data-cloud-action="resume"]'), 'the pending local recording remains explicitly recoverable');
+    h.click('[data-cloud-action="resume"]');
+  }
+  h.input('cloud-access-key', accessKey); h.submit('cloud-unlock-form'); await flush();
+  assert.equal(h.ui.canWrite(), true);
+  assert.equal(h.doc.getElementById('cloud-cost').value, '0.12345678901234567890');
+  assert.equal(h.doc.getElementById('cloud-note').value, 'Keep my unsubmitted facts');
+  assert.equal(h.calls.filter(([method]) => method === 'save').length, 0);
+  h.good();
+});
+
+test('private key reads completing after sign-out cannot restore management data', async t => {
   const result = deferred();
-  const h = await boot(t, {identity: admin, members: () => result.promise});
-  await h.library(); h.click('[data-cloud-action="members"]'); await flush();
+  const h = await boot(t, {identity: admin, keys: () => result.promise});
+  await h.library(); h.click('[data-cloud-action="keys"]'); await flush();
   await h.emit('SIGNED_OUT');
-  result.resolve([{id: uuid(101), email: 'late-private@example.com', display_name: 'Late', role: 'editor', active: true}]);
+  result.resolve([keyFixture(101, 'Late private key owner')]);
   await flush();
-  assert.doesNotMatch(h.doc.getElementById('drawer-body').textContent, /late-private@example\.com/);
-  assert.equal(h.doc.getElementById('cloud-member-form'), null);
+  assert.doesNotMatch(h.doc.getElementById('drawer-body').textContent, /Late private key owner/);
+  assert.equal(h.doc.getElementById('cloud-key-form'), null);
+  h.good();
+});
+
+test('admin creates only editor credentials and reveals the generated secret once for copying', async t => {
+  const h = await boot(t, {identity: admin});
+  await h.library(); h.click('[data-cloud-action="keys"]'); await flush();
+  assert.match(h.doc.getElementById('drawer-body').textContent, /Private contributor/);
+  assert.equal(h.doc.getElementById('cloud-created-key'), null, 'existing credentials are not recoverable from the list');
+  const selfRotate = h.doc.querySelector(`[data-cloud-action="rotate-key"][data-cloud-id="${admin.key_id}"]`);
+  assert.ok(!selfRotate || selfRotate.disabled, 'the admin cannot invalidate the current credential from this control');
+  h.input('cloud-key-name', 'Second recorder'); h.submit('cloud-key-form'); await flush();
+  assert.deepEqual(h.calls.find(([method]) => method === 'createKey'), ['createKey', {display_name: 'Second recorder', role: 'editor'}]);
+  const revealed = h.doc.getElementById('cloud-created-key');
+  assert.ok(revealed);
+  assert.equal(revealed.readOnly, true);
+  assert.equal(revealed.value, accessKey);
+  h.click('[data-cloud-action="copy-key"]'); await flush();
+  assert.deepEqual(h.clipboardWrites, [accessKey]);
+  h.click('[data-cloud-action="keys"], [data-cloud-action="library"]'); await flush();
+  assert.equal(h.doc.getElementById('cloud-created-key'), null);
+  assert.doesNotMatch(h.doc.getElementById('drawer-body').textContent, /rk_[a-f0-9]{64}/);
+  assert.doesNotMatch(JSON.stringify(h.ui.getRecords()), /access_key|token|key_id|rk_|rs_/);
+  h.good();
+});
+
+test('admin rotation preserves contributor identity and revoked access is reflected in the key list', async t => {
+  const h = await boot(t, {identity: admin});
+  await h.library(); h.click('[data-cloud-action="keys"]'); await flush();
+  h.click(`[data-cloud-action="rotate-key"][data-cloud-id="${uuid(101)}"]`); await flush();
+  assert.deepEqual(h.calls.find(([method]) => method === 'rotateKey'), ['rotateKey', {id: uuid(101)}]);
+  assert.equal(h.doc.getElementById('cloud-created-key').value, rotatedAccessKey);
+  h.click('[data-cloud-action="keys"], [data-cloud-action="library"]'); await flush();
+  if (!h.doc.getElementById('cloud-key-form')) { h.click('[data-cloud-action="keys"]'); await flush(); }
+  h.click(`[data-cloud-action="toggle-key"][data-cloud-id="${uuid(101)}"]`); await flush();
+  const changed = h.calls.find(([method]) => method === 'setKey')[1];
+  assert.equal(changed.id, uuid(101));
+  assert.equal(changed.active, false);
+  assert.match(h.doc.getElementById('drawer-body').textContent, /已停用/);
+  assert.equal(h.doc.getElementById('cloud-created-key'), null);
+  h.good();
+});
+
+test('editors can record facts but do not receive credential-management controls', async t => {
+  const h = await boot(t, {identity: {...admin, role: 'editor'}});
+  await h.library();
+  assert.ok(h.doc.querySelector('[data-cloud-action="new"]'));
+  assert.equal(h.doc.querySelector('[data-cloud-action="keys"]'), null);
+  assert.equal(h.doc.getElementById('cloud-key-form'), null);
+  assert.equal(h.calls.filter(([method]) => ['keys', 'createKey', 'rotateKey', 'setKey'].includes(method)).length, 0);
+  h.good();
+});
+
+test('a one-time key response arriving after sign-out cannot reveal the newly created credential', async t => {
+  const pending = deferred();
+  const h = await boot(t, {identity: admin, createKey: () => pending.promise});
+  await h.library(); h.click('[data-cloud-action="keys"]'); await flush();
+  h.input('cloud-key-name', 'Late secret'); h.submit('cloud-key-form'); await flush();
+  await h.emit('SIGNED_OUT');
+  pending.resolve({key: keyFixture(102, 'Late secret'), access_key: accessKey}); await flush();
+  assert.equal(h.ui.canWrite(), false);
+  assert.equal(h.doc.getElementById('cloud-created-key'), null);
+  assert.doesNotMatch(h.doc.getElementById('drawer-body').textContent, /rk_[a-f0-9]{64}|Late secret/);
+  assert.equal(h.doc.getElementById('cloud-key-form'), null);
+  h.good();
+});
+
+test('admin demotion removes a one-time credential that is already visible', async t => {
+  const h = await boot(t, {identity: admin});
+  await h.library(); h.click('[data-cloud-action="keys"]'); await flush();
+  h.input('cloud-key-name', 'Private secret owner'); h.submit('cloud-key-form'); await flush();
+  assert.equal(h.doc.getElementById('cloud-created-key').value, accessKey);
+  await h.emit('SIGNED_IN', {...admin, role: 'editor'});
+  assert.equal(h.ui.canWrite(), true);
+  assert.equal(h.doc.getElementById('cloud-created-key'), null);
+  assert.doesNotMatch(h.doc.getElementById('drawer-body').textContent, /rk_[a-f0-9]{64}/);
+  assert.equal(h.doc.querySelector('[data-cloud-action="copy-key"]'), null);
   h.good();
 });
 
@@ -239,26 +436,27 @@ test('version conflicts keep the attempted edit and explicitly create a new iden
   h.good();
 });
 
-test('authentication and member secrets are absent from calculator JSON export', async t => {
+test('access keys, session tokens and key-management data are absent from calculator JSON export', async t => {
   const h = await boot(t, {identity: admin});
+  await h.library(); h.click('[data-cloud-action="keys"]'); await flush();
+  h.input('cloud-key-name', 'Sensitive private key owner'); h.submit('cloud-key-form'); await flush();
+  assert.equal(h.doc.getElementById('cloud-created-key').value, accessKey);
+  h.click('#close-drawer');
   await h.library(); h.click('[data-cloud-action="use"]');
   h.click('#export'); h.click('#export-json');
   assert.equal(h.downloads.length, 1);
   const exported = await h.downloads[0].blob.text();
   const payload = JSON.parse(exported);
-  assert.doesNotMatch(exported, /sensitive-test|private-login|access_token|refresh_token|reelay_cloud_auth/);
+  assert.doesNotMatch(exported, /sensitive-test|private-login|access_token|refresh_token|reelay_cloud_auth|reelay_cloud_key_session|access_key|session_token|key_hash|key_id|expires_at|Sensitive private key owner|rk_[a-f0-9]{64}|rs_[a-f0-9]{64}/);
   assert.equal(payload.format, 'reelay.pricing.v9');
   assert.equal(payload.state.plan.company, h.api.getState().plan.company);
-  assert.ok(h.w.localStorage.getItem('reelay_cloud_auth_v1').includes('sensitive-test-access-token'), 'export does not erase a legitimate login session');
+  assert.ok(h.w.localStorage.getItem('reelay_cloud_key_session_v1').includes(sessionToken), 'export does not erase an established unlock session');
   h.good();
 });
 
-test('implicit form submissions do not throw and supported legacy codes still work', async t => {
+test('implicit unlock and recording submissions do not require a submitter element', async t => {
   const h = await boot(t);
-  h.ui.saveCurrent(); h.input('cloud-email', 'owner@example.com'); h.submit('cloud-login-form', true); await flush();
-  h.input('cloud-code', '123456');
-  assert.equal(h.doc.getElementById('cloud-code').checkValidity(), true);
-  h.submit('cloud-verify-form', true); await flush();
+  h.ui.saveCurrent(); h.input('cloud-access-key', accessKey); h.submit('cloud-unlock-form', true); await flush();
   assert.ok(h.doc.getElementById('cloud-record-form'));
   h.input('cloud-cost', '2'); h.submit('cloud-record-form', true); await flush();
   assert.equal(h.calls.filter(([method]) => method === 'save').length, 1);
@@ -282,15 +480,15 @@ test('two same-spec public records require an explicit selection in both task ou
   h.good();
 });
 
-test('admin demotion to editor clears private member DOM even though recording rights remain', async t => {
+test('admin demotion to editor clears private key DOM even though recording rights remain', async t => {
   const h = await boot(t, {identity: admin});
-  await h.library(); h.click('[data-cloud-action="members"]'); await flush();
-  assert.match(h.doc.getElementById('drawer-body').textContent, /private-member@example\.com/);
-  await h.emit('TOKEN_REFRESHED', {role: 'editor', authenticated: true, display_name: 'Owner'});
+  await h.library(); h.click('[data-cloud-action="keys"]'); await flush();
+  assert.match(h.doc.getElementById('drawer-body').textContent, /Private contributor/);
+  await h.emit('SIGNED_IN', {...admin, role: 'editor'});
   assert.equal(h.ui.canWrite(), true, 'editor retains record-writing rights');
-  assert.doesNotMatch(h.doc.getElementById('drawer-body').textContent, /private-member@example\.com/);
-  assert.equal(h.doc.querySelector('[data-cloud-action="toggle-member"]'), null);
-  assert.equal(h.doc.getElementById('cloud-member-form'), null);
+  assert.doesNotMatch(h.doc.getElementById('drawer-body').textContent, /Private contributor/);
+  assert.equal(h.doc.querySelector('[data-cloud-action="toggle-key"]'), null);
+  assert.equal(h.doc.getElementById('cloud-key-form'), null);
   h.good();
 });
 

@@ -2,7 +2,9 @@
 
 // A narrow interface keeps auth sessions out of calculator state and JSON exports.
 // Authorization is enforced by the database, never by this browser adapter.
-const AUTH_STORAGE_KEY = 'reelay_cloud_auth_v1';
+const ACCESS_STORAGE_KEY = 'reelay_cloud_access_v1';
+const ACCESS_KEY = /^rk_[0-9a-f]{64}$/;
+const SESSION_TOKEN = /^rs_[0-9a-f]{64}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function problem(code, message) {
@@ -16,15 +18,11 @@ function publicError(error) {
   if (error?.name === 'CloudError') return error;
   const code = String(error?.code || error?.status || '');
   if (code === 'PT400') return problem('INVALID_INPUT', '输入不完整或格式不正确，请检查后重试。');
-  if (code === 'PT403' || code === '42501' || code === '403') return problem('FORBIDDEN', '当前账号没有此操作的权限，请联系管理员。');
+  if (code === 'PT403' || code === '42501' || code === '403') return problem('FORBIDDEN', '当前密钥没有此操作的权限，请联系管理员。');
   if (code === 'PT404') return problem('NOT_FOUND', '这条记录已不存在，请刷新列表。');
   if (code === 'PT409' || code === '23505') return problem('CONFLICT', '记录已发生变化，请刷新后再编辑；当前输入尚未保存。');
-  if (['401', 'PGRST301', 'PGRST302', 'PGRST303', 'bad_jwt', 'session_not_found', 'refresh_token_not_found', 'refresh_token_already_used'].includes(code)) return problem('SESSION_EXPIRED', '登录状态已失效，请重新登录。');
-  if (['over_email_send_rate_limit', 'over_request_rate_limit', '429'].includes(code)) return problem('RATE_LIMIT', '请求过于频繁，请稍后再试。');
-  if (['otp_expired', 'invalid_credentials', 'otp_disabled'].includes(code)) return problem('INVALID_CODE', '验证码无效或已过期，请重新获取。');
-  if (['email_address_not_authorized', 'unexpected_failure', 'email_provider_disabled'].includes(code)) return problem('EMAIL_UNAVAILABLE', '登录邮件暂时无法发送，请联系管理员检查邮件配置。');
-  if (code === 'email_address_invalid') return problem('INVALID_EMAIL', '请输入有效的邮箱地址。');
-  if (code === 'user_banned') return problem('FORBIDDEN', '当前账号已停用，请联系管理员。');
+  if (['PT401', '401', 'PGRST301', 'PGRST302', 'PGRST303'].includes(code)) return problem('SESSION_EXPIRED', '录入权限已失效，请重新输入密钥。');
+  if (['over_request_rate_limit', '429'].includes(code)) return problem('RATE_LIMIT', '请求过于频繁，请稍后再试。');
   if (error?.name === 'AbortError') return problem('CANCELLED', '请求已取消。');
   if (error instanceof TypeError || code === '0' || error?.name === 'AuthRetryableFetchError') return problem('NETWORK', '无法连接云端，请检查网络后重试。');
   // Do not expose upstream response messages, request details, or tokens to UI.
@@ -51,12 +49,6 @@ function validateConfig(config) {
   return {url: url.origin, publishableKey: key};
 }
 
-function emailValue(value) {
-  const email = String(value || '').trim().toLowerCase();
-  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw problem('INVALID_EMAIL', '请输入有效的邮箱地址。');
-  return email;
-}
-
 function recordId(value) {
   if (typeof value !== 'string' || !UUID.test(value)) throw problem('INVALID_INPUT', '记录标识无效，请重新打开记录。');
   return value;
@@ -77,24 +69,89 @@ function rowValue(row, management = false) {
   return value;
 }
 
+const guestIdentity = () => ({role: null, authenticated: false, display_name: '', key_id: null, expires_at: null});
+
+function identityValue(data, expiresAt) {
+  if (data?.authenticated === false && data.role === null) return guestIdentity();
+  if (!data || data.authenticated !== true || !['editor', 'admin'].includes(data.role) || !UUID.test(data.key_id) || !Number.isFinite(Date.parse(data.expires_at))) throw problem('INVALID_RESPONSE', '录入权限信息异常，请重新解锁。');
+  return {role: data.role, authenticated: true, display_name: typeof data.display_name === 'string' ? data.display_name : '', key_id: data.key_id, expires_at: expiresAt || data.expires_at};
+}
+
+function keyValue(data) {
+  if (!data || !UUID.test(data.id) || !['editor', 'admin'].includes(data.role) || typeof data.active !== 'boolean' || typeof data.display_name !== 'string') throw problem('INVALID_RESPONSE', '密钥信息异常，请稍后刷新。');
+  return {id: data.id, display_name: data.display_name, role: data.role, active: data.active, created_at: data.created_at, updated_at: data.updated_at};
+}
+
+function issuedKey(data) {
+  if (!ACCESS_KEY.test(data?.access_key)) throw problem('INVALID_RESPONSE', '密钥生成结果异常，请刷新后检查。');
+  return {key: keyValue(data.key), access_key: data.access_key};
+}
+
 function createCloudClient(config, options = {}) {
   const settings = validateConfig(config);
   const timeoutMs = options.timeoutMs ?? 15000;
   if (!Number.isFinite(timeoutMs) || timeoutMs < 1 || timeoutMs > 120000) throw problem('INVALID_CONFIG', '云端请求超时设置无效。');
-  let sdk = null;
+  const now = options.now || Date.now;
+  let storage = options.storage;
+  if (!storage) { try { storage = globalThis.localStorage; } catch (_) { /* A blocked storage origin still permits an in-memory session. */ } }
+  const eventTarget = options.eventTarget || (typeof globalThis.addEventListener === 'function' ? globalThis : null);
+  let sdk = null, session = null, generation = 0, knownIdentity = guestIdentity();
+  const listeners = new Set();
   if (settings) {
     if (typeof options.createClient !== 'function') throw problem('INVALID_CONFIG', '云端连接组件未加载。');
     sdk = options.createClient(settings.url, settings.publishableKey, {
-      auth: {
-        persistSession: true, autoRefreshToken: true, detectSessionInUrl: false,
-        storageKey: AUTH_STORAGE_KEY,
-        ...(options.storage ? {storage: options.storage} : {}),
-      },
+      auth: {persistSession: false, autoRefreshToken: false, detectSessionInUrl: false},
     });
   }
 
-  function ensureEnabled() {
-    if (!sdk) throw problem('NOT_CONFIGURED', '云端尚未配置。');
+  function ensureEnabled() { if (!sdk) throw problem('NOT_CONFIGURED', '云端尚未配置。'); }
+  function sameSession(a, b) { return a?.session_token === b?.session_token && a?.expires_at === b?.expires_at; }
+  function normalizedSession(value) {
+    if (!value || !SESSION_TOKEN.test(value.session_token) || !Number.isFinite(Date.parse(value.expires_at)) || Date.parse(value.expires_at) <= now()) return null;
+    return {session_token: value.session_token, expires_at: value.expires_at};
+  }
+  function storedSession() {
+    if (!storage) return session;
+    let raw;
+    try { raw = storage.getItem(ACCESS_STORAGE_KEY); }
+    catch (_) { storage = null; return session; }
+    try { return normalizedSession(JSON.parse(raw || 'null')); }
+    catch (_) { return null; }
+  }
+  function persist(next) {
+    if (!storage) return;
+    try { if (next) storage.setItem(ACCESS_STORAGE_KEY, JSON.stringify(next)); else storage.removeItem(ACCESS_STORAGE_KEY); }
+    catch (_) { storage = null; /* Storage denial does not invalidate an already verified in-memory session. */ }
+  }
+  function notify(event, reason) {
+    const revision = generation, hint = {userId: knownIdentity.key_id, ...(reason ? {reason} : {})};
+    for (const listener of listeners) {
+      const timer = setTimeout(() => {
+        listener.timers.delete(timer);
+        if (listeners.has(listener) && revision === generation) listener.callback(event, hint);
+      }, 0);
+      listener.timers.add(timer);
+    }
+  }
+  function replaceSession(next, identity = guestIdentity(), event = null, save = true, reason = undefined) {
+    generation++;
+    session = next;
+    knownIdentity = identity;
+    if (save) persist(next);
+    if (event) notify(event, reason);
+  }
+  function syncStorage() {
+    if (session && Date.parse(session.expires_at) <= now()) { replaceSession(null, guestIdentity(), 'SIGNED_OUT', true, 'expired'); return session; }
+    const next = storedSession();
+    if (!sameSession(session, next)) replaceSession(next, guestIdentity(), next ? 'SIGNED_IN' : 'SIGNED_OUT', false, next ? undefined : 'external');
+    return session;
+  }
+  if (sdk) {
+    session = storedSession();
+    if (!session) persist(null);
+    eventTarget?.addEventListener('storage', event => {
+      if ((event.key === ACCESS_STORAGE_KEY || event.key === null) && (!event.storageArea || event.storageArea === storage)) syncStorage();
+    });
   }
 
   async function request(execute, requestOptions = {}) {
@@ -107,10 +164,7 @@ function createCloudClient(config, options = {}) {
       const stopped = new Promise((_, reject) => {
         onAbort = () => { reject(problem('CANCELLED', '请求已取消。')); controller.abort(); };
         outerSignal?.addEventListener('abort', onAbort, {once: true});
-        timer = setTimeout(() => {
-          reject(problem('TIMEOUT', requestOptions.write ? '请求超时，保存结果尚未确认，请刷新记录后再试。' : '请求超时，请检查网络后重试。'));
-          controller.abort();
-        }, timeoutMs);
+        timer = setTimeout(() => { reject(problem('TIMEOUT', requestOptions.write ? '请求超时，保存结果尚未确认，请刷新记录后再试。' : '请求超时，请检查网络后重试。')); controller.abort(); }, timeoutMs);
       });
       const response = await Promise.race([Promise.resolve().then(() => {
         if (controller.signal.aborted) throw problem('CANCELLED', '请求已取消。');
@@ -118,12 +172,8 @@ function createCloudClient(config, options = {}) {
       }), stopped]);
       if (response?.error) throw response.error;
       return response?.data;
-    } catch (error) {
-      throw publicError(error);
-    } finally {
-      clearTimeout(timer);
-      outerSignal?.removeEventListener('abort', onAbort);
-    }
+    } catch (error) { throw publicError(error); }
+    finally { clearTimeout(timer); outerSignal?.removeEventListener('abort', onAbort); }
   }
 
   function rpc(name, args = {}, requestOptions = {}, range = null) {
@@ -133,22 +183,39 @@ function createCloudClient(config, options = {}) {
       return query.abortSignal(signal);
     }, requestOptions);
   }
+  function credentials() {
+    ensureEnabled();
+    const current = syncStorage();
+    if (!current) throw problem('SESSION_EXPIRED', '请先输入录入密钥。');
+    return {generation, ...current};
+  }
+  function stillCurrent(capture) { syncStorage(); return capture.generation === generation && capture.session_token === session?.session_token; }
+  async function privateRpc(name, args = {}, requestOptions = {}, range = null, capture = credentials()) {
+    try {
+      const data = await rpc(name, {session_token: capture.session_token, ...args}, requestOptions, range);
+      if (!stillCurrent(capture)) throw problem('CANCELLED', '录入权限已改变，请重新操作。');
+      return data;
+    } catch (error) {
+      if (!stillCurrent(capture)) throw problem('CANCELLED', '录入权限已改变，请重新操作。');
+      if (error.code === 'SESSION_EXPIRED') replaceSession(null, guestIdentity(), 'SIGNED_OUT', true, 'expired');
+      throw error;
+    }
+  }
 
   async function records(name, management, requestOptions = {}) {
-    const pageSize = 500, maxRecords = 10000, output = [], seen = new Set();
+    const pageSize = 500, maxRecords = 10000, output = [], seen = new Set(), capture = management ? credentials() : null;
     for (let start = 0; start <= maxRecords; start += pageSize) {
-      const rows = await rpc(name, {}, requestOptions, [start, start + pageSize - 1]);
+      const range = [start, start + pageSize - 1];
+      const rows = management ? await privateRpc(name, {}, requestOptions, range, capture) : await rpc(name, {}, requestOptions, range);
       if (!Array.isArray(rows) || rows.length > pageSize) throw problem('INVALID_RESPONSE', '云端记录列表格式异常，请稍后刷新。');
       if (output.length + rows.length > maxRecords) throw problem('TOO_MANY_RECORDS', '云端记录超过当前页面可加载的数量，请联系管理员。');
       for (const row of rows) {
         const value = rowValue(row, management);
         if (seen.has(value.id)) throw problem('CHANGED_DURING_LOAD', '记录列表正在更新，请重新刷新。');
-        seen.add(value.id);
-        output.push(value);
+        seen.add(value.id); output.push(value);
       }
       if (rows.length < pageSize) return output;
     }
-    // A full final page must never be silently treated as the end of a dataset.
     throw problem('TOO_MANY_RECORDS', '云端记录超过当前页面可加载的数量，请联系管理员。');
   }
 
@@ -157,75 +224,86 @@ function createCloudClient(config, options = {}) {
     onAuthChange(callback) {
       if (typeof callback !== 'function') throw new TypeError('callback must be a function');
       if (!sdk) return () => {};
-      let active = true;
-      const timers = new Set();
-      const {data} = sdk.auth.onAuthStateChange((event, session) => {
-        // Supabase holds an auth lock during its callback. Run application work
-        // on the next task, and never hand the session/JWT to calculator state.
-        const identityHint = {userId: typeof session?.user?.id === 'string' ? session.user.id : null};
-        const timer = setTimeout(() => {
-          timers.delete(timer);
-          if (active) callback(event, identityHint);
-        }, 0);
-        timers.add(timer);
-      });
-      return () => {
-        active = false;
-        for (const timer of timers) clearTimeout(timer);
-        timers.clear();
-        data?.subscription?.unsubscribe();
-      };
+      const listener = {callback, timers: new Set()}; listeners.add(listener);
+      const revision = generation, hint = {userId: knownIdentity.key_id};
+      const timer = setTimeout(() => { listener.timers.delete(timer); if (listeners.has(listener) && revision === generation) callback('INITIAL_SESSION', hint); }, 0);
+      listener.timers.add(timer);
+      return () => { listeners.delete(listener); for (const timer of listener.timers) clearTimeout(timer); listener.timers.clear(); };
     },
-    async sendCode(email, requestOptions) {
-      const value = emailValue(email);
-      await request(() => sdk.auth.signInWithOtp({email: value, options: {shouldCreateUser: true}}), requestOptions);
-      return {sent: true};
+    async unlock(accessKey, requestOptions = {}) {
+      ensureEnabled();
+      const value = String(accessKey || '').trim();
+      if (!ACCESS_KEY.test(value)) throw problem('INVALID_KEY', '请输入完整的录入密钥。');
+      syncStorage();
+      const revision = ++generation;
+      let data;
+      try { data = await rpc('reelay_access_unlock', {access_key: value}, requestOptions); }
+      catch (error) { if (error.code === 'SESSION_EXPIRED' || error.code === 'FORBIDDEN') throw problem('INVALID_KEY', '密钥无效或已停用，请联系管理员。'); throw error; }
+      const next = normalizedSession(data), identity = identityValue(data?.identity, next?.expires_at);
+      if (!next || !identity.authenticated) throw problem('INVALID_RESPONSE', '解锁结果异常，请重新输入密钥。');
+      syncStorage();
+      if (revision !== generation) {
+        // A superseded request may have created a server session. Revoke it
+        // without ever making it the active browser credential.
+        void rpc('reelay_access_lock', {session_token: next.session_token}).catch(() => {});
+        throw problem('CANCELLED', '解锁已取消，请重新操作。');
+      }
+      replaceSession(next, identity, 'SIGNED_IN', true, 'unlocked');
+      return {...identity};
     },
-    async verifyCode(email, code, requestOptions) {
-      const value = emailValue(email), token = String(code || '').trim();
-      if (!/^\d{6,10}$/.test(token)) throw problem('INVALID_CODE', '请输入邮件中的完整数字验证码。');
-      const data = await request(() => sdk.auth.verifyOtp({email: value, token, type: 'email'}), requestOptions);
-      if (!data?.session || !data?.user) throw problem('INVALID_RESPONSE', '登录尚未完成，请重新验证。');
-      return {authenticated: true};
-    },
-    async signOut(requestOptions) {
-      await request(() => sdk.auth.signOut({scope: 'local'}), requestOptions);
+    async signOut(requestOptions = {}) {
+      ensureEnabled();
+      const current = syncStorage();
+      replaceSession(null, guestIdentity(), 'SIGNED_OUT', true, 'locked');
+      if (current) {
+        try { await rpc('reelay_access_lock', {session_token: current.session_token}, requestOptions); }
+        catch (_) { throw problem('LOCK_UNCONFIRMED', '本机已锁定，云端会话撤销未确认。'); }
+      }
       return {signedOut: true};
     },
-    async identity(requestOptions) {
-      const data = await rpc('reelay_identity', {}, requestOptions);
-      if (!data || ![null, 'editor', 'admin'].includes(data.role)) throw problem('INVALID_RESPONSE', '账号权限信息异常，请重新登录。');
-      return {role: data.role, authenticated: data.authenticated === true, display_name: typeof data.display_name === 'string' ? data.display_name : ''};
+    async identity(requestOptions = {}) {
+      ensureEnabled();
+      if (!syncStorage()) return guestIdentity();
+      const capture = credentials();
+      const value = identityValue(await privateRpc('reelay_access_identity', {}, requestOptions, null, capture), capture.expires_at);
+      if (!value.authenticated) replaceSession(null, guestIdentity(), 'SIGNED_OUT', true, 'expired');
+      else knownIdentity = value;
+      return {...value};
     },
     publicRecords(requestOptions) { return records('reelay_public_records', false, requestOptions); },
-    manageRecords(requestOptions) { return records('reelay_manage_records', true, requestOptions); },
+    manageRecords(requestOptions) { return records('reelay_access_manage_records', true, requestOptions); },
     async saveRecord({id, version, record}, requestOptions = {}) {
       const args = {record_id: recordId(id), expected_version: recordVersion(version, true), record};
       if (!record || typeof record !== 'object' || Array.isArray(record)) throw problem('INVALID_INPUT', '请填写实测记录。');
-      return rowValue(await rpc('reelay_save_record', args, {...requestOptions, write: true}), true);
+      return rowValue(await privateRpc('reelay_access_save_record', args, {...requestOptions, write: true}), true);
     },
     async archiveRecord({id, version, archived}, requestOptions = {}) {
       if (typeof archived !== 'boolean') throw problem('INVALID_INPUT', '记录状态无效。');
-      const args = {record_id: recordId(id), expected_version: recordVersion(version), archived};
-      return rowValue(await rpc('reelay_archive_record', args, {...requestOptions, write: true}), true);
+      return rowValue(await privateRpc('reelay_access_archive_record', {record_id: recordId(id), expected_version: recordVersion(version), archived}, {...requestOptions, write: true}), true);
     },
-    async members(requestOptions) {
-      const data = await rpc('reelay_members', {}, requestOptions);
-      if (!Array.isArray(data)) throw problem('INVALID_RESPONSE', '成员列表格式异常，请稍后刷新。');
-      return data;
-    },
-    async setMember({id = null, email, display_name = '', role, active}, requestOptions = {}) {
-      if (!['admin', 'editor'].includes(role) || typeof active !== 'boolean' || typeof display_name !== 'string' || display_name.trim().length > 60) throw problem('INVALID_INPUT', '请检查成员名称与权限。');
-      const args = {member_id: id === null ? null : recordId(id), email: emailValue(email), display_name: display_name.trim(), role, active};
-      return rpc('reelay_set_member', args, {...requestOptions, write: true});
-    },
-    async history(id, requestOptions) {
-      const data = await rpc('reelay_record_history', {record_id: recordId(id)}, requestOptions);
+    async history(id, requestOptions = {}) {
+      const data = await privateRpc('reelay_access_record_history', {record_id: recordId(id)}, requestOptions);
       if (!Array.isArray(data)) throw problem('INVALID_RESPONSE', '修改历史格式异常，请稍后刷新。');
       return data;
+    },
+    async keys(requestOptions = {}) {
+      const data = await privateRpc('reelay_access_keys', {}, requestOptions);
+      if (!Array.isArray(data)) throw problem('INVALID_RESPONSE', '密钥列表格式异常，请稍后刷新。');
+      return data.map(keyValue);
+    },
+    async createKey({display_name, role = 'editor'}, requestOptions = {}) {
+      if (typeof display_name !== 'string' || !display_name.trim() || display_name.trim().length > 60 || !['editor', 'admin'].includes(role)) throw problem('INVALID_INPUT', '请填写密钥名称和有效权限。');
+      return issuedKey(await privateRpc('reelay_access_create_key', {display_name: display_name.trim(), key_role: role}, {...requestOptions, write: true}));
+    },
+    async setKey({id, active}, requestOptions = {}) {
+      if (typeof active !== 'boolean') throw problem('INVALID_INPUT', '密钥状态无效。');
+      return keyValue(await privateRpc('reelay_access_set_key', {key_id: recordId(id), active}, {...requestOptions, write: true}));
+    },
+    async rotateKey({id}, requestOptions = {}) {
+      return issuedKey(await privateRpc('reelay_access_rotate_key', {key_id: recordId(id)}, {...requestOptions, write: true}));
     },
   };
   return Object.freeze(api);
 }
 
-module.exports = {createCloudClient,validateConfig};
+module.exports = {createCloudClient, validateConfig};

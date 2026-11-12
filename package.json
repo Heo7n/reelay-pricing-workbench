@@ -1,6 +1,6 @@
 {
   "name": "reelay-pricing-v9",
-  "version": "9.15.0",
+  "version": "9.16.0",
   "description": "Offline pricing workbench with versioned official rules",
   "main": "app.js",
   "scripts": {
